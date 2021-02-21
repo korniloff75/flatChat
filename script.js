@@ -1,4 +1,3 @@
-//<![CDATA[
 (function () {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
@@ -402,11 +401,9 @@
 	}
 
 	var refresh = (function () {
-		var lastMod = "<?php echo( $lastMod ); ?>";
-
 		return function (params, handler) {
-			if (!params) params = {};
-			if (!params.hasOwnProperty("lastMod")) params.lastMod = lastMod;
+			params = params || {};
+			params.lastMod = params.lastMod || LASTMOD;
 
 			post(
 				window.location.toString(),
@@ -499,7 +496,7 @@
 	};
 
 	f.onsubmit = function () {
-		if (/^\s*$/.test(name.value)) {
+		if (!name.value.trim()) {
 			tipUpper(name, "Пожалуйста, введите свое имя");
 			return false;
 		}
@@ -576,4 +573,3 @@
 
 	poll(false, true);
 })();
-		//]]>

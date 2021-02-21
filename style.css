@@ -124,12 +124,13 @@ a:hover {
 }
 
 #wrapper {
-	width: 30em;
+	/* width: 30em; */
 	text-align: left;
 	margin: auto;
 	position: relative;
 	z-index: 1;
 	padding: 1em;
+	max-width: 100%;
 }
 
 #msgsContent {

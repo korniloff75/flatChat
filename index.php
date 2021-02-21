@@ -92,10 +92,6 @@ function cleanText( $str ) {
 }
 
 
-
-
-
-
 $exit = false;
 
 $name = @$_POST["name"] ? $_POST["name"] : null;
@@ -159,14 +155,14 @@ $lastMod = filemtime( DBFILE );
 if ( $lastMod === false ) $lastMod = 0;
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+<!DOCTYPE html>
+<html lang="ru">
 	<head>
-		<title>ProtoChat</title>
+		<title>HEADER</title>
 		<meta charset="utf-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="robots" content="noindex, nofollow">
-		<meta content="width=1024" name="viewport" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 		<link rel="stylesheet" href="style.css">
 
@@ -174,7 +170,7 @@ if ( $lastMod === false ) $lastMod = 0;
 
 	<body>
 		<div id="wrapper">
-			<h1><?php echo( HEADER ); ?></h1>
+			<h1><?= HEADER ?></h1>
 
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
@@ -202,7 +198,8 @@ if ( $lastMod === false ) $lastMod = 0;
 
 
 		<script type="text/javascript">
-			const REFRESHTIME= <?=\REFRESHTIME?>;
+			const REFRESHTIME= <?=\REFRESHTIME?>,
+				LASTMOD= <?=$lastMod?>;
 		</script>
 		<script src="script.js"></script>
 	</body>
