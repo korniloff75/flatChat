@@ -1,4 +1,4 @@
-(function () {
+(function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 	var submit = document.getElementById("submit");
@@ -70,10 +70,10 @@
 	function post(url, reqParams, handler) {
 		var XMLo;
 
-		if (window.XMLHttpRequest) {
+		if (_w.XMLHttpRequest) {
 			try { XMLo = new XMLHttpRequest(); }
 			catch (e) { XMLo = null; }
-		} else if (window.ActiveXObject) {
+		} else if (_w.ActiveXObject) {
 			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
 			catch (e) {
 				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
@@ -211,8 +211,8 @@
 				var body = document.body;
 				var docEl = document.documentElement;
 
-				var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-				var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+				var scrollTop = _w.pageYOffset || docEl.scrollTop || body.scrollTop;
+				var scrollLeft = _w.pageXOffset || docEl.scrollLeft || body.scrollLeft;
 
 				var clientTop = docEl.clientTop || body.clientTop || 0;
 				var clientLeft = docEl.clientLeft || body.clientLeft || 0;
@@ -375,7 +375,7 @@
 	function scrollBottom() {
 		var os = msgs.onscroll;
 		msgs.onscroll = function (e) {
-			if (!e) e = window.event;
+			if (!e) e = _w.event;
 			if (e.preventDefault) e.preventDefault();
 			if (e.stopPropagation) e.stopPropagation();
 
@@ -406,7 +406,7 @@
 			params.lastMod = params.lastMod || LASTMOD;
 
 			post(
-				window.location.toString(),
+				_w.location.toString(),
 				params,
 				function (state, status, txt) {
 					if (!state) {
@@ -418,6 +418,7 @@
 						var p = txt.indexOf("\n");
 						if (p > 0) {
 							var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
+							console.log({s});
 							if (s) {
 								lm = s[2];
 								s = s[1];
@@ -530,7 +531,7 @@
 	};
 
 	msgs.onclick = function (e) {
-		if (!e) e = window.event;
+		if (!e) e = _w.event;
 
 		var s = e.srcElement || e.target;
 		if (s.tagName == "A") return;
@@ -563,7 +564,7 @@
 
 	name.onkeydown = text.onkeydown = function (e) {
 		if (sendDialogWaiter.isShow()) return;
-		if (!e) e = window.event;
+		if (!e) e = _w.event;
 		if (e.keyCode === 13 && e.ctrlKey) f.onsubmit();
 	};
 
@@ -572,4 +573,4 @@
 	text.focus();
 
 	poll(false, true);
-})();
+})(window);
