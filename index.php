@@ -15,6 +15,11 @@
 
 //sleep( 3 ); //Я точно забуду удалить эту отладачную строку...
 
+
+ini_set('error_reporting', -1);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+
 mb_internal_encoding( "UTF-8" );
 mb_http_output( "UTF-8" );
 mb_http_input( "UTF-8" );
@@ -49,12 +54,13 @@ function makeURL( $matches ) {
 
 function chatOut( $status = null, $chat = null ) {
 	if ( $status !== null ) {
-		$lastMod = filemtime( DBFILE );
-		if ( $lastMod === false ) $lastMod = 0;
+		if ( !($lastMod = filemtime( DBFILE )) ) $lastMod = 0;
 		echo( "{$status}:$lastMod\n" );
 	}
 
 	if ( $chat === null ) {
+
+		// *Читаем CHATTRIM байт с конца файла
 		if ( CHATTRIM ) {
 			$f = fopen( DBFILE, "r" );
 			fseek( $f, -CHATTRIM, SEEK_END );
@@ -65,12 +71,14 @@ function chatOut( $status = null, $chat = null ) {
 				$chat = mb_substr( $chat, $p );
 			}
 		}
+		// *Читаем весь файл
 		else $chat = file_get_contents( DBFILE );
 	}
 
 	echo( $chat );
 }
 
+// *Обработка имени
 function cleanName( $str ) {
 	$str = trim( $str );
 	$str = preg_replace( "~[^ 0-9a-zа-яё]~iu", "", $str );
@@ -78,15 +86,14 @@ function cleanName( $str ) {
 	return $str;
 }
 
+// *Обработка поста
 function cleanText( $str ) {
 	$str = trim( $str );
 	$str = preg_replace( "~\r~u", "", $str );
 	$str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
-	$str = preg_replace( "~&~u", "&amp;", $str );
-	$str = preg_replace( "~<~u", "&lt;", $str );
-	$str = preg_replace( "~>~u", "&gt;", $str );
+	$str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
 	$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
-	$str = preg_replace( "~\n~u", "<br />", $str );
+	$str = preg_replace( ["~(\n){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
 
 	return $str;
 }
@@ -115,6 +122,7 @@ if ( $cookieName ) $cookieName = cleanName( $cookieName );
 if ( !$name ) $name = $cookieName;
 if ( $text ) $text = cleanText( $text );
 
+// *New post
 if ( $mode == "post" ) {
 	if ( !$name || !$text ) {
 		header( 'HTTP/1.1 400 Bad Request' );
@@ -132,18 +140,19 @@ if ( $mode == "post" ) {
 	$text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-]+)\x07iu", "makeURL", $text );
 	$msg = '<div class="msg"><div class="info"><span class="name">' . $name . '</span><span class="misc"><span class="date">' . date( "d.m.Y H:i:s" ) . '</span> <span class="id">(' . $id . ')</span></span></div>' . $text . '</div>' . "\n\n";
 
-	file_put_contents( DBFILE, $msg, FILE_APPEND );
+	file_put_contents( DBFILE, $msg, LOCK_EX|FILE_APPEND );
 
 	$mode = "list";
+	$lastMod = filemtime( DBFILE );
 }
 
+// *Update list
 if ( $mode == "list" ) {
 	$exit = true;
 
 	$rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
 
-	$lastMod = filemtime( DBFILE );
-	if ( $lastMod === false ) $lastMod = 0;
+	if ( !($lastMod = filemtime( DBFILE )) ) $lastMod = 0;
 
 	if ( $rlm == $lastMod ) chatOut( "NONMODIFIED", "" );
 	else chatOut( "OK", null );
@@ -158,7 +167,7 @@ if ( $lastMod === false ) $lastMod = 0;
 <!DOCTYPE html>
 <html lang="ru">
 	<head>
-		<title>HEADER</title>
+		<title><?=HEADER?></title>
 		<meta charset="utf-8" />
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="robots" content="noindex, nofollow">
@@ -198,9 +207,9 @@ if ( $lastMod === false ) $lastMod = 0;
 
 
 		<script type="text/javascript">
-			const REFRESHTIME= <?=\REFRESHTIME?>,
-				LASTMOD= <?=$lastMod?>;
+			const REFRESHTIME= <?=\REFRESHTIME?>;
+			let lastMod= <?=$lastMod?>;
 		</script>
-		<script src="script.js"></script>
+		<script src="script.js" defer></script>
 	</body>
 </html>

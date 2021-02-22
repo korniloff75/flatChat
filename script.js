@@ -1,3 +1,12 @@
+'use strict';
+// *noConsole
+if(/\.ru/i.test(location.host)){
+	var console= {
+		log: ()=>false,
+		info: ()=>false,
+	}
+}
+
 (function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
@@ -23,8 +32,9 @@
 
 		if (state) {
 			el.style.boxSizing = "border-box";
-			var h = el.offsetHeight;
-			var dh = h - el.clientHeight;
+			var h = el.offsetHeight,
+				dh = h - el.clientHeight,
+				t;
 
 			el._ah_ = function () {
 				while (true) {
@@ -108,7 +118,6 @@
 					handler(false, XMLo.status, XMLo.responseText);
 				}
 
-				delete XMLo;
 				XMLo = null;
 			}
 		};
@@ -403,7 +412,7 @@
 	var refresh = (function () {
 		return function (params, handler) {
 			params = params || {};
-			params.lastMod = params.lastMod || LASTMOD;
+			params.lastMod = params.lastMod === 0? 0 : lastMod;
 
 			post(
 				_w.location.toString(),
@@ -418,9 +427,10 @@
 						var p = txt.indexOf("\n");
 						if (p > 0) {
 							var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
-							console.log({s});
+
 							if (s) {
-								lm = s[2];
+								lm = +s[2];
+								console.log({s,lm});
 								s = s[1];
 
 								txt = txt.substring(p + 1);
