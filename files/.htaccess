@@ -1,0 +1,23 @@
+Options -Indexes
+# <FilesMatch "\.*">
+# # SetHandler none
+# SetHandler null
+# </FilesMatch>
+
+# RemoveHandler .php
+# <Files ~ "\.php$">
+# 		ForceType text/plain
+# </Files>
+
+# <FilesMatch \.php$>
+# 		SetHandler None
+# 		ForceType text/plain
+# </FilesMatch>
+
+RemoveHandler .php .cgi .pl .fcgi .fpl .phtml .phtm .shtml .php2 .php3 .php4 .php5 .asp .jsp .js
+AddType "text/plain" .php .cgi .pl .fcgi .fpl .phtml .phtm .shtml .php2 .php3 .php4 .php5 .asp .jsp .js
+
+# Подсвечиваем исходный код вместо исполнения
+<FilesMatch \.(php.*|dat)$>
+	SetHandler application/x-httpd-php-source
+</FilesMatch>

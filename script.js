@@ -95,16 +95,23 @@ if(/\.ru/i.test(location.host)){
 
 		XMLo.open("POST", url, true);
 
-		XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		if (reqParams) {
-			var prm = "";
-			for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-			reqParams = prm;
-			//XMLo.setRequestHeader( "Content-Length", reqParams.length );
+		if(reqParams instanceof FormData){
+			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+			// *Не меняем
 		}
-		else {
-			reqParams = " ";
-			//XMLo.setRequestHeader( "Content-Length", 1 );
+		else{
+			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+			if (reqParams) {
+				var prm = "";
+				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+				reqParams = prm;
+				//XMLo.setRequestHeader( "Content-Length", reqParams.length );
+			}
+			else {
+				reqParams = " ";
+				//XMLo.setRequestHeader( "Content-Length", 1 );
+			}
 		}
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*/*");
@@ -126,6 +133,7 @@ if(/\.ru/i.test(location.host)){
 
 		return (XMLo != null);
 	}
+
 
 	function fade(o, opts, dontStartNow) {
 		var ov, ob, oe, os, t;
@@ -412,7 +420,7 @@ if(/\.ru/i.test(location.host)){
 	var refresh = (function () {
 		return function (params, handler) {
 			params = params || {};
-			params.lastMod = params.lastMod === 0? 0 : lastMod;
+			params.lastMod = params.lastMod == 0? 0 : lastMod;
 
 			post(
 				_w.location.toString(),
@@ -426,17 +434,18 @@ if(/\.ru/i.test(location.host)){
 					if (txt !== undefined) {
 						var p = txt.indexOf("\n");
 						if (p > 0) {
-							var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
+							// var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
+							var s = txt.substring(0, p).split(':'), lm;
 
 							if (s) {
-								lm = +s[2];
+								lm = +s[1];
 								console.log({s,lm});
-								s = s[1];
+								s = s[0];
 
 								txt = txt.substring(p + 1);
 
-								if (s == "NONMODIFIED") txt = undefined;
-								if (s == "OK") lastMod = lm;
+								if (s === "NONMODIFIED") txt = undefined;
+								if (s === "OK") lastMod = lm;
 							}
 						}
 
@@ -461,8 +470,8 @@ if(/\.ru/i.test(location.host)){
 	})();
 
 	var poll = (function () {
-		var t = null;
-		var inProgress = false;
+		var t,
+			inProgress = false;
 
 		var rq = function () {
 			if (inProgress) return;
@@ -489,11 +498,11 @@ if(/\.ru/i.test(location.host)){
 		};
 	})();
 
-	oAS.onclick = function () {
+	oAS.onchange = function () {
 		if (this.checked) scrollBottom();
 	};
 
-	oSND.onclick = function () {
+	oSND.onchange = function () {
 		if (oSND.checked === false) {
 			if (snd) {
 				snd.pause();
@@ -506,13 +515,19 @@ if(/\.ru/i.test(location.host)){
 		ah(text, 500, oAH.checked);
 	};
 
-	f.onsubmit = function () {
-		if (!name.value.trim()) {
+
+	// *Отправка
+	f.onsubmit = function (e) {
+		if(e){
+			e.stopPropagation();
+			e.preventDefault();
+		}
+		if (!(name.value= name.value.trim())) {
 			tipUpper(name, "Пожалуйста, введите свое имя");
 			return false;
 		}
 
-		if (/^\s*$/.test(text.value)) {
+		if (!(text.value= text.value.trim())) {
 			tipUpper(text, "Пожалуйста, введите текст");
 			return false;
 		}
@@ -520,13 +535,13 @@ if(/\.ru/i.test(location.host)){
 		sendDialogWaiter.show(true);
 		msgsDialogWaiter.show(true, false);
 
+		var data= new FormData(f);
+		data.append('mode','post');
+		data.append('lastMod',0);
+		data.append('ts', parseInt(Date.now()/1000));
+
 		refresh(
-			{
-				mode: "post",
-				lastMod: 0,
-				name: name.value,
-				text: text.value
-			},
+			data,
 			function (state, status, txt) {
 				if (state) {
 					text.value = "";
@@ -534,6 +549,9 @@ if(/\.ru/i.test(location.host)){
 				}
 				sendDialogWaiter.show(false);
 				msgsDialogWaiter.show(false);
+
+				// *Очищаем
+				f.reset();
 			}
 		);
 
@@ -541,10 +559,10 @@ if(/\.ru/i.test(location.host)){
 	};
 
 	msgs.onclick = function (e) {
-		if (!e) e = _w.event;
+		e = e || _w.event;
 
-		var s = e.srcElement || e.target;
-		if (s.tagName == "A") return;
+		var s = e.target || e.srcElement;
+		if (s.closest('a')) return true;
 
 		for (var i = 0; i < 4; i++) {
 			if (!s || s.className.indexOf("msg") >= 0) break;
@@ -568,9 +586,9 @@ if(/\.ru/i.test(location.host)){
 		}
 	};
 
-	msgs.onscroll = function () {
-		oAS.checked = false;
-	};
+	/* msgs.onscroll = function () {
+		// oAS.checked = false;
+	}; */
 
 	name.onkeydown = text.onkeydown = function (e) {
 		if (sendDialogWaiter.isShow()) return;
@@ -583,4 +601,5 @@ if(/\.ru/i.test(location.host)){
 	text.focus();
 
 	poll(false, true);
+
 })(window);
