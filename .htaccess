@@ -1,0 +1,10 @@
+AddDefaultCharset UTF-8
+
+Options -Indexes
+
+# Начальный файл
+DirectoryIndex index.php
+
+<IfModule env_module>
+SetEnv TZ Europe/Moscow
+</IfModule>

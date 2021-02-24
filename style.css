@@ -71,7 +71,7 @@ body {
 	outline: 0;
 	font-size: 100%;
 	font-family: inherit;
-	background-color: #ffffff;
+	background-color: #def;
 	font-family: Tahoma;
 	color: #000000;
 	line-height: 1em;
@@ -125,18 +125,21 @@ a:hover {
 
 #wrapper {
 	/* width: 30em; */
+	/* background: url(/assets/icon.png); */
 	text-align: left;
 	margin: auto;
 	position: relative;
 	z-index: 1;
 	padding: 1em;
 	max-width: 100%;
+	overflow: hidden;
 }
 
 #msgsContent {
 	width: 100%;
-	height: 20em;
-	overflow: auto;
+	/* height: 30em; */
+	height: 100vh;
+	overflow-y: auto;
 }
 
 #msgsContent .msg {
@@ -144,7 +147,7 @@ a:hover {
 	padding-top: 0.5em;
 	position: relative;
 	z-index: 1;
-	cursor: pointer;
+	/* cursor: pointer; */
 	word-wrap: break-word;
 }
 
@@ -167,12 +170,20 @@ a:hover {
 #msgsContent .msg .info {
 	margin-bottom: 0.2em;
 	color: #0056c6;
+	position: relative;
 }
 
 #msgsContent .msg .info .name {
 	font-weight: bold;
 	padding-right: 0.5em;
 	color: #1483ff;
+}
+
+#msgsContent .msg .info .cite {
+	position: absolute;
+	right: 1.5em;
+	top: .2em;
+	cursor: pointer;
 }
 
 #msgsContent .msg .info .misc {
@@ -191,6 +202,19 @@ a:hover {
 
 #msgsContent .msg a {
 	color: #000eff;
+}
+
+#msgsContent .msg img {
+	min-width: 100px;
+	max-height: 200px;
+	max-width: 100%;
+}
+
+#msgsContent .msg .cite_disp {
+	padding: 1em;
+	background: #ddd;
+	font-size: 80%;
+	border-radius: 1em;
 }
 
 #msgsDialog .options {
@@ -265,7 +289,7 @@ a:hover {
 }
 
 .block {
-	position: relative;
+	/* position: relative; */
 	padding: 1em;
 	-webkit-box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
 	box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
@@ -609,4 +633,30 @@ a:hover {
 	border-top-color: #ff00ff;
 	filter: progid:DXImageTransform.Microsoft.Chroma(color='#FF00FF');
 	zoom: 1;
+}
+
+
+/*  */
+#allEntries.test img{width:200px;}
+
+#\$mw{
+/*   visibility: hidden; */
+  width: 0;
+  position:fixed;
+  left:0; top:0;
+  display:flex;
+  transition: width .5s ease-in;
+  text-align:center;
+  z-index:1000;
+  background:#f0f5f9;
+}
+
+#\$mw img{
+  max-width: 100%;
+}
+#\$mw.mod-show img{
+  visibility: visible;
+}
+#\$mw.mod-show{
+  width: 100%;
 }

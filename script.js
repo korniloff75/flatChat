@@ -1,4 +1,47 @@
-(function () {
+'use strict';
+// *noConsole
+if(/\.ru/i.test(location.host)){
+	var console= {
+		log: ()=>false,
+		info: ()=>false,
+	}
+}
+
+
+window.smoothScrollTo = (function (_w) {
+	'use strict';
+
+	var timer, start, factor;
+
+	return function (target, duration) {
+		var offset = _w.pageYOffset,
+				delta  = target - _w.pageYOffset; // Y-offset difference
+		duration = duration || 1000;              // default 1 sec animation
+		start = Date.now();                       // get start time
+		factor = 0;
+
+		if( timer ) {
+			clearInterval(timer); // stop any running animations
+		}
+
+		function step() {
+			var y;
+			factor = (Date.now() - start) / duration; // get interpolation factor
+			if( factor >= 1 ) {
+				clearInterval(timer); // stop animation
+				factor = 1;           // clip to max 1.0
+			}
+			y = factor * delta + offset;
+			_w.scrollBy(0, y - _w.pageYOffset);
+		}
+
+		timer = setInterval(step, 50);
+		return timer;
+	};
+})(window);
+
+
+(function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 	var submit = document.getElementById("submit");
@@ -23,8 +66,9 @@
 
 		if (state) {
 			el.style.boxSizing = "border-box";
-			var h = el.offsetHeight;
-			var dh = h - el.clientHeight;
+			var h = el.offsetHeight,
+				dh = h - el.clientHeight,
+				t;
 
 			el._ah_ = function () {
 				while (true) {
@@ -67,13 +111,14 @@
 		else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 	}
 
+
 	function post(url, reqParams, handler) {
 		var XMLo;
 
-		if (window.XMLHttpRequest) {
+		if (_w.XMLHttpRequest) {
 			try { XMLo = new XMLHttpRequest(); }
 			catch (e) { XMLo = null; }
-		} else if (window.ActiveXObject) {
+		} else if (_w.ActiveXObject) {
 			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
 			catch (e) {
 				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
@@ -85,16 +130,23 @@
 
 		XMLo.open("POST", url, true);
 
-		XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		if (reqParams) {
-			var prm = "";
-			for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-			reqParams = prm;
-			//XMLo.setRequestHeader( "Content-Length", reqParams.length );
+		if(reqParams instanceof FormData){
+			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+			// *Не меняем
 		}
-		else {
-			reqParams = " ";
-			//XMLo.setRequestHeader( "Content-Length", 1 );
+		else{
+			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+			if (reqParams) {
+				var prm = "";
+				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+				reqParams = prm;
+				//XMLo.setRequestHeader( "Content-Length", reqParams.length );
+			}
+			else {
+				reqParams = " ";
+				//XMLo.setRequestHeader( "Content-Length", 1 );
+			}
 		}
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*/*");
@@ -108,7 +160,6 @@
 					handler(false, XMLo.status, XMLo.responseText);
 				}
 
-				delete XMLo;
 				XMLo = null;
 			}
 		};
@@ -117,6 +168,7 @@
 
 		return (XMLo != null);
 	}
+
 
 	function fade(o, opts, dontStartNow) {
 		var ov, ob, oe, os, t;
@@ -211,8 +263,8 @@
 				var body = document.body;
 				var docEl = document.documentElement;
 
-				var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-				var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+				var scrollTop = _w.pageYOffset || docEl.scrollTop || body.scrollTop;
+				var scrollLeft = _w.pageXOffset || docEl.scrollLeft || body.scrollLeft;
 
 				var clientTop = docEl.clientTop || body.clientTop || 0;
 				var clientLeft = docEl.clientLeft || body.clientLeft || 0;
@@ -375,7 +427,7 @@
 	function scrollBottom() {
 		var os = msgs.onscroll;
 		msgs.onscroll = function (e) {
-			if (!e) e = window.event;
+			if (!e) e = _w.event;
 			if (e.preventDefault) e.preventDefault();
 			if (e.stopPropagation) e.stopPropagation();
 
@@ -403,10 +455,10 @@
 	var refresh = (function () {
 		return function (params, handler) {
 			params = params || {};
-			params.lastMod = params.lastMod || LASTMOD;
+			params.lastMod = params.lastMod == 0? 0 : lastMod;
 
 			post(
-				window.location.toString(),
+				_w.location.toString(),
 				params,
 				function (state, status, txt) {
 					if (!state) {
@@ -417,15 +469,18 @@
 					if (txt !== undefined) {
 						var p = txt.indexOf("\n");
 						if (p > 0) {
-							var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
+							// var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
+							var s = txt.substring(0, p).split(':'), lm;
+
 							if (s) {
-								lm = s[2];
-								s = s[1];
+								lm = +s[1];
+								console.log({s,lm});
+								s = s[0];
 
 								txt = txt.substring(p + 1);
 
-								if (s == "NONMODIFIED") txt = undefined;
-								if (s == "OK") lastMod = lm;
+								if (s === "NONMODIFIED") txt = undefined;
+								if (s === "OK") lastMod = lm;
 							}
 						}
 
@@ -450,8 +505,8 @@
 	})();
 
 	var poll = (function () {
-		var t = null;
-		var inProgress = false;
+		var t,
+			inProgress = false;
 
 		var rq = function () {
 			if (inProgress) return;
@@ -478,11 +533,11 @@
 		};
 	})();
 
-	oAS.onclick = function () {
+	oAS.onchange = function () {
 		if (this.checked) scrollBottom();
 	};
 
-	oSND.onclick = function () {
+	oSND.onchange = function () {
 		if (oSND.checked === false) {
 			if (snd) {
 				snd.pause();
@@ -495,13 +550,19 @@
 		ah(text, 500, oAH.checked);
 	};
 
-	f.onsubmit = function () {
-		if (!name.value.trim()) {
+
+	// *Отправка
+	f.onsubmit = function (e) {
+		if(e){
+			e.stopPropagation();
+			e.preventDefault();
+		}
+		if (!(name.value= name.value.trim())) {
 			tipUpper(name, "Пожалуйста, введите свое имя");
 			return false;
 		}
 
-		if (/^\s*$/.test(text.value)) {
+		if (!(text.value= text.value.trim())) {
 			tipUpper(text, "Пожалуйста, введите текст");
 			return false;
 		}
@@ -509,13 +570,13 @@
 		sendDialogWaiter.show(true);
 		msgsDialogWaiter.show(true, false);
 
+		var data= new FormData(f);
+		data.append('mode','post');
+		data.append('lastMod',0);
+		data.append('ts', parseInt(Date.now()/1000));
+
 		refresh(
-			{
-				mode: "post",
-				lastMod: 0,
-				name: name.value,
-				text: text.value
-			},
+			data,
 			function (state, status, txt) {
 				if (state) {
 					text.value = "";
@@ -523,47 +584,75 @@
 				}
 				sendDialogWaiter.show(false);
 				msgsDialogWaiter.show(false);
+
+				// *Очищаем
+				f.reset();
+
+				name.value= Chat.name;
 			}
 		);
 
 		return false;
 	};
 
+
 	msgs.onclick = function (e) {
-		if (!e) e = window.event;
+		e = e || _w.event;
 
-		var s = e.srcElement || e.target;
-		if (s.tagName == "A") return;
+		var t = e.target || e.srcElement,
+			s= t.closest('.msg'),
+			c=  t.closest('a[href*=\'#\']'),
+			ac= t.closest('.cite');
 
-		for (var i = 0; i < 4; i++) {
-			if (!s || s.className.indexOf("msg") >= 0) break;
-			s = s.parentNode;
-		}
+		// *Переход с цитаты к посту
+		if(c) return goCite(c,e);
 
-		if (s) {
-			var ps = s.getElementsByTagName("span");
-			var name = ps[0].innerText || ps[0].textContent;
-			var misc = ps[1].innerText || ps[1].textContent;
-			var txt = "";
-			s = s.firstChild.nextSibling;
-			while (s) {
-				if (s.tagName) txt += s.tagName == "BR" ? "\n" : s.innerText || s.textContent;
-				else txt += s.nodeValue;
-				s = s.nextSibling;
-			}
+		// if (!t.closest('.cite')) return true;
 
-			if (text.value) text.value += "\n";
-			text.value += ">" + name + " " + misc + "\n" + txt.replace(/(^|\n)/g, "$1>");
-		}
+		// *Вставляем цитату
+		if (s && ac) return addCite(s,e);
 	};
 
-	msgs.onscroll = function () {
-		oAS.checked = false;
-	};
+	function addCite(msg,e){
+		// e.preventDefault();
+		e.stopPropagation();
+		// *Цитата
+		var ps = msg.getElementsByTagName("span");
+		var name = ps[0].innerText || ps[0].textContent;
+		var misc = ps[1].innerText || ps[1].textContent;
+		var txt = "",
+			s = msg.firstChild.nextSibling;
+		while (s) {
+			if (s.tagName) txt += s.tagName == "BR" ? "\n" : s.innerText || s.textContent;
+			else txt += s.nodeValue;
+			s = s.nextSibling;
+		}
+
+		console.log({msg});
+
+		// *Цитата
+		text.value += "[cite]" + name + " " + misc + "\n" + txt.replace(/(^|\n)/g, "$1>");
+
+		var href= location.href.split('#')[0];
+		text.value += "\n>" + href + '#' + msg.id + "\n***[/cite]\n";
+
+		text.focus();
+	}
+
+	function goCite(link,e){
+		// e.preventDefault();
+		e.stopPropagation();
+		link.target= "_self";
+		return true;
+	}
+
+	/* msgs.onscroll = function () {
+		// oAS.checked = false;
+	}; */
 
 	name.onkeydown = text.onkeydown = function (e) {
 		if (sendDialogWaiter.isShow()) return;
-		if (!e) e = window.event;
+		if (!e) e = _w.event;
 		if (e.keyCode === 13 && e.ctrlKey) f.onsubmit();
 	};
 
@@ -572,4 +661,142 @@
 	text.focus();
 
 	poll(false, true);
-})();
+
+})(window);
+
+
+function css (els, cssObj) {
+	if(!els.length) els=[els];
+
+	[].forEach.call(els, el => {
+		console.log({el});
+		Object.keys(cssObj).forEach(st=>{
+			el.style[st]= cssObj[st];
+			console.log(st,el.style[st]);
+		});
+	});
+}
+
+function on (el, eName, handler) {
+	el.addEventListener(eName, handler);
+}
+
+
+// *Images
+((box)=>{
+	let ims= box.querySelectorAll('img'),
+		cur;
+
+	if(!ims.length) return;
+
+	css(ims, {cursor:'zoom-in'});
+
+	let
+		mw= document.createElement('div'),
+		img= document.createElement('img'),
+		close= document.createElement('div');
+
+	mw.id="$mw";
+
+	css(mw, {
+		height:window.innerHeight+'px',
+	});
+
+	mw.classList.remove('mod-show');
+
+	img.draggable= false;
+	css(img, {cursor:'zoom-out', margin:'auto'});
+
+	css(close, {
+		position:'absolute',
+		right:0, top:0,
+		color:'#fff',
+		background:'#f33',
+		padding:'.3em .5em',
+		cursor:'pointer',
+		borderRadius:'100%',
+		border:'2px solid',
+		font:'bold 1em sans-serif',
+	});
+	close.textContent= 'X';
+
+	on(close, 'click', e=>{
+		mw.classList.remove('mod-show');
+	});
+
+	on(img, 'click', e=>{
+		e.stopPropagation();
+		e.preventDefault();
+		mw.classList.remove('mod-show');
+	});
+
+
+	mw.append(img);
+	mw.append(close);
+	document.body.append(mw);
+
+	on(box, 'click', e=>{
+		let t= e.target;
+		if(t.tagName !== 'IMG') return;
+
+		img.src= t.getAttribute('data-src') || t.src
+
+		mw.classList.add('mod-show');
+
+		cur= img;
+
+		let gcs= getComputedStyle(t);
+
+		// Убираем маленькие изображения
+		if(parseInt(gcs.width)<100) return;
+
+		// console.log(t, gcs, parseInt(gcs.width));
+		console.log(window.innerHeight/window.innerWidth, parseInt(gcs.height)/parseInt(gcs.width));
+
+		if(
+			parseInt(gcs.width)>parseInt(gcs.height)
+			|| window.innerHeight/window.innerWidth>=parseInt(gcs.height)/parseInt(gcs.width)
+		){
+			css(img, {
+				width:'100%',
+				height:'',
+			})
+		}
+		else{
+			css(img, {
+				height:window.innerHeight+'px',
+				width:'',
+			})
+		}
+	});
+
+	// *Arrows
+
+	addEventListener('keydown', function (e) {
+		console.log(e.key);
+		switch (e.key) {
+			case 'Escape':
+					mw.classList.remove('mod-show');
+					break;
+			case 'ArrowUp':
+					// up arrow
+					break;
+			case 'ArrowDown':
+					// down arrow
+					break;
+			case 'ArrowLeft':
+					// left arrow
+					break;
+			case 'ArrowRight':
+					break;
+		}
+	})
+
+})
+// Блок с изображениями
+(document.querySelector('#msgsContent'));
+
+// *
+addEventListener('load', e=>{
+	smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
+});
