@@ -6,7 +6,7 @@ class Chat
 	use Helpers;
 
 	const
-		DBPATHNAME= \DBFILE . '_test',
+		DBPATHNAME= \DBFILE,
 		DELIM= "<~>";
 
 	static
@@ -24,11 +24,9 @@ class Chat
 	{
 		$this->_setData();
 
-		// if(!$this->mode) $this->_read();
-
 		tolog(__METHOD__,null,['data'=>$this->data]);
 
-		if ( ($this->lastMod = filemtime( DBFILE )) === false ) $this->lastMod = 0;
+		if ( ($this->lastMod = filemtime( self::DBPATHNAME )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'post')
 			$this->_newPost();
@@ -50,6 +48,11 @@ class Chat
 	function __get($n)
 	{
 		return $this->$n ?? $this->data[$n];
+	}
+
+	function getData()
+	{
+		return $this->data;
 	}
 
 
@@ -97,32 +100,29 @@ class Chat
 			exit( 0 );
 		}
 
-		// $id= self::realIP();
 		$this->data['IP']= self::realIP();
 
 		$this->exit = true;
 
 		if ( $this->name != $this->cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), COOKIEPATH );
 
-		// $text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-]+)\x07iu", "makeURL", $text );
-		$this->text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-]+)\x07iu", ['Chat',"makeURL"], $this->text );
-
+		// $this->text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $this->text );
 
 		// *Uploads
 		Uploads::$allow = ['jpg','jpeg','png','gif'];
+		Uploads::$pathname = \DR.'/files_B';
 		$upload = new Uploads(null, 'attach');
 		$this->files = $upload->loaded;
 
 		tolog('Uploads',null,['$upload'=>$upload]);
 
 		// *Write
-		file_put_contents( DBFILE, $this->Template(), LOCK_EX|FILE_APPEND );
+		// file_put_contents( self::DBPATHNAME, $this->Template(), LOCK_EX|FILE_APPEND );
+		$this->_save();
 
 		$this->mode = "list";
 
-		$this->lastMod = filemtime( DBFILE );
-
-		$this->_save();
+		$this->lastMod = filemtime( self::DBPATHNAME );
 	}
 
 
@@ -143,26 +143,22 @@ class Chat
 		}
 
 		if ( $chat === null ) {
-
+			if(!file_exists(self::DBPATHNAME)){
+				$chat= [];
+			}
 			// *Читаем CHATTRIM байт с конца файла
-			if ( CHATTRIM && filesize(self::DBPATHNAME) > CHATTRIM ) {
-				$f = fopen( self::DBPATHNAME, "r" );
-				fseek( $f, -CHATTRIM, SEEK_END );
-				$chat = fread( $f, CHATTRIM );
-				fclose( $f );
-				// $p =  mb_strpos( $chat, '<div class="msg"' );
-				$p =  mb_strpos( $chat, PHP_EOL );
-				if ( $p !== false ) {
-					$chat = mb_substr( $chat, $p );
-					$chat = array_filter(explode(PHP_EOL, $chat));
-				}
+			elseif ( CHATTRIM && filesize(self::DBPATHNAME) > CHATTRIM ) {
+				$chat= self::rfileByte(self::DBPATHNAME, CHATTRIM);
+				// $chat= self::rfile(self::DBPATHNAME, 10);
+
+				tolog(__METHOD__,null,['$chat1'=>$chat]);
+
 			}
 			// *Читаем весь файл
-			// else $chat = file_get_contents( self::DBPATHNAME );
 			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
 		}
 
-		tolog(__METHOD__,null,['$chat'=>$chat]);
+		tolog(__METHOD__,null,['$chat2'=>$chat]);
 
 		// return $chat;
 		return $this->_read($chat);
@@ -170,12 +166,12 @@ class Chat
 
 
 	// todo
-	private function _read(?array $chat)
+	private function _read($chat)
 	{
 		ob_start();
 
 		if($chat){
-			array_walk($chat, function(&$v,$n)use($len){
+			array_walk($chat, function(&$v,$n){
 				// *Разбираем построчно
 				$v= explode(self::DELIM, $v);
 				// *ts -> Date
@@ -196,10 +192,16 @@ class Chat
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
 
-		$t= '<div class="msg"><div class="info"><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> <span class="id">(' . $IP . ')</span></span></div>' . "<div>{$text}</div>";
+		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
+
+		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> <span class="id">(' . $IP . ')</span></span><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+
+		// todo BB-codes
+		$t= preg_replace("~\\[cite\\](.+?)\\[/cite\\]~u", "<div class='cite_disp'>$1</div>", $t);
 
 		if($files= json_decode($files, 1)){
 			foreach($files as $f){
+				$f= self::getPathFromRoot($f);
 				$t.= "<div><img src='$f' /></div>";
 			}
 		}

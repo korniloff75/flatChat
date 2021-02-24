@@ -7,6 +7,40 @@ if(/\.ru/i.test(location.host)){
 	}
 }
 
+
+window.smoothScrollTo = (function (_w) {
+	'use strict';
+
+	var timer, start, factor;
+
+	return function (target, duration) {
+		var offset = _w.pageYOffset,
+				delta  = target - _w.pageYOffset; // Y-offset difference
+		duration = duration || 1000;              // default 1 sec animation
+		start = Date.now();                       // get start time
+		factor = 0;
+
+		if( timer ) {
+			clearInterval(timer); // stop any running animations
+		}
+
+		function step() {
+			var y;
+			factor = (Date.now() - start) / duration; // get interpolation factor
+			if( factor >= 1 ) {
+				clearInterval(timer); // stop animation
+				factor = 1;           // clip to max 1.0
+			}
+			y = factor * delta + offset;
+			_w.scrollBy(0, y - _w.pageYOffset);
+		}
+
+		timer = setInterval(step, 50);
+		return timer;
+	};
+})(window);
+
+
 (function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
@@ -76,6 +110,7 @@ if(/\.ru/i.test(location.host)){
 		if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
 		else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 	}
+
 
 	function post(url, reqParams, handler) {
 		var XMLo;
@@ -552,39 +587,64 @@ if(/\.ru/i.test(location.host)){
 
 				// *Очищаем
 				f.reset();
+
+				name.value= Chat.name;
 			}
 		);
 
 		return false;
 	};
 
+
 	msgs.onclick = function (e) {
 		e = e || _w.event;
 
-		var s = e.target || e.srcElement;
-		if (s.closest('a')) return true;
+		var t = e.target || e.srcElement,
+			s= t.closest('.msg'),
+			c=  t.closest('a[href*=\'#\']'),
+			ac= t.closest('.cite');
 
-		for (var i = 0; i < 4; i++) {
-			if (!s || s.className.indexOf("msg") >= 0) break;
-			s = s.parentNode;
-		}
+		// *Переход с цитаты к посту
+		if(c) return goCite(c,e);
 
-		if (s) {
-			var ps = s.getElementsByTagName("span");
-			var name = ps[0].innerText || ps[0].textContent;
-			var misc = ps[1].innerText || ps[1].textContent;
-			var txt = "";
-			s = s.firstChild.nextSibling;
-			while (s) {
-				if (s.tagName) txt += s.tagName == "BR" ? "\n" : s.innerText || s.textContent;
-				else txt += s.nodeValue;
-				s = s.nextSibling;
-			}
+		// if (!t.closest('.cite')) return true;
 
-			if (text.value) text.value += "\n";
-			text.value += ">" + name + " " + misc + "\n" + txt.replace(/(^|\n)/g, "$1>");
-		}
+		// *Вставляем цитату
+		if (s && ac) return addCite(s,e);
 	};
+
+	function addCite(msg,e){
+		// e.preventDefault();
+		e.stopPropagation();
+		// *Цитата
+		var ps = msg.getElementsByTagName("span");
+		var name = ps[0].innerText || ps[0].textContent;
+		var misc = ps[1].innerText || ps[1].textContent;
+		var txt = "",
+			s = msg.firstChild.nextSibling;
+		while (s) {
+			if (s.tagName) txt += s.tagName == "BR" ? "\n" : s.innerText || s.textContent;
+			else txt += s.nodeValue;
+			s = s.nextSibling;
+		}
+
+		console.log({msg});
+
+		// *Цитата
+		text.value += "[cite]" + name + " " + misc + "\n" + txt.replace(/(^|\n)/g, "$1>");
+
+		var href= location.href.split('#')[0];
+		text.value += "\n>" + href + '#' + msg.id + "\n***[/cite]\n";
+
+		text.focus();
+	}
+
+	function goCite(link,e){
+		// e.preventDefault();
+		e.stopPropagation();
+		link.target= "_self";
+		return true;
+	}
 
 	/* msgs.onscroll = function () {
 		// oAS.checked = false;
@@ -603,3 +663,140 @@ if(/\.ru/i.test(location.host)){
 	poll(false, true);
 
 })(window);
+
+
+function css (els, cssObj) {
+	if(!els.length) els=[els];
+
+	[].forEach.call(els, el => {
+		console.log({el});
+		Object.keys(cssObj).forEach(st=>{
+			el.style[st]= cssObj[st];
+			console.log(st,el.style[st]);
+		});
+	});
+}
+
+function on (el, eName, handler) {
+	el.addEventListener(eName, handler);
+}
+
+
+// *Images
+((box)=>{
+	let ims= box.querySelectorAll('img'),
+		cur;
+
+	if(!ims.length) return;
+
+	css(ims, {cursor:'zoom-in'});
+
+	let
+		mw= document.createElement('div'),
+		img= document.createElement('img'),
+		close= document.createElement('div');
+
+	mw.id="$mw";
+
+	css(mw, {
+		height:window.innerHeight+'px',
+	});
+
+	mw.classList.remove('mod-show');
+
+	img.draggable= false;
+	css(img, {cursor:'zoom-out', margin:'auto'});
+
+	css(close, {
+		position:'absolute',
+		right:0, top:0,
+		color:'#fff',
+		background:'#f33',
+		padding:'.3em .5em',
+		cursor:'pointer',
+		borderRadius:'100%',
+		border:'2px solid',
+		font:'bold 1em sans-serif',
+	});
+	close.textContent= 'X';
+
+	on(close, 'click', e=>{
+		mw.classList.remove('mod-show');
+	});
+
+	on(img, 'click', e=>{
+		e.stopPropagation();
+		e.preventDefault();
+		mw.classList.remove('mod-show');
+	});
+
+
+	mw.append(img);
+	mw.append(close);
+	document.body.append(mw);
+
+	on(box, 'click', e=>{
+		let t= e.target;
+		if(t.tagName !== 'IMG') return;
+
+		img.src= t.getAttribute('data-src') || t.src
+
+		mw.classList.add('mod-show');
+
+		cur= img;
+
+		let gcs= getComputedStyle(t);
+
+		// Убираем маленькие изображения
+		if(parseInt(gcs.width)<100) return;
+
+		// console.log(t, gcs, parseInt(gcs.width));
+		console.log(window.innerHeight/window.innerWidth, parseInt(gcs.height)/parseInt(gcs.width));
+
+		if(
+			parseInt(gcs.width)>parseInt(gcs.height)
+			|| window.innerHeight/window.innerWidth>=parseInt(gcs.height)/parseInt(gcs.width)
+		){
+			css(img, {
+				width:'100%',
+				height:'',
+			})
+		}
+		else{
+			css(img, {
+				height:window.innerHeight+'px',
+				width:'',
+			})
+		}
+	});
+
+	// *Arrows
+
+	addEventListener('keydown', function (e) {
+		console.log(e.key);
+		switch (e.key) {
+			case 'Escape':
+					mw.classList.remove('mod-show');
+					break;
+			case 'ArrowUp':
+					// up arrow
+					break;
+			case 'ArrowDown':
+					// down arrow
+					break;
+			case 'ArrowLeft':
+					// left arrow
+					break;
+			case 'ArrowRight':
+					break;
+		}
+	})
+
+})
+// Блок с изображениями
+(document.querySelector('#msgsContent'));
+
+// *
+addEventListener('load', e=>{
+	smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
+});

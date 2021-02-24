@@ -27,8 +27,10 @@ mb_language( "uni" );
 mb_regex_encoding( "UTF-8" );
 ob_start( "mb_output_handler" );
 
-setlocale( LC_ALL, array( 'ru_RU.UTF-8', 'ru_RU.UTF8', 'ru_RU.65001' ), array( 'rus_RUS.UTF-8', 'rus_RUS.UTF8', 'rus_RUS.65001' ), array( 'Russian_Russia.UTF-8', 'Russian_Russia.UTF8', 'Russian_Russia.65001' ) );
-setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
+date_default_timezone_set ('Europe/Moscow');
+
+// setlocale( LC_ALL, array( 'ru_RU.UTF-8', 'ru_RU.UTF8', 'ru_RU.65001' ), array( 'rus_RUS.UTF-8', 'rus_RUS.UTF8', 'rus_RUS.65001' ), array( 'Russian_Russia.UTF-8', 'Russian_Russia.UTF8', 'Russian_Russia.65001' ) );
+// setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
 
 
 //Боремся с включенными magic quotes
@@ -44,6 +46,7 @@ define( "HEADER", "Chat" ); //Заголовок
 define( "COOKIEPATH", "/" );
 
 define( "CHATTRIM", 10 * 1024 ); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
+// define( "CHATTRIM", 1000); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
 
 define( "MAXUSERNAMELEN", 64 ); //Максимальная длина имени пользователя
 define( "MAXUSERTEXTLEN", 1024 ); //Максимальная длина сообщения пользователя
@@ -70,7 +73,7 @@ function tolog()
 
 
 tolog(__LINE__,null,['$_POST'=>$_POST, '$_POST["mode"]'=>@$_POST["mode"],'$_FILES'=>$_FILES]);
-tolog(__LINE__,null,['$_FILES'=>$_FILES]);
+// tolog(__LINE__,null,['$_FILES'=>$_FILES]);
 
 
 $Chat= new Chat;
@@ -94,14 +97,16 @@ $Chat= new Chat;
 		<div id="wrapper">
 			<h1><?= HEADER ?></h1>
 
+			<div style="text-align:center;">
+				<label class="options first"><input id="autoScroll" type="checkbox" checked="checked" /> прокручивать вниз</label>
+				<label class="options"><input id="playSound" type="checkbox" checked="checked" /> звук</label>
+				<label class="options"><input id="autoHeight" type="checkbox" checked="checked" /> авторазмер ввода</label>
+			</div>
+
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
 					<?=$Chat->Out()?>
 				</div>
-
-				<label class="options first"><input id="autoScroll" type="checkbox" checked="checked" /> прокручивать вниз</label>
-				<label class="options"><input id="playSound" type="checkbox" checked="checked" /> звук</label>
-				<label class="options"><input id="autoHeight" type="checkbox" checked="checked" /> авторазмер ввода</label>
 
 				<div class="ct"></div>
 				<div class="cb"></div>
@@ -113,7 +118,7 @@ $Chat= new Chat;
 					<input type="text" name="name" value="<?=$Chat->name?>" maxlength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" />
 					<textarea name="text" placeholder="Текст" style="margin-top: 0.5em;" maxlength="<?=\MAXUSERTEXTLEN?>" required></textarea>
 					<div>
-						<input type="file" name="attach" id="attach">
+						<input type="file" name="attach" id="attach" multiple>
 					</div>
 					<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 					<div class="ad"></div>
@@ -124,7 +129,8 @@ $Chat= new Chat;
 
 		<script type="text/javascript">
 			const REFRESHTIME= <?=\REFRESHTIME?>;
-			let lastMod= <?=$Chat->lastMod?>;
+			let Chat= <?=json_encode($Chat->getData(),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>,
+				lastMod= <?=$Chat->lastMod?>;
 		</script>
 		<script src="script.js" defer></script>
 	</body>

@@ -62,6 +62,58 @@ trait Helpers
 	}
 
 
+	// *Чтение строк из последних @size байт файла
+	public static function rfileByte(string $file,$size=1024)
+	:array
+	{
+		$size= ceil($size/1024)*1024;
+		$f = fopen( $file, "r" );
+		fseek( $f, -$size, SEEK_END );
+		$str = fread( $f, $size );
+		fclose( $f );
+
+		$p =  mb_strpos( $str, "\n" );
+		if ( $p !== false ) {
+			$str = mb_substr( $str, ++$p );
+		}
+
+		return array_values(array_filter(explode("\n", $str)));
+	}
+	
+	// *Чтение файла построчно с конца
+	public static function rfile($file,$num=10)
+	{
+		$buf=1024;
+		if(!is_file($file)) return;
+		$f=fopen($file, 'r');
+		$pos=filesize($file)-1;
+		$c=0;$read="";
+		while($pos>0) {
+			$pos-=$buf;
+			if($pos<0) {$buf+=$pos;$pos=0;}
+			fseek($f,$pos);
+			$tmp=fread($f,$buf);
+			$c+=substr_count($tmp,"\n");
+			$read=$tmp.$read;
+			if($c>$num) break;
+		}
+		fclose($f);
+
+		$a=explode("\n",$read);
+		$c=count($a);
+		$r=[];
+		if(!$a[$c-1]) {
+			unset($a[$c-1]);$c--;
+		}
+		$start=$c-$num; if($start<0) $start=0;
+
+		for($i=$start;$i<$c;$i++) $r[]=$a[$i]."\n";
+
+		return $r;
+
+	}
+
+
 	/**
 	 * @param pathname - имя модуля или полный путь к директории
 	 */

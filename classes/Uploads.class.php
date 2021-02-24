@@ -28,12 +28,12 @@ class Uploads
 			'htm', 'css', 'sql', 'spl', 'scgi', 'fcgi'
 		],
 	// Директория куда будут загружаться файлы.
-		$pathname = \DR . '/files',
-		// *Загруженные файлы
-		$loaded = [];
+		$pathname = \DR . '/files';
 
 	public
-		$fileNames= [];
+		$fileNames= [],
+		// *Загруженные файлы
+		$loaded = [];
 
 	protected
 		$error = [],

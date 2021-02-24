@@ -18,7 +18,9 @@ token*
 cfg.*
 
 /files/zip
-/files/*.png
+/files*/*.png
+/files*/*.jpg
+/files*/*.jpeg
 
 # Log files
 *.log
