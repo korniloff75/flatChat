@@ -56,17 +56,6 @@ class Chat
 	}
 
 
-	// todo
-	function Template() {
-		$t= '<div class="msg"><div class="info"><span class="name">' . $this->name . '</span><span class="misc"><span class="date">' . date( "d.m.Y H:i:s" ) . '</span> <span class="id">(' . $this->IP . ')</span></span></div>' . "<div>{$this->text}</div>";
-
-		if($this->img)
-			$t.= "<img src='' />";
-
-		$t.= "</div>\n\n";
-		return $t;
-	}
-
 	private function _setData()
 	{
 		if($cookieName = (@$_COOKIE["userName"] ?? null))
@@ -76,6 +65,7 @@ class Chat
 		$this->data['ts'] = filter_var(@$_POST["ts"]);
 		if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
+		$this->data['IP']= self::realIP();
 
 		switch( @$_POST["mode"] ) {
 			case "post":
@@ -100,7 +90,7 @@ class Chat
 			exit( 0 );
 		}
 
-		$this->data['IP']= self::realIP();
+		// $this->data['IP']= self::realIP();
 
 		$this->exit = true;
 
@@ -151,7 +141,7 @@ class Chat
 				$chat= self::rfileByte(self::DBPATHNAME, CHATTRIM);
 				// $chat= self::rfile(self::DBPATHNAME, 10);
 
-				tolog(__METHOD__,null,['$chat1'=>$chat]);
+				// tolog(__METHOD__,null,['$chat1'=>$chat]);
 
 			}
 			// *Читаем весь файл
@@ -161,12 +151,12 @@ class Chat
 		tolog(__METHOD__,null,['$chat2'=>$chat]);
 
 		// return $chat;
-		return $this->_read($chat);
+		return $this->_parse($chat);
 	}
 
 
 	// todo
-	private function _read($chat)
+	private function _parse($chat)
 	{
 		ob_start();
 
@@ -194,7 +184,7 @@ class Chat
 
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
-		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> <span class="id">(' . $IP . ')</span></span><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><div><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
 
 		// todo BB-codes
 		$t= preg_replace("~\\[cite\\](.+?)\\[/cite\\]~u", "<div class='cite_disp'>$1</div>", $t);

@@ -143,12 +143,18 @@ a:hover {
 }
 
 #msgsContent .msg {
+	width:89%;
 	margin-bottom: 0.5em;
-	padding-top: 0.5em;
+	padding: 0.5em;
+	border-radius: .5em;
 	position: relative;
 	z-index: 1;
-	/* cursor: pointer; */
 	word-wrap: break-word;
+}
+
+#msgsContent .msg.myPost {
+	margin-left: 10%;
+	background: #ace;
 }
 
 #msgsContent .msg + .msg {
@@ -168,9 +174,12 @@ a:hover {
 }
 
 #msgsContent .msg .info {
+	display: flex;
+	flex-wrap: wrap;
 	margin-bottom: 0.2em;
 	color: #0056c6;
 	position: relative;
+	justify-content: space-between;
 }
 
 #msgsContent .msg .info .name {
@@ -180,10 +189,9 @@ a:hover {
 }
 
 #msgsContent .msg .info .cite {
-	position: absolute;
-	right: 1.5em;
-	top: .2em;
 	cursor: pointer;
+	font-style: italic;
+	font-size: 80%;
 }
 
 #msgsContent .msg .info .misc {
@@ -196,7 +204,7 @@ a:hover {
 	white-space: nowrap;
 }
 
-#msgsContent .msg .info .id {
+#msgsContent .msg .info .ip {
 	font-size: 0.8em;
 }
 
@@ -214,6 +222,7 @@ a:hover {
 	padding: 1em;
 	background: #ddd;
 	font-size: 80%;
+	font-style: italic;
 	border-radius: 1em;
 }
 
@@ -258,7 +267,10 @@ a:hover {
 }
 
 #sendDialog input[type="submit"] {
-	width: 10em;
+	width: 50%;
+	/* margin: auto; */
+	margin-left: 25%;
+	height: 2.5em;
 }
 
 #sendDialog input[name="name"] {
@@ -634,6 +646,18 @@ a:hover {
 	filter: progid:DXImageTransform.Microsoft.Chroma(color='#FF00FF');
 	zoom: 1;
 }
+
+/* #sendDialog{
+	width: 100%;
+	height: 50px;
+	position: fixed;
+	bottom: 0;
+	z-index: 1000;
+}
+
+#sendDialog:hover, #sendDialog:focus{
+	height: unset;
+} */
 
 
 /*  */

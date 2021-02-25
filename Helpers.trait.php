@@ -79,12 +79,14 @@ trait Helpers
 
 		return array_values(array_filter(explode("\n", $str)));
 	}
-	
+
 	// *Чтение файла построчно с конца
-	public static function rfile($file,$num=10)
+	public static function rfile(string $file,$num=10)
+	:?array
 	{
 		$buf=1024;
-		if(!is_file($file)) return;
+		if(!is_file($file)) return null;
+
 		$f=fopen($file, 'r');
 		$pos=filesize($file)-1;
 		$c=0;$read="";
@@ -102,6 +104,7 @@ trait Helpers
 		$a=explode("\n",$read);
 		$c=count($a);
 		$r=[];
+
 		if(!$a[$c-1]) {
 			unset($a[$c-1]);$c--;
 		}

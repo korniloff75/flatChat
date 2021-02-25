@@ -13,9 +13,10 @@ window.smoothScrollTo = (function (_w) {
 
 	var timer, start, factor;
 
-	return function (target, duration) {
-		var offset = _w.pageYOffset,
-				delta  = target - _w.pageYOffset; // Y-offset difference
+	return function (targetY, duration, el) {
+		el= el || _w;
+		var offset = el.pageYOffset,
+				delta  = targetY - el.pageYOffset; // Y-offset difference
 		duration = duration || 1000;              // default 1 sec animation
 		start = Date.now();                       // get start time
 		factor = 0;
@@ -32,7 +33,7 @@ window.smoothScrollTo = (function (_w) {
 				factor = 1;           // clip to max 1.0
 			}
 			y = factor * delta + offset;
-			_w.scrollBy(0, y - _w.pageYOffset);
+			el.scrollBy(0, y - el.pageYOffset);
 		}
 
 		timer = setInterval(step, 50);
@@ -41,7 +42,29 @@ window.smoothScrollTo = (function (_w) {
 })(window);
 
 
+// *Выделение постов пользователя
+function findMyPosts () {
+	document.querySelectorAll(`span[class=ip]`).forEach(i=>{
+		var msg= i.closest('.msg'),
+			name= msg.querySelector('span[class=name]').textContent,
+			dotPos= i.textContent.lastIndexOf('.'),
+			iIPmask= i.textContent.substring(0,dotPos);
+
+		// console.log(Chat.IPmask, iIPmask, name.split(' ')[1], Chat.name);
+
+		// *Проверка по маске IP и имени пользователя
+		if(iIPmask !== Chat.IPmask || name.split(' ')[1] !== Chat.name) return;
+
+		msg.classList.add('myPost');
+	});
+}
+
+
 (function (_w) {
+	var IPdotPos= Chat.IP.lastIndexOf('.');
+
+		Chat.IPmask= Chat.IP.substring(0,IPdotPos);
+
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 	var submit = document.getElementById("submit");
@@ -89,8 +112,8 @@ window.smoothScrollTo = (function (_w) {
 	}
 	if (oAH.checked) ah(text, 500, true);
 
-	var msgsDialogWaiter = WAITER(msgsDialog);
-	var sendDialogWaiter = WAITER(sendDialog);
+	// var msgsDialogWaiter = WAITER(msgsDialog);
+	// var sendDialogWaiter = WAITER(sendDialog);
 
 	var snd = null;
 	try {
@@ -141,13 +164,12 @@ window.smoothScrollTo = (function (_w) {
 				var prm = "";
 				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
 				reqParams = prm;
-				//XMLo.setRequestHeader( "Content-Length", reqParams.length );
 			}
 			else {
 				reqParams = " ";
-				//XMLo.setRequestHeader( "Content-Length", 1 );
 			}
 		}
+
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*/*");
 
@@ -337,94 +359,8 @@ window.smoothScrollTo = (function (_w) {
 		};
 	})();
 
-	function WAITER(o) {
-		var count = 0;
-		var w = document.createElement("div");
-		remove();
-		var f = fade(w, null, true);
-		var oMax = 0.3;
-		var t = null;
 
-
-		function th() {
-			clearTimeout(t);
-			t = null;
-
-			if (count > 0) {
-				w.style.visibility = "hidden";
-				if (!w.parentNode) {
-					if (!o.style.position) o.style.position = "relative";
-					o.appendChild(w);
-				}
-				w.className = "waiter waiterProgress";
-				f.start(true, { ob: 0, oe: oMax, os: 0.05 }, true);
-				w.style.visibility = "visible";
-			}
-			else remove();
-		}
-
-		function remove() {
-			if (w.parentNode) w.parentNode.removeChild(w);
-			w.className = "waiter";
-			w.style.opacity = 0;
-		}
-
-		return {
-			show: function (state, always) {
-				var full = w.className.indexOf("waiterProgress") >= 0;
-
-				if (state) {
-					if (t) clearTimeout(t);
-
-					if (count == 0) {
-						if (!w.parentNode && always !== false) {
-							if (!o.style.position) o.style.position = "relative";
-							o.appendChild(w);
-						}
-						if (full) {
-							f.stop(false, true);
-							f.start(true, { oe: oMax, os: 0.05 }, true);
-						}
-					}
-
-					if (!full) t = setTimeout(th, 500);
-					count++;
-				}
-				else {
-					if (count > 0) {
-						if (count == 1) {
-							count = 0;
-							if (t) {
-								clearTimeout(t);
-								t = null;
-							}
-
-							if (full) {
-								f.stop(false, true);
-								f.start(
-									true,
-									{
-										oe: 0,
-										os: 0.05,
-										handler: remove
-									},
-									true
-								);
-							}
-							else remove();
-						}
-						else count--;
-					}
-				}
-			},
-
-			isShow: function () {
-				return count > 0;
-			}
-		};
-	}
-
-	function scrollBottom() {
+	_w.scrollBottom= function scrollBottom() {
 		var os = msgs.onscroll;
 		msgs.onscroll = function (e) {
 			if (!e) e = _w.event;
@@ -512,11 +448,11 @@ window.smoothScrollTo = (function (_w) {
 			if (inProgress) return;
 
 			inProgress = true;
-			msgsDialogWaiter.show(true, false);
+			// msgsDialogWaiter.show(true, false);
 			refresh(
 				{ mode: "list" },
 				function (state, status, txt) {
-					msgsDialogWaiter.show(false);
+					// msgsDialogWaiter.show(false);
 					inProgress = false;
 					poll(false, true);
 				}
@@ -567,8 +503,8 @@ window.smoothScrollTo = (function (_w) {
 			return false;
 		}
 
-		sendDialogWaiter.show(true);
-		msgsDialogWaiter.show(true, false);
+		// sendDialogWaiter.show(true);
+		// msgsDialogWaiter.show(true, false);
 
 		var data= new FormData(f);
 		data.append('mode','post');
@@ -582,13 +518,16 @@ window.smoothScrollTo = (function (_w) {
 					text.value = "";
 					ah(text);
 				}
-				sendDialogWaiter.show(false);
-				msgsDialogWaiter.show(false);
+
+				// sendDialogWaiter.show(false);
+				// msgsDialogWaiter.show(false);
 
 				// *Очищаем
 				f.reset();
 
 				name.value= Chat.name;
+
+				findMyPosts();
 			}
 		);
 
@@ -651,7 +590,7 @@ window.smoothScrollTo = (function (_w) {
 	}; */
 
 	name.onkeydown = text.onkeydown = function (e) {
-		if (sendDialogWaiter.isShow()) return;
+		// if (sendDialogWaiter.isShow()) return;
 		if (!e) e = _w.event;
 		if (e.keyCode === 13 && e.ctrlKey) f.onsubmit();
 	};
@@ -660,7 +599,7 @@ window.smoothScrollTo = (function (_w) {
 
 	text.focus();
 
-	poll(false, true);
+	poll(true);
 
 })(window);
 
@@ -669,10 +608,10 @@ function css (els, cssObj) {
 	if(!els.length) els=[els];
 
 	[].forEach.call(els, el => {
-		console.log({el});
+		// console.log({el});
 		Object.keys(cssObj).forEach(st=>{
 			el.style[st]= cssObj[st];
-			console.log(st,el.style[st]);
+			// console.log(st,el.style[st]);
 		});
 	});
 }
@@ -731,9 +670,9 @@ function on (el, eName, handler) {
 	});
 
 
-	mw.append(img);
-	mw.append(close);
-	document.body.append(mw);
+	mw.appendChild(img);
+	mw.appendChild(close);
+	document.body.appendChild(mw);
 
 	on(box, 'click', e=>{
 		let t= e.target;
@@ -770,6 +709,7 @@ function on (el, eName, handler) {
 		}
 	});
 
+
 	// *Arrows
 
 	addEventListener('keydown', function (e) {
@@ -790,13 +730,22 @@ function on (el, eName, handler) {
 			case 'ArrowRight':
 					break;
 		}
-	})
+	});
+
+
+
+
+
+	// *
+	addEventListener('load', e=>{
+		smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
+		scrollBottom();
+		// var msgs= document.querySelectorAll('.msg');
+		// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
+
+		findMyPosts();
+	});
 
 })
 // Блок с изображениями
 (document.querySelector('#msgsContent'));
-
-// *
-addEventListener('load', e=>{
-	smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
-});
