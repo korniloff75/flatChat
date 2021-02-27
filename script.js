@@ -551,6 +551,7 @@ function findMyPosts () {
 		if (s && ac) return addCite(s,e);
 	};
 
+
 	function addCite(msg,e){
 		// e.preventDefault();
 		e.stopPropagation();
@@ -600,7 +601,7 @@ function findMyPosts () {
 
 	poll(true);
 
-	// Считаем символы
+	// *Считаем символы
 	function countChars(e) {
 		var
 			maxLen= this.maxLength,
@@ -617,7 +618,25 @@ function findMyPosts () {
 		document.querySelector('#maxLen').textContent= count;
 	};
 
-	on(f.text, 'keyup', countChars);
+	// on(f.text, 'keyup', countChars);
+	on(f.text, 'input', countChars);
+	// ?
+	on(f.text, 'change', countChars);
+
+
+	// *Клик по имени
+	BBscript.then(BB=>{
+		on(msgs, 'click', e=>{
+			var name= e.target.closest('span.name');
+			if(!name) return;
+
+			e.stopPropagation();
+			e.preventDefault();
+
+			BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
+		});
+	});
+
 
 
 

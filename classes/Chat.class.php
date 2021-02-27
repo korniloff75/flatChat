@@ -17,7 +17,9 @@ class Chat
 		$files;
 
 	private
-		$exit= false,
+		$exit= false;
+
+	protected
 		$data=[];
 
 	public function __construct()
@@ -25,6 +27,8 @@ class Chat
 		$this->_setData();
 
 		tolog(__METHOD__,null,['data'=>$this->data]);
+
+		// new State($this->data);
 
 		if ( ($this->lastMod = filemtime( self::DBPATHNAME )) === false ) $this->lastMod = 0;
 
@@ -66,6 +70,7 @@ class Chat
 		if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
 		$this->data['IP']= self::realIP();
+		$this->data['UID']= $this->name . substr($this->IP, 0, strrpos($this->IP, '.')+1);
 
 		switch( @$_POST["mode"] ) {
 			case "post":
@@ -171,7 +176,7 @@ class Chat
 			});
 		}
 
-		tolog(__METHOD__,null,['$chat'=>$chat,]);
+		// tolog(__METHOD__,null,['$chat'=>$chat,]);
 
 		return ob_get_clean();
 	}
@@ -182,12 +187,23 @@ class Chat
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
 
+		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
 		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><div><b>' .$n. '</b>. <span class="name">' . "$name" . '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
 
-		// todo BB-codes
-		$t= preg_replace("~\\[cite\\](.+?)\\[/cite\\]~u", "<div class='cite_disp'>$1</div>", $t);
+		// *BB-codes
+		$t= preg_replace([
+			"~\\[cite\\](.+?)\\[/cite\\]~u",
+			"~\\[([bi])\\](.+?)\\[/\\1\\]~u",
+			"~\\[(u)\\](.+?)\\[/\\1\\]~u",
+			"~\\[(s)\\](.+?)\\[/\\1\\]~u",
+		], [
+			"<div class='cite_disp'>$1</div>",
+			"<$1>$2</$1>",
+			"<ins>$2</ins>",
+			"<del>$2</del>",
+		], $t);
 
 		if($files= json_decode($files, 1)){
 			$t.= '<div class="imgs">';

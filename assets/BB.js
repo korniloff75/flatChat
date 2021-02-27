@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-var bbs= ['B','I'];
+var bbs= ['B','I','U','S'];
 
 var codes= {
 	':)': '😁',
@@ -15,6 +15,7 @@ var codes= {
 /**
  *
  * @param {node} ta -- textarea
+ * @return {node} panel
  */
 export function createPanel (ta){
 	var p = document.createElement('div'),
@@ -28,6 +29,23 @@ export function createPanel (ta){
 	bbs.forEach(i=>{
 		var b= document.createElement('i');
 		b.textContent= i;
+		switch (i) {
+			case 'B':
+				b.style.fontWeight= 900;
+				break;
+			case 'I':
+				b.style.fontStyle= 'italic';
+				break;
+			case 'U':
+				b.style.textDecoration= 'underline';
+				break;
+			case 'S':
+				b.style.textDecoration= 'line-through';
+				break;
+
+			default:
+				break;
+		}
 		bb.appendChild(b);
 	});
 
