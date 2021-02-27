@@ -78,6 +78,10 @@ body {
 	height: 100%;
 }
 
+strong{
+	font-weight: 700;
+}
+
 input,
 textarea {
 	outline-style: none;
@@ -152,25 +156,17 @@ a:hover {
 	word-wrap: break-word;
 }
 
+#msgsContent .msg:hover{
+	background: #f9f9f9;
+}
+
 #msgsContent .msg.myPost {
 	margin-left: 10%;
-	background: #ace;
+	background: #cde;
 }
 
 #msgsContent .msg + .msg {
-	border: dashed #e0e0e0;
-	border-width: 1px 0 0 0;
-}
-
-#msgsContent .msg:hover:after {
-	content: "";
-	position: absolute;
-	top: 0.5em;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	z-index: -1;
-	background: #f0f0f0;
+	border: 1px dashed #e0e0e0;
 }
 
 #msgsContent .msg .info {
@@ -220,7 +216,7 @@ a:hover {
 
 #msgsContent .msg .cite_disp {
 	padding: 1em;
-	background: #ddd;
+	background: #eee;
 	font-size: 80%;
 	font-style: italic;
 	border-radius: 1em;
@@ -683,4 +679,24 @@ a:hover {
 }
 #\$mw.mod-show{
   width: 100%;
+}
+
+.right{
+	text-align: right;
+}
+
+.smile {
+	display: flex;
+	font-size: 2em;
+	justify-content: space-around;
+	cursor: pointer;
+}
+.smile i {
+	font-style: normal;
+	/* border: 1px #aaa solid; */
+	padding: 0 3px;
+	/* margin: 0 2px; */
+}
+.smile *{
+	font-style: normal;
 }

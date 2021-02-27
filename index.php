@@ -111,14 +111,19 @@ $Chat= new Chat;
 				<div class="ct"></div>
 				<div class="cb"></div>
 			</div>
+
 			<br />
 			<br />
+			<div class="item-block right">
+				<p>Вы можете ввести <strong id="maxLen"><?=\MAXUSERTEXTLEN?></strong> символов</p>
+			</div>
+
 			<form action="" method="post" id="sendForm">
 				<div id="sendDialog" class="block2">
-					<input type="text" name="name" value="<?=$Chat->name?>" maxlength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" />
-					<textarea name="text" placeholder="Текст" style="margin-top: 0.5em;" maxlength="<?=\MAXUSERTEXTLEN?>" required></textarea>
+					<input type="text" name="name" value="<?=$Chat->name?>" maxLength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" />
+					<textarea name="text" placeholder="Текст" style="margin-top: 0.5em;" maxLength="<?=\MAXUSERTEXTLEN?>" required></textarea>
 					<div>
-						<input type="file" name="attach" id="attach" multiple>
+						<input type="file" name="attach[]" id="attach" multiple>
 					</div>
 					<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 					<div class="ad"></div>

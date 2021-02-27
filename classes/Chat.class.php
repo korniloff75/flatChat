@@ -184,16 +184,18 @@ class Chat
 
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
-		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><div><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><div><b>' .$n. '</b>. <span class="name">' . "$name" . '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
 
 		// todo BB-codes
 		$t= preg_replace("~\\[cite\\](.+?)\\[/cite\\]~u", "<div class='cite_disp'>$1</div>", $t);
 
 		if($files= json_decode($files, 1)){
+			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				$f= self::getPathFromRoot($f);
-				$t.= "<div><img src='$f' /></div>";
+				$t.= "<img src='$f' />";
 			}
+			$t.= '</div>';
 		}
 
 		$t.= "</div>\n\n";
@@ -217,9 +219,10 @@ class Chat
 
 	// *Обработка поста
 	static function cleanText( $str ) {
-		$str = trim( $str );
+		$str = filter_var(trim( $str ));
 		$str = preg_replace( "~\r~u", "", $str );
-		$str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
+		// Глушит Юникод
+		// $str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
 		$str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
 		$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
 		$str = preg_replace( ["~(\n){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );

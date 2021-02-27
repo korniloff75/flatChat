@@ -7,6 +7,8 @@ if(/\.ru/i.test(location.host)){
 	}
 }
 
+var BBscript= import ('./assets/BB.js');
+
 
 window.smoothScrollTo = (function (_w) {
 	'use strict';
@@ -50,10 +52,10 @@ function findMyPosts () {
 			dotPos= i.textContent.lastIndexOf('.'),
 			iIPmask= i.textContent.substring(0,dotPos);
 
-		// console.log(Chat.IPmask, iIPmask, name.split(' ')[1], Chat.name);
+		// console.log(Chat.IPmask, iIPmask, name, Chat.name);
 
 		// *Проверка по маске IP и имени пользователя
-		if(iIPmask !== Chat.IPmask || name.split(' ')[1] !== Chat.name) return;
+		if(iIPmask !== Chat.IPmask || name !== Chat.name) return;
 
 		msg.classList.add('myPost');
 	});
@@ -67,7 +69,6 @@ function findMyPosts () {
 
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
-	var submit = document.getElementById("submit");
 
 	var msgs = document.getElementById("msgsContent");
 	var oAS = document.getElementById("autoScroll");
@@ -83,7 +84,7 @@ function findMyPosts () {
 			return;
 		}
 
-		if (el._ah_) de(el, "input", el._ah_);
+		if (el._ah_) off(el, "input", el._ah_);
 		delete (el._ah_);
 		el.style.height = "auto";
 
@@ -106,7 +107,7 @@ function findMyPosts () {
 				el.style.height = nh + "px";
 			};
 
-			ae(el, "input", el._ah_);
+			on(el, "input", el._ah_);
 			el._ah_();
 		}
 	}
@@ -122,16 +123,6 @@ function findMyPosts () {
 	catch (e) {
 		snd = null;
 		console.error("can't play sounds");
-	}
-
-	function ae(obj, event, handler) {
-		if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-		else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
-	}
-
-	function de(obj, event, handler) {
-		if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-		else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 	}
 
 
@@ -320,17 +311,17 @@ function findMyPosts () {
 				};
 				tip.o = o;
 
-				ae(o, "change", tip.eh);
-				ae(document, "mousedown", tip.eh);
-				ae(document, "keydown", tip.eh);
+				on(o, "change", tip.eh);
+				on(document, "mousedown", tip.eh);
+				on(document, "keydown", tip.eh);
 			}
 
 			function detachEvents(tip) {
 				if (!tip.eh) return;
 
-				de(tip.o, "change", tip.eh);
-				de(document, "mousedown", tip.eh);
-				de(document, "keydown", tip.eh);
+				off(tip.o, "change", tip.eh);
+				off(document, "mousedown", tip.eh);
+				off(document, "keydown", tip.eh);
 			}
 
 			if (lastTip) lastTip.eh();
@@ -488,7 +479,7 @@ function findMyPosts () {
 
 
 	// *Отправка
-	f.onsubmit = function (e) {
+	function formSubmit (e) {
 		if(e){
 			e.stopPropagation();
 			e.preventDefault();
@@ -506,33 +497,41 @@ function findMyPosts () {
 		// sendDialogWaiter.show(true);
 		// msgsDialogWaiter.show(true, false);
 
-		var data= new FormData(f);
-		data.append('mode','post');
-		data.append('lastMod',0);
-		data.append('ts', parseInt(Date.now()/1000));
+		// *Smiles
+		BBscript.then(BB=>{
+			BB.replaceText(f.text);
+			// console.log(f.text.innerHTML);
+			// debugger;
 
-		refresh(
-			data,
-			function (state, status, txt) {
-				if (state) {
-					text.value = "";
-					ah(text);
+			var fd= new FormData(f);
+			fd.append('mode','post');
+			fd.append('lastMod',0);
+			fd.append('ts', parseInt(Date.now()/1000));
+
+			refresh(
+				fd,
+				function (state, status, txt) {
+					if (state) {
+						text.value = "";
+						ah(text);
+					}
+
+					// sendDialogWaiter.show(false);
+					// msgsDialogWaiter.show(false);
+
+					// *Очищаем
+					f.reset();
+					name.value= Chat.name;
+
+					findMyPosts();
 				}
-
-				// sendDialogWaiter.show(false);
-				// msgsDialogWaiter.show(false);
-
-				// *Очищаем
-				f.reset();
-
-				name.value= Chat.name;
-
-				findMyPosts();
-			}
-		);
+			);
+		});
 
 		return false;
 	};
+
+	on(f,'submit', formSubmit);
 
 
 	msgs.onclick = function (e) {
@@ -592,7 +591,7 @@ function findMyPosts () {
 	name.onkeydown = text.onkeydown = function (e) {
 		// if (sendDialogWaiter.isShow()) return;
 		if (!e) e = _w.event;
-		if (e.keyCode === 13 && e.ctrlKey) f.onsubmit();
+		if (e.keyCode === 13 && e.ctrlKey) formSubmit();
 	};
 
 	if (oAS.checked) scrollBottom();
@@ -600,6 +599,46 @@ function findMyPosts () {
 	text.focus();
 
 	poll(true);
+
+	// Считаем символы
+	function countChars(e) {
+		var
+			maxLen= this.maxLength,
+			count= maxLen - this.value.length;
+
+		if (count < 1) {
+			count=0;
+			this.blur();
+			this.value= this.value.substr(0,maxLen);
+		}
+
+		// console.log(maxLen, this.value.length);
+
+		document.querySelector('#maxLen').textContent= count;
+	};
+
+	on(f.text, 'keyup', countChars);
+
+
+
+
+	// *
+	on(_w,'load', e=>{
+		smoothScrollTo(msgs.offsetTop, 500);
+		scrollBottom();
+		// var msgs= document.querySelectorAll('.msg');
+		// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
+
+		countChars.call(f.text);
+
+		BBscript.then(BB=>{
+			var panel= BB.createPanel(f.text);
+			sendDialog.insertBefore(panel, f.text);
+
+		});
+
+		findMyPosts();
+	});
 
 })(window);
 
@@ -616,8 +655,14 @@ function css (els, cssObj) {
 	});
 }
 
-function on (el, eName, handler) {
-	el.addEventListener(eName, handler);
+function on(obj, event, handler) {
+	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
+	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
+}
+
+function off(obj, event, handler) {
+	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
+	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 }
 
 
@@ -713,37 +758,23 @@ function on (el, eName, handler) {
 	// *Arrows
 
 	addEventListener('keydown', function (e) {
-		console.log(e.key);
+		// console.log(e.key);
 		switch (e.key) {
 			case 'Escape':
-					mw.classList.remove('mod-show');
-					break;
+				mw.classList.remove('mod-show');
+				break;
 			case 'ArrowUp':
-					// up arrow
-					break;
+				// up arrow
+				break;
 			case 'ArrowDown':
-					// down arrow
-					break;
+				// down arrow
+				break;
 			case 'ArrowLeft':
-					// left arrow
-					break;
+				// left arrow
+				break;
 			case 'ArrowRight':
-					break;
+				break;
 		}
-	});
-
-
-
-
-
-	// *
-	addEventListener('load', e=>{
-		smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
-		scrollBottom();
-		// var msgs= document.querySelectorAll('.msg');
-		// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
-
-		findMyPosts();
 	});
 
 })
