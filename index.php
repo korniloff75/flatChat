@@ -105,7 +105,7 @@ $Chat= new Chat;
 
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
-					<?=$Chat->getChat()?>
+					<?=$Chat->getHTML()?>
 					<?#die?>
 				</div>
 
@@ -142,7 +142,7 @@ $Chat= new Chat;
 
 		<script type="text/javascript">
 			const REFRESHTIME= <?=\REFRESHTIME?>;
-			let Chat= <?=json_encode($Chat->getData(),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?>,
+			let Chat= <?=$Chat->getData()?>,
 				lastMod= <?=$Chat->lastMod?>,
 				State= <?=$Chat->Out()['state'] ?? '[]'?>;
 		</script>

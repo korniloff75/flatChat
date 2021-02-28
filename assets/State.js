@@ -18,12 +18,14 @@ export function defineUID (name,IP){
 	return name + IP.substring(0,dotPos+1);
 }
 
+
 // *Выделение постов пользователя
 export function findMyPosts (msgs) {
 	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
 		var uid= msg.getAttribute('data-uid');
 
-		(uid === Chat.UID) && msg.classList.add('myPost');
+		([Chat.myUID, Chat.UID].includes(uid)) && msg.classList.add('myPost');
+		// console.log(uid, [Chat.myUID, Chat.UID].includes(uid));
 	});
 }
 

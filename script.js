@@ -402,7 +402,9 @@ function findMyPosts () {
 					if (response !== undefined) {
 						var chat= (response instanceof String)
 							? response
-							: response.chat;
+							: response.html;
+
+						Object.assign(Chat, response.Chat);
 
 						var p = chat.indexOf("\n");
 

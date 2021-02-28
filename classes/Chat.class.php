@@ -57,7 +57,7 @@ class Chat
 
 	public function getData()
 	{
-		return $this->data;
+		return json_encode($this->data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -102,7 +102,7 @@ class Chat
 			exit( 0 );
 		}
 
-		// $this->data['IP']= self::realIP();
+		$this->data['myUID']= $this->_defineUID($this->name, $this->IP);
 
 		$this->exit = true;
 
@@ -137,17 +137,17 @@ class Chat
 	}
 
 
-	public function getChat()
+	public function getHTML()
 	{
 		$this->Out();
-		return $this->out['chat'];
+		return $this->out['html'];
 	}
 
 	public function Out( $status = null, $chat = null )
 	// :string
 	{
 		$out= &$this->out;
-		$out['chat']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
+		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
 		if ( $chat === null ) {
 			if(!file_exists(self::DBPATHNAME)){
@@ -167,11 +167,13 @@ class Chat
 
 		// tolog(__METHOD__,null,['$chat2'=>$chat]);
 
-		$out['chat'].= $this->_parse($chat);
+		$out['html'].= $this->_parse($chat);
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
 		$out['state']= State::$db->get();
+		// $out['Chat']= $this->getData();
+		$out['Chat']= $this->data;
 
 		// return $this->_parse($chat);
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
