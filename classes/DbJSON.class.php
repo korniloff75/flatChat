@@ -26,7 +26,7 @@ class DbJSON implements Iterator, Countable
 
 		self::$log= &$log;
 
-		// *Deprecated
+		// *Legacy
 		if(self::$convertPath)
 		{
 			//* fix 4 __destruct
@@ -41,8 +41,6 @@ class DbJSON implements Iterator, Countable
 			if(!$this->path) $this->path= $_SERVER['DOCUMENT_ROOT']. '/' . $path;
 
 			// trigger_error(__METHOD__.": \$this->path2= {$this->path}; \$path= $path; \$dir= $dir");
-
-			// var_dump($this->path);
 		}
 		else
 		{

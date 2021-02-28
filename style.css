@@ -135,7 +135,8 @@ a:hover {
 	position: relative;
 	z-index: 1;
 	padding: 1em;
-	max-width: 100%;
+	width: 100%;
+	max-width: 1000px;
 	overflow: hidden;
 }
 
@@ -200,8 +201,13 @@ a:hover {
 	white-space: nowrap;
 }
 
-#msgsContent .msg .info .ip {
+#msgsContent .info span.ip {
 	font-size: 0.8em;
+	color: red;
+}
+
+#msgsContent .info span.ip.on{
+	color: green;
 }
 
 #msgsContent .msg a {

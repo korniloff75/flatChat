@@ -6,8 +6,13 @@ class State extends Chat
 
 	public function __construct(array $data)
 	{
-		self::$db= new DbJSON('./state.json');
+		// *Последнее обращение к серверу
+		$data['ts']= time();
+		$UID= $data['UID'];
+		unset($data['UID']);
 
-		self::$db->set([]);
+		self::$db= new DbJSON(\DR.'/state.json');
+
+		self::$db->set(['users'=>[$UID=>$data]]);
 	}
 }

@@ -8,6 +8,7 @@ if(/\.ru/i.test(location.host)){
 }
 
 var BBscript= import ('./assets/BB.js');
+var StateScript= import ('./assets/State.js');
 
 
 window.smoothScrollTo = (function (_w) {
@@ -44,9 +45,9 @@ window.smoothScrollTo = (function (_w) {
 })(window);
 
 
-// *Выделение постов пользователя
+/* // *Выделение постов пользователя
 function findMyPosts () {
-	document.querySelectorAll(`span[class=ip]`).forEach(i=>{
+	msgs.querySelectorAll(`span[class=ip]`).forEach(i=>{
 		var msg= i.closest('.msg'),
 			name= msg.querySelector('span[class=name]').textContent,
 			dotPos= i.textContent.lastIndexOf('.'),
@@ -59,7 +60,7 @@ function findMyPosts () {
 
 		msg.classList.add('myPost');
 	});
-}
+} */
 
 
 (function (_w) {
@@ -77,6 +78,8 @@ function findMyPosts () {
 	var f = document.getElementById("sendForm");
 	var name = f.elements.name;
 	var text = f.elements.text;
+
+	// StateScript.then(s=>{s.msgs= msgs});
 
 	function ah(el, maxH, state) {
 		if (arguments.length === 1) {
@@ -167,7 +170,10 @@ function findMyPosts () {
 		XMLo.onreadystatechange = function () {
 			if (XMLo.readyState == 4) {
 				if (XMLo.status == 200 || XMLo.status == 0) {
-					handler(true, XMLo.status, XMLo.responseText, (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
+					// console.log({XMLo});
+					var json= JSON.parse(XMLo.responseText);
+					console.log({json});
+					handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
 				}
 				else {
 					handler(false, XMLo.status, XMLo.responseText);
@@ -387,32 +393,37 @@ function findMyPosts () {
 			post(
 				_w.location.toString(),
 				params,
-				function (state, status, txt) {
+				function (state, status, response) {
 					if (!state) {
 						tipUpper(msgsDialog, "Ошибка сервера: " + status);
-						txt = undefined;
+						response = undefined;
 					}
 
-					if (txt !== undefined) {
-						var p = txt.indexOf("\n");
+					if (response !== undefined) {
+						var chat= (response instanceof String)
+							? response
+							: response.chat;
+
+						var p = chat.indexOf("\n");
+
 						if (p > 0) {
-							// var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
-							var s = txt.substring(0, p).split(':'), lm;
+							var s = chat.substring(0, p).split(':'), lm;
 
 							if (s) {
 								lm = +s[1];
 								console.log({s,lm});
 								s = s[0];
 
-								txt = txt.substring(p + 1);
+								chat = chat.substring(p + 1);
 
-								if (s === "NONMODIFIED") txt = undefined;
+								if (s === "NONMODIFIED") chat = undefined;
 								if (s === "OK") lastMod = lm;
 							}
 						}
 
-						if (txt !== undefined) {
-							msgs.innerHTML = txt;
+						if (chat !== undefined) {
+							msgs.innerHTML = chat;
+
 							if (oAS.checked) scrollBottom();
 
 							if (oSND.checked) {
@@ -423,9 +434,14 @@ function findMyPosts () {
 								}
 							}
 						}
+
+						StateScript.then(State=>{
+							State.set(response.state)
+							.hilightUsers(msgs);
+						})
 					}
 
-					if (handler) handler(state, status, txt);
+					if (handler) handler(state, status, chat);
 				}
 			);
 		};
@@ -516,14 +532,11 @@ function findMyPosts () {
 						ah(text);
 					}
 
-					// sendDialogWaiter.show(false);
-					// msgsDialogWaiter.show(false);
-
 					// *Очищаем
 					f.reset();
 					name.value= Chat.name;
 
-					findMyPosts();
+					StateScript.then(s=>s.findMyPosts(msgs));
 				}
 			);
 		});
@@ -656,7 +669,7 @@ function findMyPosts () {
 
 		});
 
-		findMyPosts();
+		StateScript.then(s=>s.findMyPosts(msgs));
 	});
 
 })(window);
