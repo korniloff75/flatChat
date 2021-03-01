@@ -7,15 +7,20 @@ if(/\.ru/i.test(location.host)){
 	}
 }
 
+var BBscript= import ('./assets/BB.js');
+var StateScript= import ('./assets/State.js');
+var Imgscript= import ('./assets/Images.js');
+
 
 window.smoothScrollTo = (function (_w) {
 	'use strict';
 
 	var timer, start, factor;
 
-	return function (target, duration) {
-		var offset = _w.pageYOffset,
-				delta  = target - _w.pageYOffset; // Y-offset difference
+	return function (targetY, duration, el) {
+		el= el || _w;
+		var offset = el.pageYOffset,
+				delta  = targetY - el.pageYOffset; // Y-offset difference
 		duration = duration || 1000;              // default 1 sec animation
 		start = Date.now();                       // get start time
 		factor = 0;
@@ -32,7 +37,7 @@ window.smoothScrollTo = (function (_w) {
 				factor = 1;           // clip to max 1.0
 			}
 			y = factor * delta + offset;
-			_w.scrollBy(0, y - _w.pageYOffset);
+			el.scrollBy(0, y - el.pageYOffset);
 		}
 
 		timer = setInterval(step, 50);
@@ -41,10 +46,36 @@ window.smoothScrollTo = (function (_w) {
 })(window);
 
 
+function css (els, cssObj) {
+	if(!els.length) els=[els];
+
+	[].forEach.call(els, el => {
+		// console.log({el});
+		Object.keys(cssObj).forEach(st=>{
+			el.style[st]= cssObj[st];
+			// console.log(st,el.style[st]);
+		});
+	});
+}
+
+function on(obj, event, handler) {
+	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
+	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
+}
+
+function off(obj, event, handler) {
+	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
+	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
+}
+
+
 (function (_w) {
+	var IPdotPos= Chat.IP.lastIndexOf('.');
+
+		Chat.IPmask= Chat.IP.substring(0,IPdotPos);
+
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
-	var submit = document.getElementById("submit");
 
 	var msgs = document.getElementById("msgsContent");
 	var oAS = document.getElementById("autoScroll");
@@ -54,13 +85,15 @@ window.smoothScrollTo = (function (_w) {
 	var name = f.elements.name;
 	var text = f.elements.text;
 
+	// StateScript.then(s=>{s.msgs= msgs});
+
 	function ah(el, maxH, state) {
 		if (arguments.length === 1) {
 			if (el._ah_) el._ah_();
 			return;
 		}
 
-		if (el._ah_) de(el, "input", el._ah_);
+		if (el._ah_) off(el, "input", el._ah_);
 		delete (el._ah_);
 		el.style.height = "auto";
 
@@ -83,14 +116,14 @@ window.smoothScrollTo = (function (_w) {
 				el.style.height = nh + "px";
 			};
 
-			ae(el, "input", el._ah_);
+			on(el, "input", el._ah_);
 			el._ah_();
 		}
 	}
 	if (oAH.checked) ah(text, 500, true);
 
-	var msgsDialogWaiter = WAITER(msgsDialog);
-	var sendDialogWaiter = WAITER(sendDialog);
+	// var msgsDialogWaiter = WAITER(msgsDialog);
+	// var sendDialogWaiter = WAITER(sendDialog);
 
 	var snd = null;
 	try {
@@ -99,16 +132,6 @@ window.smoothScrollTo = (function (_w) {
 	catch (e) {
 		snd = null;
 		console.error("can't play sounds");
-	}
-
-	function ae(obj, event, handler) {
-		if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-		else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
-	}
-
-	function de(obj, event, handler) {
-		if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-		else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 	}
 
 
@@ -141,20 +164,22 @@ window.smoothScrollTo = (function (_w) {
 				var prm = "";
 				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
 				reqParams = prm;
-				//XMLo.setRequestHeader( "Content-Length", reqParams.length );
 			}
 			else {
 				reqParams = " ";
-				//XMLo.setRequestHeader( "Content-Length", 1 );
 			}
 		}
+
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*/*");
 
 		XMLo.onreadystatechange = function () {
 			if (XMLo.readyState == 4) {
 				if (XMLo.status == 200 || XMLo.status == 0) {
-					handler(true, XMLo.status, XMLo.responseText, (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
+					// console.log({XMLo});
+					var json= JSON.parse(XMLo.responseText);
+					console.log({json});
+					handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
 				}
 				else {
 					handler(false, XMLo.status, XMLo.responseText);
@@ -298,17 +323,17 @@ window.smoothScrollTo = (function (_w) {
 				};
 				tip.o = o;
 
-				ae(o, "change", tip.eh);
-				ae(document, "mousedown", tip.eh);
-				ae(document, "keydown", tip.eh);
+				on(o, "change", tip.eh);
+				on(document, "mousedown", tip.eh);
+				on(document, "keydown", tip.eh);
 			}
 
 			function detachEvents(tip) {
 				if (!tip.eh) return;
 
-				de(tip.o, "change", tip.eh);
-				de(document, "mousedown", tip.eh);
-				de(document, "keydown", tip.eh);
+				off(tip.o, "change", tip.eh);
+				off(document, "mousedown", tip.eh);
+				off(document, "keydown", tip.eh);
 			}
 
 			if (lastTip) lastTip.eh();
@@ -337,94 +362,8 @@ window.smoothScrollTo = (function (_w) {
 		};
 	})();
 
-	function WAITER(o) {
-		var count = 0;
-		var w = document.createElement("div");
-		remove();
-		var f = fade(w, null, true);
-		var oMax = 0.3;
-		var t = null;
 
-
-		function th() {
-			clearTimeout(t);
-			t = null;
-
-			if (count > 0) {
-				w.style.visibility = "hidden";
-				if (!w.parentNode) {
-					if (!o.style.position) o.style.position = "relative";
-					o.appendChild(w);
-				}
-				w.className = "waiter waiterProgress";
-				f.start(true, { ob: 0, oe: oMax, os: 0.05 }, true);
-				w.style.visibility = "visible";
-			}
-			else remove();
-		}
-
-		function remove() {
-			if (w.parentNode) w.parentNode.removeChild(w);
-			w.className = "waiter";
-			w.style.opacity = 0;
-		}
-
-		return {
-			show: function (state, always) {
-				var full = w.className.indexOf("waiterProgress") >= 0;
-
-				if (state) {
-					if (t) clearTimeout(t);
-
-					if (count == 0) {
-						if (!w.parentNode && always !== false) {
-							if (!o.style.position) o.style.position = "relative";
-							o.appendChild(w);
-						}
-						if (full) {
-							f.stop(false, true);
-							f.start(true, { oe: oMax, os: 0.05 }, true);
-						}
-					}
-
-					if (!full) t = setTimeout(th, 500);
-					count++;
-				}
-				else {
-					if (count > 0) {
-						if (count == 1) {
-							count = 0;
-							if (t) {
-								clearTimeout(t);
-								t = null;
-							}
-
-							if (full) {
-								f.stop(false, true);
-								f.start(
-									true,
-									{
-										oe: 0,
-										os: 0.05,
-										handler: remove
-									},
-									true
-								);
-							}
-							else remove();
-						}
-						else count--;
-					}
-				}
-			},
-
-			isShow: function () {
-				return count > 0;
-			}
-		};
-	}
-
-	function scrollBottom() {
+	_w.scrollBottom= function scrollBottom() {
 		var os = msgs.onscroll;
 		msgs.onscroll = function (e) {
 			if (!e) e = _w.event;
@@ -460,32 +399,39 @@ window.smoothScrollTo = (function (_w) {
 			post(
 				_w.location.toString(),
 				params,
-				function (state, status, txt) {
+				function (state, status, response) {
 					if (!state) {
 						tipUpper(msgsDialog, "Ошибка сервера: " + status);
-						txt = undefined;
+						response = undefined;
 					}
 
-					if (txt !== undefined) {
-						var p = txt.indexOf("\n");
+					if (response !== undefined) {
+						var chat= (response instanceof String)
+							? response
+							: response.html;
+
+						Object.assign(Chat, response.Chat);
+
+						var p = chat.indexOf("\n");
+
 						if (p > 0) {
-							// var s = /^([a-z]+):(\d+)$/i.exec(txt.substring(0, p)), lm;
-							var s = txt.substring(0, p).split(':'), lm;
+							var s = chat.substring(0, p).split(':'), lm;
 
 							if (s) {
 								lm = +s[1];
 								console.log({s,lm});
 								s = s[0];
 
-								txt = txt.substring(p + 1);
+								chat = chat.substring(p + 1);
 
-								if (s === "NONMODIFIED") txt = undefined;
+								if (s === "NONMODIFIED") chat = undefined;
 								if (s === "OK") lastMod = lm;
 							}
 						}
 
-						if (txt !== undefined) {
-							msgs.innerHTML = txt;
+						if (chat !== undefined) {
+							msgs.innerHTML = chat;
+
 							if (oAS.checked) scrollBottom();
 
 							if (oSND.checked) {
@@ -496,9 +442,18 @@ window.smoothScrollTo = (function (_w) {
 								}
 							}
 						}
+
+						StateScript.then(State=>{
+							State.set(response.state)
+							.hilightUsers(msgs);
+						});
+
+						/* Imgscript.then(I=>{
+							// I.init(msgs);
+						}); */
 					}
 
-					if (handler) handler(state, status, txt);
+					if (handler) handler(state, status, chat);
 				}
 			);
 		};
@@ -512,11 +467,11 @@ window.smoothScrollTo = (function (_w) {
 			if (inProgress) return;
 
 			inProgress = true;
-			msgsDialogWaiter.show(true, false);
+			// msgsDialogWaiter.show(true, false);
 			refresh(
 				{ mode: "list" },
 				function (state, status, txt) {
-					msgsDialogWaiter.show(false);
+					// msgsDialogWaiter.show(false);
 					inProgress = false;
 					poll(false, true);
 				}
@@ -552,7 +507,7 @@ window.smoothScrollTo = (function (_w) {
 
 
 	// *Отправка
-	f.onsubmit = function (e) {
+	function formSubmit (e) {
 		if(e){
 			e.stopPropagation();
 			e.preventDefault();
@@ -567,33 +522,41 @@ window.smoothScrollTo = (function (_w) {
 			return false;
 		}
 
-		sendDialogWaiter.show(true);
-		msgsDialogWaiter.show(true, false);
+		// sendDialogWaiter.show(true);
+		// msgsDialogWaiter.show(true, false);
 
-		var data= new FormData(f);
-		data.append('mode','post');
-		data.append('lastMod',0);
-		data.append('ts', parseInt(Date.now()/1000));
+		// *Smiles
+		BBscript.then(BB=>{
+			BB.replaceText(f.text);
+			// console.log(f.text.innerHTML);
+			// debugger;
 
-		refresh(
-			data,
-			function (state, status, txt) {
-				if (state) {
-					text.value = "";
-					ah(text);
+			var fd= new FormData(f);
+			fd.append('mode','post');
+			fd.append('lastMod',0);
+			fd.append('ts', parseInt(Date.now()/1000));
+
+			refresh(
+				fd,
+				function (state, status, txt) {
+					if (state) {
+						text.value = "";
+						ah(text);
+					}
+
+					// *Очищаем
+					f.reset();
+					name.value= Chat.name;
+
+					StateScript.then(s=>s.findMyPosts(msgs));
 				}
-				sendDialogWaiter.show(false);
-				msgsDialogWaiter.show(false);
-
-				// *Очищаем
-				f.reset();
-
-				name.value= Chat.name;
-			}
-		);
+			);
+		});
 
 		return false;
 	};
+
+	on(f,'submit', formSubmit);
 
 
 	msgs.onclick = function (e) {
@@ -612,6 +575,7 @@ window.smoothScrollTo = (function (_w) {
 		// *Вставляем цитату
 		if (s && ac) return addCite(s,e);
 	};
+
 
 	function addCite(msg,e){
 		// e.preventDefault();
@@ -651,152 +615,78 @@ window.smoothScrollTo = (function (_w) {
 	}; */
 
 	name.onkeydown = text.onkeydown = function (e) {
-		if (sendDialogWaiter.isShow()) return;
+		// if (sendDialogWaiter.isShow()) return;
 		if (!e) e = _w.event;
-		if (e.keyCode === 13 && e.ctrlKey) f.onsubmit();
+		if (e.keyCode === 13 && e.ctrlKey) formSubmit();
 	};
 
 	if (oAS.checked) scrollBottom();
 
 	text.focus();
 
-	poll(false, true);
+	poll(true);
+
+	// *Считаем символы
+	function countChars(e) {
+		var
+			maxLen= this.maxLength,
+			count= maxLen - this.value.length;
+
+		if (count < 1) {
+			count=0;
+			this.blur();
+			this.value= this.value.substr(0,maxLen);
+		}
+
+		// console.log(maxLen, this.value.length);
+
+		document.querySelector('#maxLen').textContent= count;
+	};
+
+	// on(f.text, 'keyup', countChars);
+	on(f.text, 'input', countChars);
+	// ?
+	on(f.text, 'change', countChars);
+
+
+	// *Клик по имени
+	BBscript.then(BB=>{
+		on(msgs, 'click', e=>{
+			var name= e.target.closest('span.name');
+			if(!name) return;
+
+			e.stopPropagation();
+			e.preventDefault();
+
+			BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
+		});
+	});
+
+
+
+
+
+	// *
+	on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
+		smoothScrollTo(msgs.offsetTop, 500);
+		scrollBottom();
+		// var msgs= document.querySelectorAll('.msg');
+		// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
+
+		countChars.call(f.text);
+
+		BBscript.then(BB=>{
+			var panel= BB.createPanel(f.text);
+			sendDialog.insertBefore(panel, f.text);
+
+		});
+
+		Imgscript.then(I=>{
+			I.init(msgs);
+		});
+
+		StateScript.then(s=>s.findMyPosts(msgs));
+	});
 
 })(window);
 
-
-function css (els, cssObj) {
-	if(!els.length) els=[els];
-
-	[].forEach.call(els, el => {
-		console.log({el});
-		Object.keys(cssObj).forEach(st=>{
-			el.style[st]= cssObj[st];
-			console.log(st,el.style[st]);
-		});
-	});
-}
-
-function on (el, eName, handler) {
-	el.addEventListener(eName, handler);
-}
-
-
-// *Images
-((box)=>{
-	let ims= box.querySelectorAll('img'),
-		cur;
-
-	if(!ims.length) return;
-
-	css(ims, {cursor:'zoom-in'});
-
-	let
-		mw= document.createElement('div'),
-		img= document.createElement('img'),
-		close= document.createElement('div');
-
-	mw.id="$mw";
-
-	css(mw, {
-		height:window.innerHeight+'px',
-	});
-
-	mw.classList.remove('mod-show');
-
-	img.draggable= false;
-	css(img, {cursor:'zoom-out', margin:'auto'});
-
-	css(close, {
-		position:'absolute',
-		right:0, top:0,
-		color:'#fff',
-		background:'#f33',
-		padding:'.3em .5em',
-		cursor:'pointer',
-		borderRadius:'100%',
-		border:'2px solid',
-		font:'bold 1em sans-serif',
-	});
-	close.textContent= 'X';
-
-	on(close, 'click', e=>{
-		mw.classList.remove('mod-show');
-	});
-
-	on(img, 'click', e=>{
-		e.stopPropagation();
-		e.preventDefault();
-		mw.classList.remove('mod-show');
-	});
-
-
-	mw.append(img);
-	mw.append(close);
-	document.body.append(mw);
-
-	on(box, 'click', e=>{
-		let t= e.target;
-		if(t.tagName !== 'IMG') return;
-
-		img.src= t.getAttribute('data-src') || t.src
-
-		mw.classList.add('mod-show');
-
-		cur= img;
-
-		let gcs= getComputedStyle(t);
-
-		// Убираем маленькие изображения
-		if(parseInt(gcs.width)<100) return;
-
-		// console.log(t, gcs, parseInt(gcs.width));
-		console.log(window.innerHeight/window.innerWidth, parseInt(gcs.height)/parseInt(gcs.width));
-
-		if(
-			parseInt(gcs.width)>parseInt(gcs.height)
-			|| window.innerHeight/window.innerWidth>=parseInt(gcs.height)/parseInt(gcs.width)
-		){
-			css(img, {
-				width:'100%',
-				height:'',
-			})
-		}
-		else{
-			css(img, {
-				height:window.innerHeight+'px',
-				width:'',
-			})
-		}
-	});
-
-	// *Arrows
-
-	addEventListener('keydown', function (e) {
-		console.log(e.key);
-		switch (e.key) {
-			case 'Escape':
-					mw.classList.remove('mod-show');
-					break;
-			case 'ArrowUp':
-					// up arrow
-					break;
-			case 'ArrowDown':
-					// down arrow
-					break;
-			case 'ArrowLeft':
-					// left arrow
-					break;
-			case 'ArrowRight':
-					break;
-		}
-	})
-
-})
-// Блок с изображениями
-(document.querySelector('#msgsContent'));
-
-// *
-addEventListener('load', e=>{
-	smoothScrollTo(document.querySelector('#msgsContent').offsetTop, 500);
-});

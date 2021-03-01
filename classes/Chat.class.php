@@ -14,10 +14,13 @@ class Chat
 
 	public
 		$lastMod,
-		$files;
+		$files,
+		$out=[];
 
 	private
-		$exit= false,
+		$exit= false;
+
+	protected
 		$data=[];
 
 	public function __construct()
@@ -25,6 +28,8 @@ class Chat
 		$this->_setData();
 
 		tolog(__METHOD__,null,['data'=>$this->data]);
+
+		new State($this->data);
 
 		if ( ($this->lastMod = filemtime( self::DBPATHNAME )) === false ) $this->lastMod = 0;
 
@@ -36,8 +41,8 @@ class Chat
 
 			$rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
 
-			if ( $rlm == $this->lastMod ) self::Out( "NONMODIFIED", "" );
-			else echo self::Out( "OK", null );
+			if ( $rlm == $this->lastMod ) echo $this->Out( "NONMODIFIED", "" );
+			else echo $this->Out( "OK", null );
 		}
 
 		if ( $this->exit ) exit( 0 );
@@ -50,21 +55,15 @@ class Chat
 		return $this->$n ?? $this->data[$n];
 	}
 
-	function getData()
+	public function getData()
 	{
-		return $this->data;
+		return json_encode($this->data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
-	// todo
-	function Template() {
-		$t= '<div class="msg"><div class="info"><span class="name">' . $this->name . '</span><span class="misc"><span class="date">' . date( "d.m.Y H:i:s" ) . '</span> <span class="id">(' . $this->IP . ')</span></span></div>' . "<div>{$this->text}</div>";
-
-		if($this->img)
-			$t.= "<img src='' />";
-
-		$t.= "</div>\n\n";
-		return $t;
+	protected function _defineUID($name, $IP)
+	{
+		return $name . substr($IP, 0, strrpos($this->IP, '.')+1);
 	}
 
 	private function _setData()
@@ -76,6 +75,9 @@ class Chat
 		$this->data['ts'] = filter_var(@$_POST["ts"]);
 		if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
+		$this->data['IP']= self::realIP();
+
+		$this->data['UID']= $this->_defineUID($this->name, $this->IP);
 
 		switch( @$_POST["mode"] ) {
 			case "post":
@@ -100,7 +102,7 @@ class Chat
 			exit( 0 );
 		}
 
-		$this->data['IP']= self::realIP();
+		$this->data['myUID']= $this->_defineUID($this->name, $this->IP);
 
 		$this->exit = true;
 
@@ -135,12 +137,17 @@ class Chat
 	}
 
 
-	public function Out( $status = null, $chat = null )
-	:string
+	public function getHTML()
 	{
-		if ( $status !== null ) {
-			echo "{$status}:{$this->lastMod}\n";
-		}
+		$this->Out();
+		return $this->out['html'];
+	}
+
+	public function Out( $status = null, $chat = null )
+	// :string
+	{
+		$out= &$this->out;
+		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
 		if ( $chat === null ) {
 			if(!file_exists(self::DBPATHNAME)){
@@ -151,22 +158,31 @@ class Chat
 				$chat= self::rfileByte(self::DBPATHNAME, CHATTRIM);
 				// $chat= self::rfile(self::DBPATHNAME, 10);
 
-				tolog(__METHOD__,null,['$chat1'=>$chat]);
+				// tolog(__METHOD__,null,['$chat1'=>$chat]);
 
 			}
 			// *Читаем весь файл
 			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
 		}
 
-		tolog(__METHOD__,null,['$chat2'=>$chat]);
+		// tolog(__METHOD__,null,['$chat2'=>$chat]);
 
-		// return $chat;
-		return $this->_read($chat);
+		$out['html'].= $this->_parse($chat);
+		tolog(__METHOD__,null,['$out'=>$out]);
+		// var_dump($out);
+
+		$out['state']= State::$db->get();
+		// $out['Chat']= $this->getData();
+		$out['Chat']= $this->data;
+
+		// return $this->_parse($chat);
+		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
 
 
 	// todo
-	private function _read($chat)
+	private function _parse($chat)
+	:string
 	{
 		ob_start();
 
@@ -181,7 +197,7 @@ class Chat
 			});
 		}
 
-		tolog(__METHOD__,null,['$chat'=>$chat,]);
+		// tolog(__METHOD__,null,['$chat'=>$chat,]);
 
 		return ob_get_clean();
 	}
@@ -191,19 +207,34 @@ class Chat
 	{
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
+		$UID= $this->_defineUID($name, $IP);
 
+		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
-		$t= '<div class="msg" id="msg_'.$n.'"><div class="info"><span class="name">' . "<b>{$n}</b>. $name" . '</span><span class="misc"><span class="date">' . $ts . '</span> <span class="id">(' . $IP . ')</span></span><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\"><div><b>$n</b>. <span class=\"name\">$name"
+		. '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
 
-		// todo BB-codes
-		$t= preg_replace("~\\[cite\\](.+?)\\[/cite\\]~u", "<div class='cite_disp'>$1</div>", $t);
+		// *BB-codes
+		$t= preg_replace([
+			"~\\[cite\\](.+?)\\[/cite\\]~u",
+			"~\\[([bi])\\](.+?)\\[/\\1\\]~u",
+			"~\\[(u)\\](.+?)\\[/\\1\\]~u",
+			"~\\[(s)\\](.+?)\\[/\\1\\]~u",
+		], [
+			"<div class='cite_disp'>$1</div>",
+			"<$1>$2</$1>",
+			"<ins>$2</ins>",
+			"<del>$2</del>",
+		], $t);
 
 		if($files= json_decode($files, 1)){
+			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				$f= self::getPathFromRoot($f);
-				$t.= "<div><img src='$f' /></div>";
+				$t.= "<img src='/assets/placeholder.svg' data-src='$f' />";
 			}
+			$t.= '</div>';
 		}
 
 		$t.= "</div>\n\n";
@@ -227,9 +258,10 @@ class Chat
 
 	// *Обработка поста
 	static function cleanText( $str ) {
-		$str = trim( $str );
+		$str = filter_var(trim( $str ));
 		$str = preg_replace( "~\r~u", "", $str );
-		$str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
+		// Глушит Юникод
+		// $str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
 		$str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
 		$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
 		$str = preg_replace( ["~(\n){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
