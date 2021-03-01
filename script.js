@@ -9,6 +9,7 @@ if(/\.ru/i.test(location.host)){
 
 var BBscript= import ('./assets/BB.js');
 var StateScript= import ('./assets/State.js');
+var Imgscript= import ('./assets/Images.js');
 
 
 window.smoothScrollTo = (function (_w) {
@@ -45,28 +46,33 @@ window.smoothScrollTo = (function (_w) {
 })(window);
 
 
-/* // *Выделение постов пользователя
-function findMyPosts () {
-	msgs.querySelectorAll(`span[class=ip]`).forEach(i=>{
-		var msg= i.closest('.msg'),
-			name= msg.querySelector('span[class=name]').textContent,
-			dotPos= i.textContent.lastIndexOf('.'),
-			iIPmask= i.textContent.substring(0,dotPos);
+function css (els, cssObj) {
+	if(!els.length) els=[els];
 
-		// console.log(Chat.IPmask, iIPmask, name, Chat.name);
-
-		// *Проверка по маске IP и имени пользователя
-		if(iIPmask !== Chat.IPmask || name !== Chat.name) return;
-
-		msg.classList.add('myPost');
+	[].forEach.call(els, el => {
+		// console.log({el});
+		Object.keys(cssObj).forEach(st=>{
+			el.style[st]= cssObj[st];
+			// console.log(st,el.style[st]);
+		});
 	});
-} */
+}
+
+function on(obj, event, handler) {
+	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
+	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
+}
+
+function off(obj, event, handler) {
+	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
+	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
+}
 
 
 (function (_w) {
-	var IPdotPos= Chat.IP.lastIndexOf('.');
+	/* var IPdotPos= Chat.IP.lastIndexOf('.');
 
-		Chat.IPmask= Chat.IP.substring(0,IPdotPos);
+		Chat.IPmask= Chat.IP.substring(0,IPdotPos); */
 
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
@@ -371,21 +377,8 @@ function findMyPosts () {
 		setTimeout(function () { msgs.onscroll = os; }, 10);
 	}
 
-	function insertAtCursor(o, val) {
-		if (document.selection) {
-			o.focus();
-			sel = document.selection.createRange();
-			sel.text = val;
-		}
-		else if (o.selectionStart || o.selectionStart == '0') {
-			var startPos = o.selectionStart;
-			var endPos = o.selectionEnd;
-			o.value = o.value.substring(0, startPos) + val + o.value.substring(endPos, o.value.length);
-		}
-		else o.value += val;
-	}
 
-	var refresh = (function () {
+	/* var refresh = (function () {
 		return function (params, handler) {
 			params = params || {};
 			params.lastMod = params.lastMod == 0? 0 : lastMod;
@@ -393,61 +386,90 @@ function findMyPosts () {
 			post(
 				_w.location.toString(),
 				params,
-				function (state, status, response) {
-					if (!state) {
-						tipUpper(msgsDialog, "Ошибка сервера: " + status);
-						response = undefined;
-					}
-
-					if (response !== undefined) {
-						var chat= (response instanceof String)
-							? response
-							: response.html;
-
-						Object.assign(Chat, response.Chat);
-
-						var p = chat.indexOf("\n");
-
-						if (p > 0) {
-							var s = chat.substring(0, p).split(':'), lm;
-
-							if (s) {
-								lm = +s[1];
-								console.log({s,lm});
-								s = s[0];
-
-								chat = chat.substring(p + 1);
-
-								if (s === "NONMODIFIED") chat = undefined;
-								if (s === "OK") lastMod = lm;
-							}
-						}
-
-						if (chat !== undefined) {
-							msgs.innerHTML = chat;
-
-							if (oAS.checked) scrollBottom();
-
-							if (oSND.checked) {
-								if (snd) {
-									snd.pause();
-									snd.currentTime = 0;
-									snd.play();
-								}
-							}
-						}
-
-						StateScript.then(State=>{
-							State.set(response.state)
-							.hilightUsers(msgs);
-						})
-					}
-
-					if (handler) handler(state, status, chat);
-				}
+				refreshAfter.bind(null,handler)
 			);
 		};
-	})();
+	})(); */
+
+	function refresh(params, handler) {
+		params = params || {};
+		params.lastMod = params.lastMod == 0? 0 : lastMod;
+
+		post(
+			_w.location.toString(),
+			params,
+			refreshAfter.bind(null,handler)
+		);
+	};
+
+	/**
+	 *
+	 * @param {function} handler - callback after ajax
+	 * @param {bool} success - result of ajax
+	 * @param {string} status - remote modifed
+	 * @param {obj|string} response - data from ajax
+	 */
+	function refreshAfter (handler, success, status, response) {
+		// console.log(arguments);
+		if (!success) {
+			tipUpper(msgsDialog, "Ошибка сервера: " + status);
+			response = undefined;
+		}
+
+		if (response !== undefined) {
+			var html= (response instanceof String)
+				? response
+				: response.html;
+
+			Object.assign(Chat, response.Chat);
+
+			// console.log({Chat});
+
+			if(f.name.type !== 'hidden' && Chat.name){
+				f.name.type= 'hidden';
+				f.name.value= Chat.name;
+				console.log(f.name.value);
+			}
+
+			var p = html.indexOf("\n");
+
+			if (p > 0) {
+				var s = html.substring(0, p).split(':'), lm;
+
+				if (s) {
+					lm = +s[1];
+					console.log({s,lm});
+					s = s[0];
+
+					html = html.substring(p + 1);
+
+					if (s === "NONMODIFIED") html = undefined;
+					if (s === "OK") lastMod = lm;
+				}
+			}
+
+			if (html !== undefined) {
+				msgs.innerHTML = html;
+
+				if (oAS.checked) scrollBottom();
+
+				if (oSND.checked) {
+					if (snd) {
+						snd.pause();
+						snd.currentTime = 0;
+						snd.play();
+					}
+				}
+			}
+
+			StateScript.then(State=>{
+				State.set(response.state)
+				.hilightUsers(msgs);
+			});
+		}
+
+		if (handler) handler(success, status, html);
+	}
 
 	var poll = (function () {
 		var t,
@@ -460,7 +482,7 @@ function findMyPosts () {
 			// msgsDialogWaiter.show(true, false);
 			refresh(
 				{ mode: "list" },
-				function (state, status, txt) {
+				function (success, status, txt) {
 					// msgsDialogWaiter.show(false);
 					inProgress = false;
 					poll(false, true);
@@ -511,9 +533,6 @@ function findMyPosts () {
 			tipUpper(text, "Пожалуйста, введите текст");
 			return false;
 		}
-
-		// sendDialogWaiter.show(true);
-		// msgsDialogWaiter.show(true, false);
 
 		// *Smiles
 		BBscript.then(BB=>{
@@ -657,7 +676,7 @@ function findMyPosts () {
 
 
 	// *
-	on(_w,'load', e=>{
+	on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 		smoothScrollTo(msgs.offsetTop, 500);
 		scrollBottom();
 		// var msgs= document.querySelectorAll('.msg');
@@ -671,146 +690,12 @@ function findMyPosts () {
 
 		});
 
+		Imgscript.then(I=>{
+			I.init(msgs);
+		});
+
 		StateScript.then(s=>s.findMyPosts(msgs));
 	});
 
 })(window);
 
-
-function css (els, cssObj) {
-	if(!els.length) els=[els];
-
-	[].forEach.call(els, el => {
-		// console.log({el});
-		Object.keys(cssObj).forEach(st=>{
-			el.style[st]= cssObj[st];
-			// console.log(st,el.style[st]);
-		});
-	});
-}
-
-function on(obj, event, handler) {
-	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
-}
-
-function off(obj, event, handler) {
-	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
-}
-
-
-// *Images
-((box)=>{
-	let ims= box.querySelectorAll('img'),
-		cur;
-
-	if(!ims.length) return;
-
-	css(ims, {cursor:'zoom-in'});
-
-	let
-		mw= document.createElement('div'),
-		img= document.createElement('img'),
-		close= document.createElement('div');
-
-	mw.id="$mw";
-
-	css(mw, {
-		height:window.innerHeight+'px',
-	});
-
-	mw.classList.remove('mod-show');
-
-	img.draggable= false;
-	css(img, {cursor:'zoom-out', margin:'auto'});
-
-	css(close, {
-		position:'absolute',
-		right:0, top:0,
-		color:'#fff',
-		background:'#f33',
-		padding:'.3em .5em',
-		cursor:'pointer',
-		borderRadius:'100%',
-		border:'2px solid',
-		font:'bold 1em sans-serif',
-	});
-	close.textContent= 'X';
-
-	on(close, 'click', e=>{
-		mw.classList.remove('mod-show');
-	});
-
-	on(img, 'click', e=>{
-		e.stopPropagation();
-		e.preventDefault();
-		mw.classList.remove('mod-show');
-	});
-
-
-	mw.appendChild(img);
-	mw.appendChild(close);
-	document.body.appendChild(mw);
-
-	on(box, 'click', e=>{
-		let t= e.target;
-		if(t.tagName !== 'IMG') return;
-
-		img.src= t.getAttribute('data-src') || t.src
-
-		mw.classList.add('mod-show');
-
-		cur= img;
-
-		let gcs= getComputedStyle(t);
-
-		// Убираем маленькие изображения
-		if(parseInt(gcs.width)<100) return;
-
-		// console.log(t, gcs, parseInt(gcs.width));
-		console.log(window.innerHeight/window.innerWidth, parseInt(gcs.height)/parseInt(gcs.width));
-
-		if(
-			parseInt(gcs.width)>parseInt(gcs.height)
-			|| window.innerHeight/window.innerWidth>=parseInt(gcs.height)/parseInt(gcs.width)
-		){
-			css(img, {
-				width:'100%',
-				height:'',
-			})
-		}
-		else{
-			css(img, {
-				height:window.innerHeight+'px',
-				width:'',
-			})
-		}
-	});
-
-
-	// *Arrows
-
-	addEventListener('keydown', function (e) {
-		// console.log(e.key);
-		switch (e.key) {
-			case 'Escape':
-				mw.classList.remove('mod-show');
-				break;
-			case 'ArrowUp':
-				// up arrow
-				break;
-			case 'ArrowDown':
-				// down arrow
-				break;
-			case 'ArrowLeft':
-				// left arrow
-				break;
-			case 'ArrowRight':
-				break;
-		}
-	});
-
-})
-// Блок с изображениями
-(document.querySelector('#msgsContent'));

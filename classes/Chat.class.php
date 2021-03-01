@@ -232,7 +232,7 @@ class Chat
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				$f= self::getPathFromRoot($f);
-				$t.= "<img src='$f' />";
+				$t.= "<img src='/assets/placeholder.svg' data-src='$f' />";
 			}
 			$t.= '</div>';
 		}
