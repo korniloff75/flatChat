@@ -9,6 +9,7 @@ if(/\.ru/i.test(location.host)){
 
 var BBscript= import ('./assets/BB.js');
 var StateScript= import ('./assets/State.js');
+var Imgscript= import ('./assets/Images.js');
 
 
 window.smoothScrollTo = (function (_w) {
@@ -45,22 +46,27 @@ window.smoothScrollTo = (function (_w) {
 })(window);
 
 
-/* // *Выделение постов пользователя
-function findMyPosts () {
-	msgs.querySelectorAll(`span[class=ip]`).forEach(i=>{
-		var msg= i.closest('.msg'),
-			name= msg.querySelector('span[class=name]').textContent,
-			dotPos= i.textContent.lastIndexOf('.'),
-			iIPmask= i.textContent.substring(0,dotPos);
+function css (els, cssObj) {
+	if(!els.length) els=[els];
 
-		// console.log(Chat.IPmask, iIPmask, name, Chat.name);
-
-		// *Проверка по маске IP и имени пользователя
-		if(iIPmask !== Chat.IPmask || name !== Chat.name) return;
-
-		msg.classList.add('myPost');
+	[].forEach.call(els, el => {
+		// console.log({el});
+		Object.keys(cssObj).forEach(st=>{
+			el.style[st]= cssObj[st];
+			// console.log(st,el.style[st]);
+		});
 	});
-} */
+}
+
+function on(obj, event, handler) {
+	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
+	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
+}
+
+function off(obj, event, handler) {
+	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
+	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
+}
 
 
 (function (_w) {
@@ -440,7 +446,11 @@ function findMyPosts () {
 						StateScript.then(State=>{
 							State.set(response.state)
 							.hilightUsers(msgs);
-						})
+						});
+
+						/* Imgscript.then(I=>{
+							// I.init(msgs);
+						}); */
 					}
 
 					if (handler) handler(state, status, chat);
@@ -657,7 +667,7 @@ function findMyPosts () {
 
 
 	// *
-	on(_w,'load', e=>{
+	on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 		smoothScrollTo(msgs.offsetTop, 500);
 		scrollBottom();
 		// var msgs= document.querySelectorAll('.msg');
@@ -671,146 +681,12 @@ function findMyPosts () {
 
 		});
 
+		Imgscript.then(I=>{
+			I.init(msgs);
+		});
+
 		StateScript.then(s=>s.findMyPosts(msgs));
 	});
 
 })(window);
 
-
-function css (els, cssObj) {
-	if(!els.length) els=[els];
-
-	[].forEach.call(els, el => {
-		// console.log({el});
-		Object.keys(cssObj).forEach(st=>{
-			el.style[st]= cssObj[st];
-			// console.log(st,el.style[st]);
-		});
-	});
-}
-
-function on(obj, event, handler) {
-	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
-}
-
-function off(obj, event, handler) {
-	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
-}
-
-
-// *Images
-((box)=>{
-	let ims= box.querySelectorAll('img'),
-		cur;
-
-	if(!ims.length) return;
-
-	css(ims, {cursor:'zoom-in'});
-
-	let
-		mw= document.createElement('div'),
-		img= document.createElement('img'),
-		close= document.createElement('div');
-
-	mw.id="$mw";
-
-	css(mw, {
-		height:window.innerHeight+'px',
-	});
-
-	mw.classList.remove('mod-show');
-
-	img.draggable= false;
-	css(img, {cursor:'zoom-out', margin:'auto'});
-
-	css(close, {
-		position:'absolute',
-		right:0, top:0,
-		color:'#fff',
-		background:'#f33',
-		padding:'.3em .5em',
-		cursor:'pointer',
-		borderRadius:'100%',
-		border:'2px solid',
-		font:'bold 1em sans-serif',
-	});
-	close.textContent= 'X';
-
-	on(close, 'click', e=>{
-		mw.classList.remove('mod-show');
-	});
-
-	on(img, 'click', e=>{
-		e.stopPropagation();
-		e.preventDefault();
-		mw.classList.remove('mod-show');
-	});
-
-
-	mw.appendChild(img);
-	mw.appendChild(close);
-	document.body.appendChild(mw);
-
-	on(box, 'click', e=>{
-		let t= e.target;
-		if(t.tagName !== 'IMG') return;
-
-		img.src= t.getAttribute('data-src') || t.src
-
-		mw.classList.add('mod-show');
-
-		cur= img;
-
-		let gcs= getComputedStyle(t);
-
-		// Убираем маленькие изображения
-		if(parseInt(gcs.width)<100) return;
-
-		// console.log(t, gcs, parseInt(gcs.width));
-		console.log(window.innerHeight/window.innerWidth, parseInt(gcs.height)/parseInt(gcs.width));
-
-		if(
-			parseInt(gcs.width)>parseInt(gcs.height)
-			|| window.innerHeight/window.innerWidth>=parseInt(gcs.height)/parseInt(gcs.width)
-		){
-			css(img, {
-				width:'100%',
-				height:'',
-			})
-		}
-		else{
-			css(img, {
-				height:window.innerHeight+'px',
-				width:'',
-			})
-		}
-	});
-
-
-	// *Arrows
-
-	addEventListener('keydown', function (e) {
-		// console.log(e.key);
-		switch (e.key) {
-			case 'Escape':
-				mw.classList.remove('mod-show');
-				break;
-			case 'ArrowUp':
-				// up arrow
-				break;
-			case 'ArrowDown':
-				// down arrow
-				break;
-			case 'ArrowLeft':
-				// left arrow
-				break;
-			case 'ArrowRight':
-				break;
-		}
-	});
-
-})
-// Блок с изображениями
-(document.querySelector('#msgsContent'));
