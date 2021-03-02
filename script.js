@@ -70,10 +70,6 @@ function off(obj, event, handler) {
 
 
 (function (_w) {
-	/* var IPdotPos= Chat.IP.lastIndexOf('.');
-
-		Chat.IPmask= Chat.IP.substring(0,IPdotPos); */
-
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 
@@ -83,7 +79,8 @@ function off(obj, event, handler) {
 	var oAH = document.getElementById("autoHeight");
 	var f = document.getElementById("sendForm");
 	var name = f.elements.name;
-	var text = f.elements.text;
+	var text = f.elements.text,
+		usersList = document.querySelector('.users');;
 
 	// StateScript.then(s=>{s.msgs= msgs});
 
@@ -174,24 +171,26 @@ function off(obj, event, handler) {
 		XMLo.setRequestHeader("Accept", "*/*");
 
 		XMLo.onreadystatechange = function () {
-			if (XMLo.readyState == 4) {
-				if (XMLo.status == 200 || XMLo.status == 0) {
-					// console.log({XMLo});
-					var json= JSON.parse(XMLo.responseText);
-					console.log({json});
-					handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
-				}
-				else {
-					handler(false, XMLo.status, XMLo.responseText);
-				}
+			if (XMLo.readyState !== 4) return;
 
-				XMLo = null;
+			// if (XMLo.status == 200 || XMLo.status == 0) {
+			if (XMLo.status === 200) {
+				// console.log({XMLo});
+
+				var json= JSON.parse(XMLo.responseText);
+				// console.log({json});
+				handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
 			}
+			else if(XMLo.status !== 0){
+				handler(false, XMLo.status, XMLo.responseText);
+			}
+
+			XMLo = null;
 		};
 
 		XMLo.send(reqParams);
 
-		return (XMLo != null);
+		return (XMLo !== null);
 	}
 
 
@@ -378,19 +377,11 @@ function off(obj, event, handler) {
 	}
 
 
-	/* var refresh = (function () {
-		return function (params, handler) {
-			params = params || {};
-			params.lastMod = params.lastMod == 0? 0 : lastMod;
-
-			post(
-				_w.location.toString(),
-				params,
-				refreshAfter.bind(null,handler)
-			);
-		};
-	})(); */
-
+	/**
+	 * *Обновление страницы
+	 * @param {obj} params
+	 * @param {function} handler
+	 */
 	function refresh(params, handler) {
 		params = params || {};
 		params.lastMod = params.lastMod == 0? 0 : lastMod;
@@ -403,16 +394,17 @@ function off(obj, event, handler) {
 	};
 
 	/**
-	 *
+	 * *Коллбэк для refresh
 	 * @param {function} handler - callback after ajax
 	 * @param {bool} success - result of ajax
-	 * @param {string} status - remote modifed
+	 * @param {string} statusCode - must be 200
 	 * @param {obj|string} response - data from ajax
 	 */
-	function refreshAfter (handler, success, status, response) {
+	function refreshAfter (handler, success, statusCode, response) {
 		// console.log(arguments);
+
 		if (!success) {
-			tipUpper(msgsDialog, "Ошибка сервера: " + status);
+			tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
 			response = undefined;
 		}
 
@@ -448,6 +440,7 @@ function off(obj, event, handler) {
 				}
 			}
 
+			// *if Modifed
 			if (html !== undefined) {
 				msgs.innerHTML = html;
 
@@ -462,14 +455,16 @@ function off(obj, event, handler) {
 				}
 			}
 
+			// *Every
 			StateScript.then(State=>{
-				State.set(response.state)
-				.hilightUsers(msgs);
+				State.setDB(response.state)
+				.hilightUsers(msgs, usersList);
 			});
 		}
 
-		if (handler) handler(success, status, html);
-	}
+		if (handler) handler(success, statusCode, html);
+	} //refreshAfter
+
 
 	var poll = (function () {
 		var t,

@@ -13,10 +13,8 @@
 .......................................................
 */
 
-//sleep( 3 ); //Я точно забуду удалить эту отладачную строку...
 
-
-/* ini_set('error_reporting', -1);
+/* ini_set('error_reporting', E_ALL & ~E_NOTICE);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1); */
 
@@ -95,7 +93,7 @@ $Chat= new Chat;
 
 	<body>
 		<main id="wrapper">
-			<header>
+			<header class="box">
 				<h1><?= HEADER ?></h1>
 
 				<div class="checkbox">
@@ -126,6 +124,12 @@ $Chat= new Chat;
 					</div>
 				</form>
 			</div><!-- .item-block -->
+
+			<!-- <h3>Участники</h3> -->
+			<div class="users box">
+
+			</div>
+
 		</main><!-- #wrapper -->
 
 		<footer class="right" style="font-size:.7em;background: #000; padding-top:1em;">
@@ -145,3 +149,19 @@ $Chat= new Chat;
 		<script src="script.js" defer></script>
 	</body>
 </html>
+
+<?php
+die;
+
+$link= mysqli_connect('localhost','root','');
+if($link === false){
+	die;
+}
+
+mysqli_set_charset($link, "utf8");
+
+if(!$db= mysqli_query($link, "SHOW DATABASES LIKE myDB")){
+	$link = mysqli_query($link, "CREATE DATABASE myDB");
+};
+
+tolog('$link', null, $db);
