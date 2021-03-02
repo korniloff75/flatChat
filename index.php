@@ -30,13 +30,6 @@ date_default_timezone_set ('Europe/Moscow');
 // setlocale( LC_ALL, array( 'ru_RU.UTF-8', 'ru_RU.UTF8', 'ru_RU.65001' ), array( 'rus_RUS.UTF-8', 'rus_RUS.UTF8', 'rus_RUS.65001' ), array( 'Russian_Russia.UTF-8', 'Russian_Russia.UTF8', 'Russian_Russia.65001' ) );
 // setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
 
-
-//Боремся с включенными magic quotes
-if ( function_exists( "get_magic_quotes_gpc" ) && get_magic_quotes_gpc() === 1 ) {
-	$_COOKIE = array_map( "stripslashes", $_COOKIE );
-	$_POST = array_map( "stripslashes", $_POST );
-}
-
 define( "DBFILE", realpath( str_replace( '\\', '/', __DIR__ ) ) . "/chat.db" ); //Путь и имя файла с чатом
 define( "REFRESHTIME", 7 * 1000 ); //Клиентская задержка опроса сервера
 define( "HEADER", "Chat" ); //Заголовок
@@ -146,7 +139,13 @@ $Chat= new Chat;
 				lastMod= <?=$Chat->lastMod?>,
 				State= <?=$Chat->Out()['state'] ?? '[]'?>;
 		</script>
-		<script src="script.js" defer></script>
+
+		<script src="script.js"></script>
+
+		<script src="./assets/BB.js" type="module"></script>
+		<script src="./assets/State.js" type="module"></script>
+		<script src="./assets/Images.js" type="module"></script>
+
 	</body>
 </html>
 

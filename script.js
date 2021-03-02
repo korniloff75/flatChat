@@ -1,4 +1,11 @@
 'use strict';
+/* import * as BBscript from "./assets/BB.js";
+import * as StateScript from "./assets/State.js";
+import * as Imgscript from "./assets/Images.js"; */
+
+
+console.log({BBscript});
+
 // *noConsole
 if(/\.ru/i.test(location.host)){
 	var console= {

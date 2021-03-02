@@ -7,9 +7,12 @@ var codes= {
 	':)': '😁',
 	';)': '😉',
 	':D': '😂',
+	':*': '😘',
+	':Р': '😋',
+	'В)': '😎',
 	':(': '😕',
 	':\'(': '😢',
-	':*': '😘',
+	':\\': '😒',
 }
 
 /**
@@ -77,9 +80,10 @@ function replace (txt) {
 	codes= Object.assign(codes, {
 		'=)': codes[':)'],
 		':))': codes[':D'],
+		':/': codes[':\\'],
 	});
 	Object.keys(codes).forEach(i=>{
-		txt= txt.replace(i, codes[i], 'g');
+		txt= txt.replace(` ${i} `, codes[i], 'g');
 	});
 	console.log({codes});
 	return txt;

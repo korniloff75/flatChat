@@ -154,11 +154,17 @@ a:hover {
 	color: red;
 }
 
+.users p {
+	padding-right: .5em;
+	border-radius: .2em;
+	line-height: 170%;
+}
+
 .users p::before {
 	content: "·";
 	font-size: 2em;
 	font-weight: bold;
-	padding: 0 .1em 0 .5em;
+	margin: 0 .1em 0 .1em;
 }
 
 .users span.date {
@@ -257,14 +263,20 @@ a:hover {
 	white-space: nowrap;
 }
 
-#msgsContent .info span.ip {
-	font-size: 0.8em;
-	color: red;
+#msgsContent .info span.state {
+	display: inline-block;
+	line-height: 1.3em;
+	width: .7em;
+	height: .7em;
+	border-radius: 100%;
+	background: red;
+	margin-right: .1em;
 }
 
-#msgsContent .info span.ip.on,
+#msgsContent .info span.state.on,
 .on {
-	color: green;
+	color: #fff;
+	background: green;
 }
 
 #msgsContent .msg a {

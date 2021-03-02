@@ -29,7 +29,9 @@ class Chat
 
 		tolog(__METHOD__,null,['data'=>$this->data]);
 
-		new State($this->data);
+		// if(!$this->mode || $this->name){
+			new State($this->data);
+		// }
 
 		if ( ($this->lastMod = filemtime( self::DBPATHNAME )) === false ) $this->lastMod = 0;
 
@@ -69,7 +71,7 @@ class Chat
 	private function _setData()
 	{
 		if($cookieName = (@$_COOKIE["userName"] ?? null))
-			$cookieName = Chat::cleanName( $cookieName );
+			$cookieName = self::cleanName( $cookieName );
 
 		$this->data['name'] = filter_var(@$_POST["name"]) ?? null;
 		$this->data['ts'] = filter_var(@$_POST["ts"]);
@@ -144,7 +146,7 @@ class Chat
 	}
 
 	public function Out( $status = null, $chat = null )
-	// :string
+	:string
 	{
 		$out= &$this->out;
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
@@ -171,6 +173,7 @@ class Chat
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
+		// var_dump(State::$db);
 		$out['state']= State::$db->get();
 		// $out['Chat']= $this->getData();
 		$out['Chat']= $this->data;
@@ -191,7 +194,7 @@ class Chat
 				// *Разбираем построчно
 				$v= explode(self::DELIM, $v);
 				// *ts -> Date
-				$v[1]= date('Y-m-j H:i', $v[1]);
+				$v[1]= date('Y-m-d H:i', $v[1]);
 				// $v= $this->_renderPost($n,$v);
 				echo $this->_renderPost(++$n,$v);
 			});
@@ -212,8 +215,8 @@ class Chat
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\"><div><b>$n</b>. <span class=\"name\">$name"
-		. '</span><span class="misc"><span class="date">' . $ts . '</span> (<span class="ip">' . $IP . '</span>)</span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
+		. '</span><span class="misc"><span class="date">' . $ts . '</span></span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
 
 		// *BB-codes
 		$t= preg_replace([

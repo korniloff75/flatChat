@@ -48,17 +48,17 @@ export function hilightUsers (box, listNode){
 
 	uInfo.forEach(i=>{
 		var name= i.querySelector('span.name').textContent,
-			ipElement= i.querySelector('span.ip'),
-			IP= ipElement.textContent,
+			stateElement= i.querySelector('span.state'),
+			IP= i.dataset.ip,
 			uid= defineUID(name,IP);
 
 		if(!users[uid]) return;
 
 		if(users[uid].on){
-			ipElement.classList.add('on');
+			stateElement.classList.add('on');
 		}
 		else{
-			ipElement.classList.remove('on');
+			stateElement.classList.remove('on');
 		}
 		// console.log({users, uid}, users[uid]);
 		// debugger;
