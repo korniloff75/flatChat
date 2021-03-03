@@ -110,10 +110,12 @@ $Chat= new Chat;
 					<div id="sendDialog" class="block2">
 						<input type="text" name="name" value="<?=$Chat->name?>" maxLength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" required />
 						<textarea name="text" placeholder="Текст" maxLength="<?=\MAXUSERTEXTLEN?>" required></textarea>
-						<div>
-							<input type="file" name="attach[]" id="attach" multiple>
+						<div class="submit">
+							<label class="input__file button" for="attach">Добавить файл
+								<input type="file" name="attach[]" id="attach" multiple hidden>
+							</label>
+							<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 						</div>
-						<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 					</div>
 				</form>
 			</div><!-- .item-block -->

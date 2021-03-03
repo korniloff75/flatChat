@@ -8,6 +8,8 @@
 var db={},
 	users;
 
+// console.log({Chat});
+
 export function setDB (state){
 	db= state;
 	users= db.users;
@@ -24,7 +26,6 @@ export function defineUID (name,IP){
 // *Выделение постов пользователя
 export function findMyPosts (msgs) {
 	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
-		// var uid= msg.getAttribute('data-uid');
 		var uid= msg.dataset.uid;
 
 		([Chat.myUID, Chat.UID].includes(uid)) && msg.classList.add('myPost');
@@ -46,6 +47,7 @@ export function hilightUsers (box, listNode){
 
 	addToUsersList(listNode);
 
+	// *Перебираем шапки постов
 	uInfo.forEach(i=>{
 		var name= i.querySelector('span.name').textContent,
 			stateElement= i.querySelector('span.state'),

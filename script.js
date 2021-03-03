@@ -4,7 +4,7 @@ import * as StateScript from "./assets/State.js";
 import * as Imgscript from "./assets/Images.js"; */
 
 
-console.log({BBscript});
+// console.log({BBscript});
 
 // *noConsole
 if(/\.ru/i.test(location.host)){
@@ -451,13 +451,18 @@ function off(obj, event, handler) {
 			if (html !== undefined) {
 				msgs.innerHTML = html;
 
+				StateScript.then(s=>s.findMyPosts(msgs));
+
 				if (oAS.checked) scrollBottom();
 
 				if (oSND.checked) {
 					if (snd) {
 						snd.pause();
 						snd.currentTime = 0;
-						snd.play();
+						snd.play()
+						.catch((error) => {
+							console.log(error);
+						});
 					}
 				}
 			}

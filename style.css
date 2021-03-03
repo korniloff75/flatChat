@@ -348,12 +348,36 @@ a:hover {
 	padding: 0 0.2em;
 }
 
+#sendDialog .submit {
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 0.5em;
+	justify-content: space-between;
+	align-items: center;
+	/* align-content: center; */
+}
+
+label.input__file {
+	flex: 0 0 170px;
+	cursor: pointer;
+	color: #777;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+label.input__file:hover {
+	color: #555;
+}
+label.input__file::before{
+	content: "📎";
+	font-size: 1.8em;
+}
+
 #sendDialog input[type="submit"] {
-	width: 50%;
-	/* margin: auto; */
-	margin-left: 25%;
-	height: 2.5em;
+	flex: 2 0 55%;
+	height: 2.7em;
 	background: #ddd;
+	/* max-width: 50%; */
 }
 
 #sendDialog input[name="name"] {
@@ -363,10 +387,6 @@ a:hover {
 #sendDialog textarea[name="text"] {
 	min-height: 10em;
 	resize: none;
-}
-
-#submit {
-	margin-top: 0.5em;
 }
 
 .waiter {
@@ -520,9 +540,11 @@ text-align:left;margin-top:20px;
 	cursor: pointer;
 	text-decoration: none;
 
-	font-family: Tahoma;
-	font-weight: bold;
+	/* font-family: Tahoma;
+	font-weight: bold; */
+	font: .9em Tahoma bold;
 	color: #555555;
+	height: inherit;
 
 	border-radius: 0.18em;
 
@@ -685,6 +707,7 @@ text-align:left;margin-top:20px;
 span.name{
 	cursor: pointer;
 }
+
 
 @media (max-width:500px){
 	#sendDialog textarea[name="text"] {

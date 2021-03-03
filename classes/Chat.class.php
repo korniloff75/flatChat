@@ -73,7 +73,7 @@ class Chat
 		if($cookieName = (@$_COOKIE["userName"] ?? null))
 			$cookieName = self::cleanName( $cookieName );
 
-		$this->data['name'] = filter_var(@$_POST["name"]) ?? null;
+		$this->data['name'] = self::cleanName(@$_POST["name"]) ?? null;
 		$this->data['ts'] = filter_var(@$_POST["ts"]);
 		if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
@@ -252,8 +252,8 @@ class Chat
 
 	// *Обработка имени
 	static function cleanName( $str ) {
-		$str = trim( $str );
-		$str = preg_replace( "~[^ 0-9a-zа-яё]~iu", "", $str );
+		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
+		$str = preg_replace( "~[^ 0-9a-zа-яё]|\s{3,}~iu", "", $str );
 		$str = mb_substr( $str, 0, MAXUSERNAMELEN );
 		return $str;
 	}
@@ -261,11 +261,11 @@ class Chat
 
 	// *Обработка поста
 	static function cleanText( $str ) {
-		$str = filter_var(trim( $str ));
+		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
 		$str = preg_replace( "~\r~u", "", $str );
 		// Глушит Юникод
 		// $str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
-		$str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
+		// $str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
 		$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
 		$str = preg_replace( ["~(\n){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
 
