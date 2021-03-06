@@ -155,17 +155,17 @@ a:hover {
 }
 
 .users p {
-	padding-right: .5em;
+	padding: 0 .5em;
 	border-radius: .2em;
 	line-height: 170%;
 }
 
-.users p::before {
+/* .users p::before {
 	content: "·";
 	font-size: 2em;
 	font-weight: bold;
 	margin: 0 .1em 0 .1em;
-}
+} */
 
 .users span.date {
 	color: #777;

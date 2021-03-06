@@ -58,6 +58,7 @@ class Chat
 	}
 
 	public function getData()
+	:string
 	{
 		return json_encode($this->data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
@@ -68,18 +69,34 @@ class Chat
 		return $name . substr($IP, 0, strrpos($this->IP, '.')+1);
 	}
 
+
 	private function _setData()
 	{
-		if($cookieName = (@$_COOKIE["userName"] ?? null))
-			$cookieName = self::cleanName( $cookieName );
+		// if($cookieName = (@$_COOKIE["userName"] ?? null))
+		// 	$cookieName = self::cleanName( $cookieName );
 
-		$this->data['name'] = self::cleanName(@$_POST["name"]) ?? null;
-		$this->data['ts'] = filter_var(@$_POST["ts"]);
-		if(!$this->name) $this->data['name']= $cookieName;
-		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
-		$this->data['IP']= self::realIP();
+		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
+			$this->data= array_merge($this->data, $chatUser);
+		}
+		else{
+			$this->data['IP']= self::realIP();
+		}
 
+		$this->data['name'] = $this->name? $this->name: self::cleanName(@$_POST["name"]) ?? null;
 		$this->data['UID']= $this->_defineUID($this->name, $this->IP);
+
+		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
+
+		$this->data['ts'] = filter_var(@$_POST["ts"]);
+		// if(!$this->name) $this->data['name']= $cookieName;
+		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
+
+
+		$cook= json_encode([
+			'name'=> $this->name,
+			'IP'=> $this->IP,
+			'UID'=> $this->UID,
+		], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
 		switch( @$_POST["mode"] ) {
 			case "post":
@@ -93,7 +110,8 @@ class Chat
 
 		$this->data['mode'] = $mode ?? null;
 
-		if ( $this->name !== $cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH );
+		// if ( $this->name !== $cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH );
+		if ( $cook !== @$_COOKIE["chatUser"] ) setcookie( "chatUser", $cook, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH, '', false, true );
 	}
 
 
@@ -108,7 +126,7 @@ class Chat
 
 		$this->exit = true;
 
-		if ( $this->name != $this->cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), COOKIEPATH );
+		// if ( $this->name != $this->cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), COOKIEPATH );
 
 		// $this->text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $this->text );
 
@@ -183,7 +201,6 @@ class Chat
 	}
 
 
-	// todo
 	private function _parse($chat)
 	:string
 	{
@@ -253,7 +270,7 @@ class Chat
 	// *Обработка имени
 	static function cleanName( $str ) {
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
-		$str = preg_replace( "~[^ 0-9a-zа-яё]|\s{3,}~iu", "", $str );
+		$str = preg_replace( "~[^_0-9a-zа-яё\-\$]~iu", "", $str );
 		$str = mb_substr( $str, 0, MAXUSERNAMELEN );
 		return $str;
 	}
@@ -267,7 +284,7 @@ class Chat
 		// $str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
 		// $str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
 		$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
-		$str = preg_replace( ["~(\n){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
+		$str = preg_replace( ["~([\s\n]){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
 
 		return $str;
 	}

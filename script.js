@@ -75,7 +75,70 @@ function off(obj, event, handler) {
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 }
 
+function post(url, reqParams, callback) {
+	var XMLo,
+		_w= window;
 
+	if (_w.XMLHttpRequest) {
+		try { XMLo = new XMLHttpRequest(); }
+		catch (e) { XMLo = null; }
+	} else if (_w.ActiveXObject) {
+		try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
+		catch (e) {
+			try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
+			catch (e) { XMLo = null; }
+		}
+	}
+
+	if (XMLo == null) return null;
+
+	XMLo.open("POST", url, true);
+
+	if(reqParams instanceof FormData){
+		// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+		// *Не меняем
+	}
+	else{
+		XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+		if (reqParams) {
+			var prm = "";
+			for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+			reqParams = prm;
+		}
+		else {
+			reqParams = " ";
+		}
+	}
+
+	XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	XMLo.setRequestHeader("Accept", "*/*");
+
+	XMLo.onreadystatechange = function () {
+		if (XMLo.readyState !== 4) return;
+
+		// if (XMLo.status == 200 || XMLo.status == 0) {
+		if (XMLo.status === 200) {
+			// console.log({XMLo});
+
+			var json= JSON.parse(XMLo.responseText);
+			// console.log({json});
+			callback(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
+		}
+		else if(XMLo.status !== 0){
+			callback(false, XMLo.status, XMLo.responseText);
+		}
+
+		XMLo = null;
+	};
+
+	XMLo.send(reqParams);
+
+	return (XMLo !== null);
+}
+
+
+// *main
 (function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
@@ -91,6 +154,13 @@ function off(obj, event, handler) {
 
 	// StateScript.then(s=>{s.msgs= msgs});
 
+	if(f.name.type !== 'hidden' && Chat.name){
+		f.name.type= 'hidden';
+		f.name.value= Chat.name;
+		console.log(f.name.value);
+	}
+
+	// autoHeight
 	function ah(el, maxH, state) {
 		if (arguments.length === 1) {
 			if (el._ah_) el._ah_();
@@ -136,68 +206,6 @@ function off(obj, event, handler) {
 	catch (e) {
 		snd = null;
 		console.error("can't play sounds");
-	}
-
-
-	function post(url, reqParams, handler) {
-		var XMLo;
-
-		if (_w.XMLHttpRequest) {
-			try { XMLo = new XMLHttpRequest(); }
-			catch (e) { XMLo = null; }
-		} else if (_w.ActiveXObject) {
-			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
-			catch (e) {
-				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
-				catch (e) { XMLo = null; }
-			}
-		}
-
-		if (XMLo == null) return null;
-
-		XMLo.open("POST", url, true);
-
-		if(reqParams instanceof FormData){
-			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
-			// *Не меняем
-		}
-		else{
-			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-			if (reqParams) {
-				var prm = "";
-				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-				reqParams = prm;
-			}
-			else {
-				reqParams = " ";
-			}
-		}
-
-		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-		XMLo.setRequestHeader("Accept", "*/*");
-
-		XMLo.onreadystatechange = function () {
-			if (XMLo.readyState !== 4) return;
-
-			// if (XMLo.status == 200 || XMLo.status == 0) {
-			if (XMLo.status === 200) {
-				// console.log({XMLo});
-
-				var json= JSON.parse(XMLo.responseText);
-				// console.log({json});
-				handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
-			}
-			else if(XMLo.status !== 0){
-				handler(false, XMLo.status, XMLo.responseText);
-			}
-
-			XMLo = null;
-		};
-
-		XMLo.send(reqParams);
-
-		return (XMLo !== null);
 	}
 
 
@@ -424,12 +432,6 @@ function off(obj, event, handler) {
 
 			// console.log({Chat});
 
-			if(f.name.type !== 'hidden' && Chat.name){
-				f.name.type= 'hidden';
-				f.name.value= Chat.name;
-				console.log(f.name.value);
-			}
-
 			var p = html.indexOf("\n");
 
 			if (p > 0) {
@@ -460,8 +462,8 @@ function off(obj, event, handler) {
 						snd.pause();
 						snd.currentTime = 0;
 						snd.play()
-						.catch((error) => {
-							console.log(error);
+						.catch((err) => {
+							console.log(err);
 						});
 					}
 				}
@@ -478,6 +480,10 @@ function off(obj, event, handler) {
 	} //refreshAfter
 
 
+	/**
+	 * Long Polling
+	 * @param {bool} rewait - Ожидание перед запросом
+	 */
 	var poll = (function () {
 		var t,
 			inProgress = false;
@@ -492,23 +498,22 @@ function off(obj, event, handler) {
 				function (success, status, txt) {
 					// msgsDialogWaiter.show(false);
 					inProgress = false;
-					poll(false, true);
+					poll(true);
 				}
 			);
 		};
 
-		return function (refreshNow, rewait) {
+		return function (rewait) {
 			if (rewait === true) {
 				if (t) clearTimeout(t);
 				t = setTimeout(rq, REFRESHTIME );
 			}
-
-			if (refreshNow === true) rq();
+			else rq();
 		};
 	})();
 
 	oAS.onchange = function () {
-		if (this.checked) scrollBottom();
+		this.checked && scrollBottom();
 	};
 
 	oSND.onchange = function () {
@@ -641,6 +646,7 @@ function off(obj, event, handler) {
 	text.focus();
 
 	poll(true);
+
 
 	// *Считаем символы
 	function countChars(e) {

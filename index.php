@@ -31,7 +31,7 @@ date_default_timezone_set ('Europe/Moscow');
 // setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
 
 define( "DBFILE", realpath( str_replace( '\\', '/', __DIR__ ) ) . "/chat.db" ); //Путь и имя файла с чатом
-define( "REFRESHTIME", 7 * 1000 ); //Клиентская задержка опроса сервера
+define( "REFRESHTIME", 10 * 1000 ); //Клиентская задержка опроса сервера
 define( "HEADER", "Chat" ); //Заголовок
 
 define( "COOKIEPATH", "/" );
@@ -39,7 +39,7 @@ define( "COOKIEPATH", "/" );
 define( "CHATTRIM", 50 * 1024 ); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
 // define( "CHATTRIM", 1000); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
 
-define( "MAXUSERNAMELEN", 64 ); //Максимальная длина имени пользователя
+define( "MAXUSERNAMELEN", 20 ); //Максимальная длина имени пользователя
 define( "MAXUSERTEXTLEN", 1024 ); //Максимальная длина сообщения пользователя
 
 define( "DR", $_SERVER['DOCUMENT_ROOT'] );
