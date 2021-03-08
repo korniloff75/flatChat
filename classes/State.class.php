@@ -2,6 +2,8 @@
 
 class State extends Chat
 {
+	const EXPIRES= 24*3600;
+
 	static $db;
 
 	public function __construct(array $data)
@@ -21,7 +23,7 @@ class State extends Chat
 		$now= time();
 		$change=0;
 		foreach(($users= self::$db->get('users')) as $uid=>$user){
-			if($now - $user['ts'] < 24*3600 && $user['name']) continue;
+			if($now - $user['ts'] < self::EXPIRES && $user['name']) continue;
 
 			unset($users[$uid]);
 			$change=1;

@@ -689,10 +689,10 @@ text-align:left;margin-top:20px;
 	display: flex;
 	font-size: 2em;
 	justify-content: space-around;
-	cursor: pointer;
 }
 .smile i {
 	font-style: normal;
+	cursor: pointer;
 	/* border: 1px #aaa solid; */
 	padding: 0 3px;
 	/* margin: 0 2px; */

@@ -120,7 +120,7 @@ $Chat= new Chat;
 				</form>
 			</div><!-- .item-block -->
 
-			<!-- <h3>Участники</h3> -->
+			<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
 			<div class="users box">
 
 			</div>
@@ -137,7 +137,7 @@ $Chat= new Chat;
 
 		<script type="text/javascript">
 			const REFRESHTIME= <?=\REFRESHTIME?>;
-			let Chat= <?=$Chat->getData()?>,
+			let Chat= <?=$Chat->getJsonData()?>,
 				lastMod= <?=$Chat->lastMod?>,
 				State= <?=$Chat->Out()['state'] ?? '[]'?>;
 		</script>

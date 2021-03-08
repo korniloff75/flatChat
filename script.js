@@ -486,15 +486,20 @@ function post(url, reqParams, callback) {
 	 */
 	var poll = (function () {
 		var t,
-			inProgress = false;
+			inProgress = false,
+			data= { mode: "list" };
 
 		var rq = function () {
 			if (inProgress) return;
 
+			if(!Chat.name){
+				data.name= f.name.value;
+			}
+
 			inProgress = true;
 			// msgsDialogWaiter.show(true, false);
 			refresh(
-				{ mode: "list" },
+				data,
 				function (success, status, txt) {
 					// msgsDialogWaiter.show(false);
 					inProgress = false;

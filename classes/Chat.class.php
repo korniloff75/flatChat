@@ -43,8 +43,8 @@ class Chat
 
 			$rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
 
-			if ( $rlm == $this->lastMod ) echo $this->Out( "NONMODIFIED", "" );
-			else echo $this->Out( "OK", null );
+			if ( $rlm == $this->lastMod ) echo $this->Out( "NONMODIFIED" );
+			else echo $this->Out( "OK", true );
 		}
 
 		if ( $this->exit ) exit( 0 );
@@ -57,7 +57,7 @@ class Chat
 		return $this->$n ?? $this->data[$n];
 	}
 
-	public function getData()
+	public function getJsonData()
 	:string
 	{
 		return json_encode($this->data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
@@ -82,7 +82,7 @@ class Chat
 			$this->data['IP']= self::realIP();
 		}
 
-		$this->data['name'] = $this->name? $this->name: self::cleanName(@$_POST["name"]) ?? null;
+		$this->data['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
 		$this->data['UID']= $this->_defineUID($this->name, $this->IP);
 
 		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
@@ -126,10 +126,6 @@ class Chat
 
 		$this->exit = true;
 
-		// if ( $this->name != $this->cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), COOKIEPATH );
-
-		// $this->text = preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $this->text );
-
 		// *Uploads
 		Uploads::$allow = ['jpg','jpeg','png','gif'];
 		Uploads::$pathname = \DR.'/files_B';
@@ -159,17 +155,18 @@ class Chat
 
 	public function getHTML()
 	{
-		$this->Out();
+		$this->Out(null, true);
 		return $this->out['html'];
 	}
 
-	public function Out( $status = null, $chat = null )
+
+	public function Out( $status = null, $modifed = false )
 	:string
 	{
 		$out= &$this->out;
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
-		if ( $chat === null ) {
+		if ( $modifed ) {
 			if(!file_exists(self::DBPATHNAME)){
 				$chat= [];
 			}
@@ -183,11 +180,12 @@ class Chat
 			}
 			// *Читаем весь файл
 			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
-		}
+
+			$out['html'].= $this->_parse($chat);
+		} //$modifed
 
 		// tolog(__METHOD__,null,['$chat2'=>$chat]);
 
-		$out['html'].= $this->_parse($chat);
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
@@ -196,12 +194,12 @@ class Chat
 		// $out['Chat']= $this->getData();
 		$out['Chat']= $this->data;
 
-		// return $this->_parse($chat);
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
 
 
-	private function _parse($chat)
+	private function _parse(?array $chat)
+	// private function _parse( $chat )
 	:string
 	{
 		ob_start();
@@ -271,21 +269,14 @@ class Chat
 	static function cleanName( $str ) {
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
 		$str = preg_replace( "~[^_0-9a-zа-яё\-\$]~iu", "", $str );
-		$str = mb_substr( $str, 0, MAXUSERNAMELEN );
-		return $str;
+		return mb_substr( $str, 0, MAXUSERNAMELEN );
 	}
 
 
 	// *Обработка поста
 	static function cleanText( $str ) {
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
-		$str = preg_replace( "~\r~u", "", $str );
-		// Глушит Юникод
-		// $str = preg_replace( "\x07[^ \t\n!\"#$%&'()*+,\\-./:;<=>?@\\[\\]^_`{|}~0-9a-zа-яё]\x07iu", "", $str );
-		// $str = preg_replace( ["~&~u","~<~u","~>~u"], ["&amp;","&lt;","&gt;"], $str );
-		$str = mb_substr( $str, 0, MAXUSERTEXTLEN );
-		$str = preg_replace( ["~([\s\n]){5,}~u", "~\n~u"], ["$1$1$1$1", "<br />"], $str );
-
-		return $str;
+		$str = preg_replace( ["~\r~u", "~([\s\n]){5,}~u", "~\n~u"], ["", "$1$1$1$1", "<br />"], $str );
+		return mb_substr( $str, 0, MAXUSERTEXTLEN );;
 	}
 } // Chat
