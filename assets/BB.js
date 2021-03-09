@@ -89,8 +89,8 @@ function replace (txt) {
 	Object.keys(codes).forEach(i=>{
 		var r= i.replace(/([\(\)\/\*\\])/g,"\\$1");
 		// console.log({i,r});
-		// txt= txt.replace(`${i}`, codes[i], 'g');
-		txt= txt.replace(new RegExp(`(^|\s)${r}(\s|$)`, 'gm'), `$1${codes[i]}$2`, 'g');
+
+		txt= txt.replace(new RegExp(`(^|\\s)${r}(\\s|$)`, 'gm'), `$1${codes[i]}$2`, 'g');
 	});
 	// console.log({codes});
 	return txt;

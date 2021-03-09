@@ -557,7 +557,7 @@ function post(url, reqParams, callback) {
 		// *Smiles
 		BBscript.then(BB=>{
 			BB.replaceText(f.text);
-			// console.log(f.text.innerHTML);
+			// console.log(f.text.value);
 			// debugger;
 
 			var fd= new FormData(f);

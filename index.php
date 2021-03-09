@@ -132,7 +132,7 @@ $Chat= new Chat;
 
 			<h3>Архивные посты</h3>
 			<div class="arhive box">
-
+				<?=$Chat->getArhive()?>
 			</div>
 
 		</main><!-- #wrapper -->

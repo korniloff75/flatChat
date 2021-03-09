@@ -15,8 +15,10 @@ class Chat
 		$log;
 
 	public
+		$dbPathname,
 		$file,
 		$lastMod,
+		$useStartIndex= true,
 		$out=[];
 
 	private
@@ -25,9 +27,11 @@ class Chat
 	protected
 		$data=[];
 
-	public function __construct()
+	public function __construct($dbPathname=null)
 	{
-		$this->_setData();
+		$this->dbPathname= $dbPathname ?? self::DBPATHNAME;
+
+		$this->_controller();
 
 		tolog(__METHOD__,null,['data'=>$this->data]);
 
@@ -35,7 +39,7 @@ class Chat
 			new State($this->data);
 		// }
 
-		if ( ($this->lastMod = filemtime( self::DBPATHNAME )) === false ) $this->lastMod = 0;
+		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'post')
 			$this->_newPost();
@@ -72,7 +76,7 @@ class Chat
 	}
 
 
-	private function _setData()
+	private function _controller()
 	{
 		// if($cookieName = (@$_COOKIE["userName"] ?? null))
 		// 	$cookieName = self::cleanName( $cookieName );
@@ -135,12 +139,12 @@ class Chat
 		tolog('Uploads',null,['$upload'=>$upload]);
 
 		// *Write
-		// file_put_contents( self::DBPATHNAME, $this->Template(), LOCK_EX|FILE_APPEND );
+		// file_put_contents( $this->dbPathname, $this->Template(), LOCK_EX|FILE_APPEND );
 		$this->_save($upload->loaded);
 
 		$this->mode = "list";
 
-		$this->lastMod = filemtime( self::DBPATHNAME );
+		$this->lastMod = filemtime( $this->dbPathname );
 	}
 
 
@@ -153,7 +157,7 @@ class Chat
 		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($files,  JSON_UNESCAPED_SLASHES)];
 
 		// *Write
-		file_put_contents( self::DBPATHNAME, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
+		file_put_contents( $this->dbPathname, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
 	}
 
 
@@ -164,32 +168,36 @@ class Chat
 	}
 
 
-	// todo Разбиваем базу
+
 	/**
-	 * Разбиваем базу, добавляя лишнее в архив /db/*(ts)
+	 * *Разбиваем базу, добавляя лишнее в архив /db/*(ts)
 	 */
 	private function _checkDB()
 	{
 		$file= &$this->file;
-		$count= count($file= file(self::DBPATHNAME, FILE_SKIP_EMPTY_LINES));
+		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
 		if(
-			!file_exists(self::DBPATHNAME)
+			!file_exists($this->dbPathname)
+			// *Archives
+			|| !$this->useStartIndex
 			|| ($count - self::MAX_LINES - self::DELTA_LINES < 0)
 		){
 			tolog(__METHOD__ . ": База имеет допустимый размер - $count строк.",null,['$count'=>$count]);
-			// return $file;
 		}
 		// *Файл превышает допустимый размер
 		else{
 			$newFile= array_splice($file, -self::MAX_LINES);
 
-			// *Обрезаем базу
-			file_put_contents( self::DBPATHNAME, $newFile, LOCK_EX );
-			// *Добавляем в архив
-			file_put_contents( \DR.'/db/'.time(), $file, LOCK_EX );
+			if(
+				// *Обрезаем базу
+				file_put_contents( $this->dbPathname, $newFile, LOCK_EX )
+				// *Добавляем в архив
+				&& file_put_contents( \DR.'/db/'.time(), $file, LOCK_EX )
+			){
+				State::$db->set(['startIndex'=>State::$db->get('startIndex') + ($count - self::MAX_LINES)]);
+			}
 
-			State::$db->set(['startIndex'=>State::$db->get('startIndex') + ($count - self::MAX_LINES)]);
 		}
 
 		return $this;
@@ -246,13 +254,19 @@ class Chat
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
 		$UID= $this->_defineUID($name, $IP);
-		$n+= State::$db->get('startIndex');
+		if($this->useStartIndex){
+			$n+= State::$db->get('startIndex');
+		}
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
+		// *Цитировать
+		$cite= $this->useStartIndex? '<div class="cite">Цитировать</div>':'';
+
 		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
-		. '</span><span class="misc"><span class="date">' . $ts . '</span></span></div><div class="cite">Цитировать</div></div>' . "<div class='post'>{$text}</div>";
+		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite</div>"
+		. "<div class='post'>{$text}</div>";
 
 		// *BB-codes
 		$t= preg_replace([
@@ -299,5 +313,14 @@ class Chat
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
 		$str = preg_replace( ["~\r~u", "~([\s\n]){5,}~u", "~\n~u"], ["", "$1$1$1$1", "<br />"], $str );
 		return mb_substr( $str, 0, MAXUSERTEXTLEN );;
+	}
+
+
+	// *Архив
+	function getArhive()
+	{
+		foreach(new FilesystemIterator('db/') as $fi){
+			echo "<a href='/Archive.php?f=". self::fixSlashes($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
+		}
 	}
 } // Chat
