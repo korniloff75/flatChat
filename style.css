@@ -376,7 +376,6 @@ label.input__file::before{
 #sendDialog input[type="submit"] {
 	flex: 2 0 55%;
 	height: 2.7em;
-	background: #ddd;
 	/* max-width: 50%; */
 }
 

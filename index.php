@@ -21,12 +21,11 @@ ini_set('display_startup_errors', 1); */
 require_once 'define.php';
 
 
-tolog(__LINE__,null,['$_POST'=>$_POST, '$_POST["mode"]'=>@$_POST["mode"],'$_FILES'=>$_FILES]);
+tolog(__LINE__,null,['$_REQUEST'=>$_REQUEST, '$_REQUEST["mode"]'=>@$_REQUEST["mode"],'$_FILES'=>$_FILES]);
 // tolog(__LINE__,null,['$_FILES'=>$_FILES]);
 
 
 $Chat= new Chat;
-
 
 ?>
 <!DOCTYPE html>
@@ -48,6 +47,12 @@ $Chat= new Chat;
 				<h1><?= HEADER ?></h1>
 
 				<div class="checkbox">
+					<?php
+					// var_dump($_SESSION);
+					if(is_adm()){
+						echo "<h3>=Admin=</h3>";
+					}
+					?>
 					<label class="options first"><input id="autoScroll" type="checkbox" checked="checked"> прокручивать вниз</label>
 					<label class="options"><input id="playSound" type="checkbox" checked="checked"> звук</label>
 					<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
@@ -96,6 +101,7 @@ $Chat= new Chat;
 		</main><!-- #wrapper -->
 
 		<footer class="right" style="font-size:.7em;background: #000; padding-top:1em;">
+			<a href="/login.php">login</a>
 			<a href="//github.com/korniloff75/flatChat" target="_blank" title="Репозиторий">
 				KorniloFF &copy;
 				<svg style="background: #fff;border: none;border-radius: 100%;" viewBox="0 0 16 16" version="1.1" width="50" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
@@ -118,20 +124,3 @@ $Chat= new Chat;
 
 	</body>
 </html>
-
-<?php
-// Лишнее
-die;
-
-$link= mysqli_connect('localhost','root','');
-if($link === false){
-	die;
-}
-
-mysqli_set_charset($link, "utf8");
-
-if(!$db= mysqli_query($link, "SHOW DATABASES LIKE myDB")){
-	$link = mysqli_query($link, "CREATE DATABASE myDB");
-};
-
-tolog('$link', null, $db);

@@ -211,4 +211,31 @@ trait Helpers
 		}
 		return $out;
 	}
+
+
+	// *DOMNode extensions
+
+	public static function getDOMinnerHTML(DOMNode $element)
+	{
+		$innerHTML = "";
+
+		foreach ($element->childNodes as $child)
+		{
+				$innerHTML .= $element->ownerDocument->saveHTML($child);
+		}
+
+		return $innerHTML;
+	}
+
+
+	function setDOMinnerHTML(DOMNode $element, $html)
+	{
+		$fragment = $element->ownerDocument->createDocumentFragment();
+		$fragment->appendXML($html);
+		while ($element->hasChildNodes()){
+			$element->removeChild($element->firstChild);
+		}
+
+		$element->appendChild($fragment);
+	}
 }

@@ -13,7 +13,8 @@ class Chat
 		DELTA_LINES= 100;
 
 	static
-		$log;
+		$log,
+		$indexes= ['IP','ts','name','text','files'];
 
 	public
 		$dbPathname,
@@ -49,10 +50,13 @@ class Chat
 			$this->exit = true;
 
 			// $rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
-			$rlm = (int)filter_var($_POST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
+			$rlm = (int)filter_var($_REQUEST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
 
 			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true );
+		}
+		else{
+			// session_start();
 		}
 
 		if ( $this->exit ) exit( 0 );
@@ -82,6 +86,12 @@ class Chat
 	{
 		// if($cookieName = (@$_COOKIE["userName"] ?? null))
 		// 	$cookieName = self::cleanName( $cookieName );
+		foreach($_GET as $cmd=>&$val){
+			$val= filter_input(INPUT_GET, $cmd, FILTER_SANITIZE_STRING);
+			if(method_exists(__CLASS__, "c_$cmd")){
+				$this->{"c_$cmd"}($val);
+			}
+		}
 
 		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
 			$this->data= array_merge($this->data, $chatUser);
@@ -95,9 +105,9 @@ class Chat
 
 		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
 
-		$this->data['ts'] = filter_var(@$_POST["ts"]);
+		$this->data['ts'] = filter_var(@$_REQUEST["ts"]);
 		// if(!$this->name) $this->data['name']= $cookieName;
-		$this->data['text'] = self::cleanText(@$_POST["text"] ?? null);
+		$this->data['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 
 		$cook= json_encode([
@@ -106,7 +116,7 @@ class Chat
 			'UID'=> $this->UID,
 		], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-		switch( @$_POST["mode"] ) {
+		switch( @$_REQUEST["mode"] ) {
 			case "post":
 				$mode = "post";
 			break;
@@ -176,7 +186,8 @@ class Chat
 	 */
 	private function _checkDB()
 	{
-		$file= &$this->file;
+		if($file= &$this->file) return $this;
+
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
 		if(!is_dir(self::ARH_PATHNAME)){
@@ -239,13 +250,15 @@ class Chat
 		ob_start();
 
 		if($chat= $this->_checkDB()->file){
-			array_walk($chat, function(&$v,$n){
+			$render= is_adm()? '_renderAdmPost': '_renderPost';
+
+			array_walk($chat, function(&$v,$n)use($render){
 				// *Разбираем построчно
 				$v= explode(self::DELIM, $v);
 				// *ts -> Date
 				$v[1]= date('Y-m-d H:i', $v[1]);
-				// $v= $this->_renderPost($n,$v);
-				echo $this->_renderPost(++$n,$v);
+
+				echo $this->{$render}(++$n,$v);
 			});
 		}
 
@@ -253,6 +266,57 @@ class Chat
 
 		return ob_get_clean();
 	}
+
+
+	// * ADMIN
+
+	/**
+	 * Отдаём пост по $num
+	 * @param {} num - Номер поста из клиента
+	 */
+	public function c_getPost($num)
+	{
+		$state= new DbJSON(State::BASE_PATHNAME);
+		$num-= $state->startIndex + 1;
+
+		$post= array_combine(self::$indexes, explode(self::DELIM, $this->_checkDB()->file[$num]));
+		echo json_encode($post, JSON_UNESCAPED_UNICODE);
+		die;
+	}
+
+
+	/**
+	 * Исправлена работа с кириллицей (!!!)
+	 * https://snipp.ru/php/problem-domdocument
+	 */
+	private function _renderAdmPost($n,&$i)
+	{
+		$t= $this->_renderPost($n,$i);
+
+		// $t = mb_convert_encoding ($t, "UTF-8");
+
+		$doc = new DOMDocument("1.0","UTF-8");
+		$doc->loadHTML("\xEF\xBB\xBF" . $t);
+
+		$panel= $doc->createElement('div');
+		$panel->setAttribute('class', 'adm');
+
+		self::setDOMinnerHTML($panel,"<button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
+
+		$xpath = new DOMXpath($doc);
+
+		// tolog(__METHOD__.' DOMXpath',null,['encoding'=>$doc->encoding, ]);
+
+		$info= $xpath->query('//div[contains(@class, "info")]')->item(0);
+
+		$info->appendChild($panel);
+
+		$doc->normalize();
+
+		return html_entity_decode($doc->saveHTML(), ENT_COMPAT);
+	}
+
+	// * /ADMIN
 
 
 	private function _renderPost($n,&$i)

@@ -75,71 +75,90 @@ function off(obj, event, handler) {
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 }
 
-function post(url, reqParams, callback) {
-	var XMLo,
-		_w= window;
+var Ajax={
+	get: function(){
+		Ajax.method= 'get';
+		return Ajax.request.apply(null, arguments);
+	},
+	post: function(){
+		Ajax.method= 'post';
+		// console.log(['post'].concat(arguments));
+		return Ajax.request.apply(null, arguments);
+	},
 
-	if (_w.XMLHttpRequest) {
-		try { XMLo = new XMLHttpRequest(); }
-		catch (e) { XMLo = null; }
-	} else if (_w.ActiveXObject) {
-		try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
-		catch (e) {
-			try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
+	request: function (url, reqParams, callback) {
+		var XMLo,
+			_w= window;
+
+		if (_w.XMLHttpRequest) {
+			try { XMLo = new XMLHttpRequest(); }
 			catch (e) { XMLo = null; }
+		} else if (_w.ActiveXObject) {
+			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
+			catch (e) {
+				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
+				catch (e) { XMLo = null; }
+			}
 		}
+
+		if (XMLo == null) return null;
+
+		XMLo.open(Ajax.method, url, true);
+
+		if(reqParams.responseType) XMLo.responseType = reqParams.responseType;
+
+		// console.log(reqParams, XMLo.responseType);
+
+		if(reqParams instanceof FormData){
+			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+			// *Не меняем
+		}
+		else{
+			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+			if (reqParams) {
+				var prm = "";
+				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+				reqParams = prm;
+			}
+			else {
+				reqParams = " ";
+			}
+		}
+
+		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+		XMLo.setRequestHeader("Accept", "*\/*");
+
+		XMLo.onreadystatechange = function () {
+			if (XMLo.readyState !== 4) return;
+			var resp= XMLo.response;
+
+			// if (XMLo.status == 200 || XMLo.status == 0) {
+			if (XMLo.status === 200) {
+				console.log({XMLo});
+
+				callback&&callback(true, XMLo.status, resp);
+			}
+			else if(XMLo.status !== 0){
+				callback&&callback(false, XMLo.status, resp);
+			}
+
+			XMLo = null;
+		};
+
+		XMLo.send(reqParams);
+
+		return (XMLo !== null);
 	}
-
-	if (XMLo == null) return null;
-
-	XMLo.open("POST", url, true);
-
-	if(reqParams instanceof FormData){
-		// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
-		// *Не меняем
-	}
-	else{
-		XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-		if (reqParams) {
-			var prm = "";
-			for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-			reqParams = prm;
-		}
-		else {
-			reqParams = " ";
-		}
-	}
-
-	XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-	XMLo.setRequestHeader("Accept", "*/*");
-
-	XMLo.onreadystatechange = function () {
-		if (XMLo.readyState !== 4) return;
-
-		// if (XMLo.status == 200 || XMLo.status == 0) {
-		if (XMLo.status === 200) {
-			// console.log({XMLo});
-
-			var json= JSON.parse(XMLo.responseText);
-			// console.log({json});
-			callback(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
-		}
-		else if(XMLo.status !== 0){
-			callback(false, XMLo.status, XMLo.responseText);
-		}
-
-		XMLo = null;
-	};
-
-	XMLo.send(reqParams);
-
-	return (XMLo !== null);
 }
+
+// ?
+// var post= Ajax.post;
+
 
 
 // *main
-(function (_w) {
+;(function (_w) {
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 
@@ -405,15 +424,19 @@ function post(url, reqParams, callback) {
 	 * @param {function} handler
 	 */
 	function refresh(params, handler) {
-		params = params || {};
+		// if(!(params instanceof FormData)){
+			params = Object.assign((params||{}), {responseType:'json'});
+		// }
+
 		params.lastMod = params.lastMod == 0? 0 : lastMod;
 
-		post(
+		Ajax.post(
 			_w.location.toString(),
 			params,
 			refreshAfter.bind(null,handler)
 		);
 	};
+
 
 	/**
 	 * *Коллбэк для refresh
@@ -570,6 +593,7 @@ function post(url, reqParams, callback) {
 			fd.append('mode','post');
 			fd.append('lastMod',0);
 			fd.append('ts', parseInt(Date.now()/1000));
+			fd.responseType= 'json';
 
 			refresh(
 				fd,

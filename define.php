@@ -37,8 +37,16 @@ function tolog()
 {
 	global $log;
 
-	if(empty($_POST["mode"]) || $_POST["mode"] === 'post'){
+	if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] === 'post'){
 		$log = $log ?? new Logger('my.log', DR);
 		call_user_func_array([$log,'add'], func_get_args());
 	}
+}
+
+session_start();
+
+// *Admin
+function is_adm()
+{
+	return !empty($_SESSION['adm']);
 }

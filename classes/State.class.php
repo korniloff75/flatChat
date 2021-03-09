@@ -2,7 +2,9 @@
 
 class State extends Chat
 {
-	const EXPIRES= 24*3600;
+	const
+		EXPIRES= 24*3600,
+		BASE_PATHNAME= \DR.'/state.json';
 
 	static $db;
 
@@ -13,15 +15,9 @@ class State extends Chat
 		$UID= $data['UID'];
 		unset($data['UID']);
 
-		self::$db= new DbJSON(\DR.'/state.json');
+		self::$db= new DbJSON(self::BASE_PATHNAME);
 
 		self::$db->set(['users'=>[$UID=>$data]]);
-	}
-
-
-	// ?
-	private function _filterUsers($u){
-		return $now - $user['ts'] < self::EXPIRES && $user['name'];
 	}
 
 
