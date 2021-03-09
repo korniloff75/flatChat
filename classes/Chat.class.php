@@ -112,7 +112,6 @@ class Chat
 
 		$this->data['mode'] = $mode ?? null;
 
-		// if ( $this->name !== $cookieName ) setcookie( "userName", $this->name, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH );
 		if ( $cook !== @$_COOKIE["chatUser"] ) setcookie( "chatUser", $cook, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH, '', false, true );
 	}
 
@@ -204,20 +203,6 @@ class Chat
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
 		if ( $is_modified ) {
-			/* if(!file_exists(self::DBPATHNAME)){
-				$chat= [];
-			}
-			// *Читаем CHATTRIM байт с конца файла
-			elseif ( CHATTRIM && filesize(self::DBPATHNAME) > CHATTRIM ) {
-				$chat= self::rfileByte(self::DBPATHNAME, CHATTRIM);
-				// $chat= self::rfile(self::DBPATHNAME, 10);
-
-				// tolog(__METHOD__,null,['$chat1'=>$chat]);
-			}
-			// *Читаем весь файл
-			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES); */
-
-
 			$out['html'].= $this->_parse();
 		} //$is_modified
 
