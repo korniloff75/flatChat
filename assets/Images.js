@@ -147,10 +147,10 @@ function showVisible(ims) {
 		let realSrc = img.dataset.src;
 		if (!realSrc) continue;
 
-		if (isVisible(img)) {
+		if (realSrc && isVisible(img)) {
 			img.src = realSrc;
 			img.dataset.src = '';
 		}
 	}
-	console.log(ims[0],ims);
+	// console.log(ims[0],ims);
 }

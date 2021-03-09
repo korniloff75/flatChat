@@ -5,8 +5,9 @@ node_modules
 *.test
 /dist
 /tmp
+*.db
 /state.json
-db/*.json
+db/*
 js/db/*.*
 /google*
 *__

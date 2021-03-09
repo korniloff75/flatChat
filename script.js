@@ -1,4 +1,11 @@
 'use strict';
+/* import * as BBscript from "./assets/BB.js";
+import * as StateScript from "./assets/State.js";
+import * as Imgscript from "./assets/Images.js"; */
+
+
+// console.log({BBscript});
+
 // *noConsole
 if(/\.ru/i.test(location.host)){
 	var console= {
@@ -68,25 +75,99 @@ function off(obj, event, handler) {
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 }
 
+function post(url, reqParams, callback) {
+	var XMLo,
+		_w= window;
 
+	if (_w.XMLHttpRequest) {
+		try { XMLo = new XMLHttpRequest(); }
+		catch (e) { XMLo = null; }
+	} else if (_w.ActiveXObject) {
+		try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
+		catch (e) {
+			try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
+			catch (e) { XMLo = null; }
+		}
+	}
+
+	if (XMLo == null) return null;
+
+	XMLo.open("POST", url, true);
+
+	if(reqParams instanceof FormData){
+		// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+		// *Не меняем
+	}
+	else{
+		XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+		if (reqParams) {
+			var prm = "";
+			for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+			reqParams = prm;
+		}
+		else {
+			reqParams = " ";
+		}
+	}
+
+	XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+	XMLo.setRequestHeader("Accept", "*/*");
+
+	XMLo.onreadystatechange = function () {
+		if (XMLo.readyState !== 4) return;
+
+		// if (XMLo.status == 200 || XMLo.status == 0) {
+		if (XMLo.status === 200) {
+			// console.log({XMLo});
+
+			var json= JSON.parse(XMLo.responseText);
+			// console.log({json});
+			callback(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
+		}
+		else if(XMLo.status !== 0){
+			callback(false, XMLo.status, XMLo.responseText);
+		}
+
+		XMLo = null;
+	};
+
+	XMLo.send(reqParams);
+
+	return (XMLo !== null);
+}
+
+
+// *main
 (function (_w) {
-	var IPdotPos= Chat.IP.lastIndexOf('.');
-
-		Chat.IPmask= Chat.IP.substring(0,IPdotPos);
-
 	var msgsDialog = document.getElementById("msgsDialog");
 	var sendDialog = document.getElementById("sendDialog");
 
 	var msgs = document.getElementById("msgsContent");
+	var f = document.getElementById("sendForm"),
+		name = f.elements.name,
+		text = f.elements.text,
+		usersList = document.querySelector('.users'),
+		attach= f['attach[]'],
+		attachNode= f.querySelector('.attaches>div');
+
 	var oAS = document.getElementById("autoScroll");
 	var oSND = document.getElementById("playSound");
 	var oAH = document.getElementById("autoHeight");
-	var f = document.getElementById("sendForm");
-	var name = f.elements.name;
-	var text = f.elements.text;
 
 	// StateScript.then(s=>{s.msgs= msgs});
 
+	function hideName(){
+		if(f.name.type !== 'hidden' && Chat.name){
+			f.name.type= 'hidden';
+			f.name.value= Chat.name;
+			console.log(f.name.value);
+		}
+	}
+
+	hideName();
+
+	// autoHeight
 	function ah(el, maxH, state) {
 		if (arguments.length === 1) {
 			if (el._ah_) el._ah_();
@@ -132,66 +213,6 @@ function off(obj, event, handler) {
 	catch (e) {
 		snd = null;
 		console.error("can't play sounds");
-	}
-
-
-	function post(url, reqParams, handler) {
-		var XMLo;
-
-		if (_w.XMLHttpRequest) {
-			try { XMLo = new XMLHttpRequest(); }
-			catch (e) { XMLo = null; }
-		} else if (_w.ActiveXObject) {
-			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
-			catch (e) {
-				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
-				catch (e) { XMLo = null; }
-			}
-		}
-
-		if (XMLo == null) return null;
-
-		XMLo.open("POST", url, true);
-
-		if(reqParams instanceof FormData){
-			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
-			// *Не меняем
-		}
-		else{
-			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-			if (reqParams) {
-				var prm = "";
-				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-				reqParams = prm;
-			}
-			else {
-				reqParams = " ";
-			}
-		}
-
-		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-		XMLo.setRequestHeader("Accept", "*/*");
-
-		XMLo.onreadystatechange = function () {
-			if (XMLo.readyState == 4) {
-				if (XMLo.status == 200 || XMLo.status == 0) {
-					// console.log({XMLo});
-					var json= JSON.parse(XMLo.responseText);
-					console.log({json});
-					handler(true, XMLo.status, (json? json: XMLo.responseText), (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
-				}
-				else {
-					handler(false, XMLo.status, XMLo.responseText);
-				}
-
-				XMLo = null;
-			}
-		};
-
-		XMLo.send(reqParams);
-
-		return (XMLo != null);
 	}
 
 
@@ -377,119 +398,136 @@ function off(obj, event, handler) {
 		setTimeout(function () { msgs.onscroll = os; }, 10);
 	}
 
-	function insertAtCursor(o, val) {
-		if (document.selection) {
-			o.focus();
-			sel = document.selection.createRange();
-			sel.text = val;
+
+	/**
+	 * *Обновление страницы
+	 * @param {obj} params
+	 * @param {function} handler
+	 */
+	function refresh(params, handler) {
+		params = params || {};
+		params.lastMod = params.lastMod == 0? 0 : lastMod;
+
+		post(
+			_w.location.toString(),
+			params,
+			refreshAfter.bind(null,handler)
+		);
+	};
+
+	/**
+	 * *Коллбэк для refresh
+	 * @param {function} handler - callback after ajax
+	 * @param {bool} success - result of ajax
+	 * @param {string} statusCode - must be 200
+	 * @param {obj|string} response - data from ajax
+	 */
+	function refreshAfter (handler, success, statusCode, response) {
+		// console.log(arguments);
+
+		if (!success) {
+			tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
+			response = undefined;
 		}
-		else if (o.selectionStart || o.selectionStart == '0') {
-			var startPos = o.selectionStart;
-			var endPos = o.selectionEnd;
-			o.value = o.value.substring(0, startPos) + val + o.value.substring(endPos, o.value.length);
-		}
-		else o.value += val;
-	}
 
-	var refresh = (function () {
-		return function (params, handler) {
-			params = params || {};
-			params.lastMod = params.lastMod == 0? 0 : lastMod;
+		if (response !== undefined) {
+			var html= (response instanceof String)
+				? response
+				: response.html;
 
-			post(
-				_w.location.toString(),
-				params,
-				function (state, status, response) {
-					if (!state) {
-						tipUpper(msgsDialog, "Ошибка сервера: " + status);
-						response = undefined;
-					}
+			Object.assign(Chat, response.Chat);
 
-					if (response !== undefined) {
-						var chat= (response instanceof String)
-							? response
-							: response.html;
+			// console.log({Chat});
 
-						Object.assign(Chat, response.Chat);
+			hideName();
 
-						var p = chat.indexOf("\n");
+			var p = html.indexOf("\n");
 
-						if (p > 0) {
-							var s = chat.substring(0, p).split(':'), lm;
+			if (p > 0) {
+				var s = html.substring(0, p).split(':'), lm;
 
-							if (s) {
-								lm = +s[1];
-								console.log({s,lm});
-								s = s[0];
+				if (s) {
+					lm = +s[1];
+					console.log({s,lm});
+					s = s[0];
 
-								chat = chat.substring(p + 1);
+					html = html.substring(p + 1);
 
-								if (s === "NONMODIFIED") chat = undefined;
-								if (s === "OK") lastMod = lm;
-							}
-						}
-
-						if (chat !== undefined) {
-							msgs.innerHTML = chat;
-
-							if (oAS.checked) scrollBottom();
-
-							if (oSND.checked) {
-								if (snd) {
-									snd.pause();
-									snd.currentTime = 0;
-									snd.play();
-								}
-							}
-						}
-
-						StateScript.then(State=>{
-							State.set(response.state)
-							.hilightUsers(msgs);
-						});
-
-						/* Imgscript.then(I=>{
-							// I.init(msgs);
-						}); */
-					}
-
-					if (handler) handler(state, status, chat);
+					if (s === "NONMODIFIED") html = undefined;
+					if (s === "OK") lastMod = lm;
 				}
-			);
-		};
-	})();
+			}
 
+			// *if Modifed
+			if (html !== undefined) {
+				msgs.innerHTML = html;
+
+				StateScript.then(s=>s.findMyPosts(msgs));
+
+				if (oAS.checked) scrollBottom();
+
+				if (oSND.checked) {
+					if (snd) {
+						snd.pause();
+						snd.currentTime = 0;
+						snd.play()
+						.catch((err) => {
+							console.log(err);
+						});
+					}
+				}
+			}
+
+			// *Every
+			StateScript.then(State=>{
+				State.setDB(response.state)
+				.hilightUsers(msgs, usersList);
+			});
+		}
+
+		if (handler) handler(success, statusCode, html);
+	} //refreshAfter
+
+
+	/**
+	 * Long Polling
+	 * @param {bool} rewait - Ожидание перед запросом
+	 */
 	var poll = (function () {
 		var t,
-			inProgress = false;
+			inProgress = false,
+			data= { mode: "list" };
 
 		var rq = function () {
 			if (inProgress) return;
 
+			if(!Chat.name){
+				data.name= f.name.value;
+			}
+
 			inProgress = true;
 			// msgsDialogWaiter.show(true, false);
 			refresh(
-				{ mode: "list" },
-				function (state, status, txt) {
+				data,
+				function (success, status, txt) {
 					// msgsDialogWaiter.show(false);
 					inProgress = false;
-					poll(false, true);
+					poll(true);
 				}
 			);
 		};
 
-		return function (refreshNow, rewait) {
+		return function (rewait) {
 			if (rewait === true) {
 				if (t) clearTimeout(t);
 				t = setTimeout(rq, REFRESHTIME );
 			}
-
-			if (refreshNow === true) rq();
+			else rq();
 		};
 	})();
 
 	oAS.onchange = function () {
-		if (this.checked) scrollBottom();
+		this.checked && scrollBottom();
 	};
 
 	oSND.onchange = function () {
@@ -522,13 +560,10 @@ function off(obj, event, handler) {
 			return false;
 		}
 
-		// sendDialogWaiter.show(true);
-		// msgsDialogWaiter.show(true, false);
-
 		// *Smiles
 		BBscript.then(BB=>{
 			BB.replaceText(f.text);
-			// console.log(f.text.innerHTML);
+			// console.log(f.text.value);
 			// debugger;
 
 			var fd= new FormData(f);
@@ -547,6 +582,9 @@ function off(obj, event, handler) {
 					// *Очищаем
 					f.reset();
 					name.value= Chat.name;
+
+					showAttaches();
+					countChars.call(f.text);
 
 					StateScript.then(s=>s.findMyPosts(msgs));
 				}
@@ -626,6 +664,7 @@ function off(obj, event, handler) {
 
 	poll(true);
 
+
 	// *Считаем символы
 	function countChars(e) {
 		var
@@ -643,10 +682,40 @@ function off(obj, event, handler) {
 		document.querySelector('#maxLen').textContent= count;
 	};
 
-	// on(f.text, 'keyup', countChars);
+	function showAttaches(){
+		if (!attach.files.length){
+			attachNode.parentNode.hidden= 1;
+			return;
+		}
+
+		attachNode.innerHTML='';
+		attachNode.parentNode.hidden= 0;
+
+		for(var file of attach.files){
+			var p= document.createElement('p');
+			p.textContent= file.name;
+			attachNode.appendChild(p);
+		}
+	}
+
+
 	on(f.text, 'input', countChars);
 	// ?
 	on(f.text, 'change', countChars);
+	on(f, 'change', function(e){
+		showAttaches();
+	});
+
+	// *remove attaches
+	on(attachNode.parentNode, 'click', function(e) {
+		var t= e.target;
+		e.preventDefault();
+
+		if(t.closest('.clear')){
+			attach.value='';
+			showAttaches();
+		}
+	});
 
 
 	// *Клик по имени
@@ -686,7 +755,8 @@ function off(obj, event, handler) {
 		});
 
 		StateScript.then(s=>s.findMyPosts(msgs));
+
+		showAttaches();
 	});
 
 })(window);
-

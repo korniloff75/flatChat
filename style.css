@@ -127,6 +127,7 @@ a:hover {
 }
 
 #wrapper {
+	box-sizing: border-box;
 	margin: auto;
 	position: relative;
 	overflow: hidden;
@@ -135,24 +136,40 @@ a:hover {
 	padding: .3em;
 }
 
-/* .wrapper {
-	background: #fefefe;
-	text-align: left;
-	margin: auto;
-	position: relative;
-	z-index: 1;
-	padding: 1em;
-	overflow: hidden;
-} */
-
-header {
+.box {
 	background: #fafafa;
 	text-align: left;
 	margin: 0;margin-bottom:20px;
 	z-index: 1;
 	padding: .5em;
 	max-width: 100%;
-	overflow: hidden;box-shadow:0 0 5px rgba(0,0,0,.2);
+	overflow: hidden;
+	box-shadow:0 0 5px rgba(0,0,0,.2);
+}
+
+.users {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	color: red;
+}
+
+.users p {
+	padding: 0 .5em;
+	border-radius: .2em;
+	line-height: 170%;
+}
+
+/* .users p::before {
+	content: "·";
+	font-size: 2em;
+	font-weight: bold;
+	margin: 0 .1em 0 .1em;
+} */
+
+.users span.date {
+	color: #777;
+	font-size: 70%;
 }
 
 .checkbox {
@@ -175,13 +192,14 @@ header {
 }
 
 #msgsContent .msg {
-	width:89%;
+	width: 89%;
 	margin-bottom: 0.5em;
 	padding: 0.3em;
 	border-radius: .5em;
 	position: relative;
 	z-index: 1;
 	word-wrap: break-word;
+	background: #eee;
 }
 
 #msgsContent .msg:hover{
@@ -220,11 +238,16 @@ header {
 	color: #CB1E1E;
 }
 #msgsContent .msg .info .cite {
-	display:inline-block;height:35px;
-	margin:0;padding:0 15px;
-	cursor: pointer;color:#fff;
-	font-size: .8em;line-height:35px;
-	background:#6494C1;border-radius:5px;
+	display: inline-block;
+	/* height: 2.5em; */
+	margin: 0;
+	padding: 0 1em;
+	cursor: pointer;
+	color: #fff;
+	font-size: .8em;
+	line-height: 2em;
+	background: #6494C1;
+	border-radius: 5px;
 }
 #msgsContent .msg .info .cite:hover {
 	box-shadow:0 0 2px rgba(0,0,0,.3);
@@ -240,13 +263,20 @@ header {
 	white-space: nowrap;
 }
 
-#msgsContent .info span.ip {
-	font-size: 0.8em;
-	color: red;
+#msgsContent .info span.state {
+	display: inline-block;
+	line-height: 1.3em;
+	width: .7em;
+	height: .7em;
+	border-radius: 100%;
+	background: red;
+	margin-right: .1em;
 }
 
-#msgsContent .info span.ip.on{
-	color: green;
+#msgsContent .info span.state.on,
+.on {
+	color: #fff;
+	background: green;
 }
 
 #msgsContent .msg a {
@@ -318,12 +348,35 @@ header {
 	padding: 0 0.2em;
 }
 
+#sendDialog .submit {
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 0.5em;
+	justify-content: space-between;
+	align-items: center;
+	/* align-content: center; */
+}
+
+label.input__file {
+	flex: 0 0 170px;
+	cursor: pointer;
+	color: #777;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+label.input__file:hover {
+	color: #555;
+}
+label.input__file::before{
+	content: "📎";
+	font-size: 1.8em;
+}
+
 #sendDialog input[type="submit"] {
-	width: 50%;
-	/* margin: auto; */
-	margin-left: 25%;
-	height: 2.5em;
-	background: #ddd;
+	flex: 2 0 55%;
+	height: 2.7em;
+	/* max-width: 50%; */
 }
 
 #sendDialog input[name="name"] {
@@ -333,10 +386,6 @@ header {
 #sendDialog textarea[name="text"] {
 	min-height: 10em;
 	resize: none;
-}
-
-#submit {
-	margin-top: 0.5em;
 }
 
 .waiter {
@@ -452,10 +501,11 @@ font-size:90%;margin-bottom:5px;
 .block2 {
 	position: relative;
 	display: block;
-	background: #eee;border:2px solid #fefefe;
+	background: #eee;
+	border:2px solid #fefefe;
 	margin: 0;
 	z-index: 1;
-	padding: 1.5em;
+	padding: .9em;
 	max-width: 100%;
 	overflow: hidden;box-shadow:0 0 5px rgba(0,0,0,.2);
 }
@@ -489,9 +539,11 @@ text-align:left;margin-top:20px;
 	cursor: pointer;
 	text-decoration: none;
 
-	font-family: Tahoma;
-	font-weight: bold;
+	/* font-family: Tahoma;
+	font-weight: bold; */
+	font: .9em Tahoma bold;
 	color: #555555;
+	height: inherit;
 
 	border-radius: 0.18em;
 
@@ -636,10 +688,10 @@ text-align:left;margin-top:20px;
 	display: flex;
 	font-size: 2em;
 	justify-content: space-around;
-	cursor: pointer;
 }
 .smile i {
 	font-style: normal;
+	cursor: pointer;
 	/* border: 1px #aaa solid; */
 	padding: 0 3px;
 	/* margin: 0 2px; */
@@ -653,4 +705,17 @@ text-align:left;margin-top:20px;
 
 span.name{
 	cursor: pointer;
+}
+
+
+@media (max-width:500px){
+	#sendDialog textarea[name="text"] {
+		min-height: 4em;
+		resize: none;
+	}
+
+	.block2 {
+		border-width: 1px;
+		padding: .5em;
+	}
 }

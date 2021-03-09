@@ -1,15 +1,18 @@
 'use strict';
 // native
 
-var bbs= ['B','I','U','S'];
+var bbs= ['B','I','U','S','❞'];
 
 var codes= {
 	':)': '😁',
 	';)': '😉',
 	':D': '😂',
+	':*': '😘',
+	':Р': '😋',
+	'В)': '😎',
 	':(': '😕',
 	':\'(': '😢',
-	':*': '😘',
+	':\\': '😒',
 }
 
 /**
@@ -42,6 +45,10 @@ export function createPanel (ta){
 			case 'S':
 				b.style.textDecoration= 'line-through';
 				break;
+			case '❞':
+				b.bb= 'cite';
+				// b.style.textDecoration= 'line-through';
+				break;
 
 			default:
 				break;
@@ -61,7 +68,7 @@ export function createPanel (ta){
 	p.addEventListener('click',e=>{
 		var t= e.target;
 		if(t.closest('.bb')){
-			var c= t.textContent.toLowerCase();
+			var c= (t.bb || t.textContent).toLowerCase();
 			insert('['+c+']', '[/'+c+']', ta);
 		}
 		else if(t.closest('.sm')){
@@ -77,17 +84,23 @@ function replace (txt) {
 	codes= Object.assign(codes, {
 		'=)': codes[':)'],
 		':))': codes[':D'],
+		':/': codes[':\\'],
 	});
 	Object.keys(codes).forEach(i=>{
-		txt= txt.replace(i, codes[i], 'g');
+		var r= i.replace(/([\(\)\/\*\\])/g,"\\$1");
+		// console.log({i,r});
+
+		txt= txt.replace(new RegExp(`(^|\\s)${r}(\\s|$)`, 'gm'), `$1${codes[i]}$2`, 'g');
 	});
-	console.log({codes});
+	// console.log({codes});
 	return txt;
 }
+
 
 export function replaceHTML (node) {
 	node.innerHTML= replace(node.innerHTML);
 }
+
 
 export function replaceText (node) {
 	var prop= node.value !== undefined? 'value': 'textContent';
@@ -95,6 +108,7 @@ export function replaceText (node) {
 
 	node[prop]= replace(node[prop]);
 }
+
 
 export function insert(start, end, element) {
 	element.focus();
