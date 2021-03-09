@@ -157,11 +157,15 @@ function post(url, reqParams, callback) {
 
 	// StateScript.then(s=>{s.msgs= msgs});
 
-	if(f.name.type !== 'hidden' && Chat.name){
-		f.name.type= 'hidden';
-		f.name.value= Chat.name;
-		console.log(f.name.value);
+	function hideName(){
+		if(f.name.type !== 'hidden' && Chat.name){
+			f.name.type= 'hidden';
+			f.name.value= Chat.name;
+			console.log(f.name.value);
+		}
 	}
+
+	hideName();
 
 	// autoHeight
 	function ah(el, maxH, state) {
@@ -434,6 +438,8 @@ function post(url, reqParams, callback) {
 			Object.assign(Chat, response.Chat);
 
 			// console.log({Chat});
+
+			hideName();
 
 			var p = html.indexOf("\n");
 

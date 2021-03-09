@@ -7,6 +7,7 @@ class Chat
 
 	const
 		DBPATHNAME= \DBFILE,
+		ARH_PATHNAME= \DR.'/db',
 		DELIM= "<~>",
 		MAX_LINES= 200,
 		DELTA_LINES= 100;
@@ -47,7 +48,8 @@ class Chat
 		if ( $this->mode == "list" ) {
 			$this->exit = true;
 
-			$rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
+			// $rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
+			$rlm = (int)filter_var($_POST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
 
 			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true );
@@ -170,12 +172,16 @@ class Chat
 
 
 	/**
-	 * *Разбиваем базу, добавляя лишнее в архив /db/*(ts)
+	 * *Разбиваем базу, добавляя лишнее в архив self::ARH_PATHNAME/*(ts)
 	 */
 	private function _checkDB()
 	{
 		$file= &$this->file;
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
+
+		if(!is_dir(self::ARH_PATHNAME)){
+			mkdir(self::ARH_PATHNAME);
+		}
 
 		if(
 			!file_exists($this->dbPathname)
@@ -193,7 +199,7 @@ class Chat
 				// *Обрезаем базу
 				file_put_contents( $this->dbPathname, $newFile, LOCK_EX )
 				// *Добавляем в архив
-				&& file_put_contents( \DR.'/db/'.time(), $file, LOCK_EX )
+				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
 				State::$db->set(['startIndex'=>State::$db->get('startIndex') + ($count - self::MAX_LINES)]);
 			}
@@ -285,7 +291,7 @@ class Chat
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				// $f= self::getPathFromRoot($f);
-				$t.= "<img src='/assets/placeholder.svg' data-src='$f' />";
+				$t.= "<img src='/assets/placeholder.svg' data-src='$f' draggable='false' />";
 			}
 			$t.= '</div>';
 		}
@@ -319,8 +325,8 @@ class Chat
 	// *Архив
 	function getArhive()
 	{
-		foreach(new FilesystemIterator('db/') as $fi){
-			echo "<a href='/Archive.php?f=". self::fixSlashes($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
+		foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
+			echo "<a href='/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
 		}
 	}
 } // Chat
