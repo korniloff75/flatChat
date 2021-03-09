@@ -7,14 +7,16 @@ class Chat
 
 	const
 		DBPATHNAME= \DBFILE,
-		DELIM= "<~>";
+		DELIM= "<~>",
+		MAX_LINES= 200,
+		DELTA_LINES= 100;
 
 	static
 		$log;
 
 	public
+		$file,
 		$lastMod,
-		$files,
 		$out=[];
 
 	private
@@ -43,7 +45,7 @@ class Chat
 
 			$rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
 
-			if ( $rlm == $this->lastMod ) echo $this->Out( "NONMODIFIED" );
+			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true );
 		}
 
@@ -130,13 +132,12 @@ class Chat
 		Uploads::$allow = ['jpg','jpeg','png','gif'];
 		Uploads::$pathname = \DR.'/files_B';
 		$upload = new Uploads(null, 'attach');
-		$this->files = $upload->loaded;
 
 		tolog('Uploads',null,['$upload'=>$upload]);
 
 		// *Write
 		// file_put_contents( self::DBPATHNAME, $this->Template(), LOCK_EX|FILE_APPEND );
-		$this->_save();
+		$this->_save($upload->loaded);
 
 		$this->mode = "list";
 
@@ -144,9 +145,13 @@ class Chat
 	}
 
 
-	private function _save()
+	private function _save($files= [])
 	{
-		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($this->files,  JSON_UNESCAPED_SLASHES)];
+		array_walk($files, function(&$f){
+			$f= self::getPathFromRoot($f);
+		});
+
+		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($files,  JSON_UNESCAPED_SLASHES)];
 
 		// *Write
 		file_put_contents( self::DBPATHNAME, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
@@ -160,14 +165,46 @@ class Chat
 	}
 
 
-	public function Out( $status = null, $modifed = false )
+	// todo Разбиваем базу
+	/**
+	 * Разбиваем базу, добавляя лишнее в архив /db/*(ts)
+	 */
+	private function _checkDB()
+	{
+		$file= &$this->file;
+		$count= count($file= file(self::DBPATHNAME, FILE_SKIP_EMPTY_LINES));
+
+		if(
+			!file_exists(self::DBPATHNAME)
+			|| ($count - self::MAX_LINES - self::DELTA_LINES < 0)
+		){
+			tolog(__METHOD__ . ": База имеет допустимый размер - $count строк.",null,['$count'=>$count]);
+			// return $file;
+		}
+		// *Файл превышает допустимый размер
+		else{
+			$newFile= array_splice($file, -self::MAX_LINES);
+
+			// *Обрезаем базу
+			file_put_contents( self::DBPATHNAME, $newFile, LOCK_EX );
+			// *Добавляем в архив
+			file_put_contents( \DR.'/db/'.time(), $file, LOCK_EX );
+
+			State::$db->set(['startIndex'=>State::$db->get('startIndex') + ($count - self::MAX_LINES)]);
+		}
+
+		return $this;
+	}
+
+
+	public function Out( $status = null, $is_modified = false )
 	:string
 	{
 		$out= &$this->out;
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
-		if ( $modifed ) {
-			if(!file_exists(self::DBPATHNAME)){
+		if ( $is_modified ) {
+			/* if(!file_exists(self::DBPATHNAME)){
 				$chat= [];
 			}
 			// *Читаем CHATTRIM байт с конца файла
@@ -176,20 +213,19 @@ class Chat
 				// $chat= self::rfile(self::DBPATHNAME, 10);
 
 				// tolog(__METHOD__,null,['$chat1'=>$chat]);
-
 			}
 			// *Читаем весь файл
-			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES);
+			else $chat = file(self::DBPATHNAME, FILE_IGNORE_NEW_LINES|FILE_SKIP_EMPTY_LINES); */
 
-			$out['html'].= $this->_parse($chat);
-		} //$modifed
+
+			$out['html'].= $this->_parse();
+		} //$is_modified
 
 		// tolog(__METHOD__,null,['$chat2'=>$chat]);
 
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
-		// var_dump(State::$db);
 		$out['state']= State::$db->get();
 		// $out['Chat']= $this->getData();
 		$out['Chat']= $this->data;
@@ -198,13 +234,12 @@ class Chat
 	}
 
 
-	private function _parse(?array $chat)
-	// private function _parse( $chat )
+	private function _parse()
 	:string
 	{
 		ob_start();
 
-		if($chat){
+		if($chat= $this->_checkDB()->file){
 			array_walk($chat, function(&$v,$n){
 				// *Разбираем построчно
 				$v= explode(self::DELIM, $v);
@@ -226,6 +261,7 @@ class Chat
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
 		$UID= $this->_defineUID($name, $IP);
+		$n+= State::$db->get('startIndex');
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -249,7 +285,7 @@ class Chat
 		if($files= json_decode($files, 1)){
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
-				$f= self::getPathFromRoot($f);
+				// $f= self::getPathFromRoot($f);
 				$t.= "<img src='/assets/placeholder.svg' data-src='$f' />";
 			}
 			$t.= '</div>';

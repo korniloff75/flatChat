@@ -96,9 +96,11 @@ function replace (txt) {
 	return txt;
 }
 
+
 export function replaceHTML (node) {
 	node.innerHTML= replace(node.innerHTML);
 }
+
 
 export function replaceText (node) {
 	var prop= node.value !== undefined? 'value': 'textContent';
@@ -106,6 +108,7 @@ export function replaceText (node) {
 
 	node[prop]= replace(node[prop]);
 }
+
 
 export function insert(start, end, element) {
 	element.focus();

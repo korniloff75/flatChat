@@ -117,6 +117,11 @@ $Chat= new Chat;
 							<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 						</div>
 					</div>
+					<div class="attaches">
+						<h3>Прикрепления:</h3>
+						<p><button class="clear button">Очистить</button></p>
+						<div></div>
+					</div>
 				</form>
 			</div><!-- .item-block -->
 

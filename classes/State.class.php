@@ -19,6 +19,12 @@ class State extends Chat
 	}
 
 
+	// ?
+	private function _filterUsers($u){
+		return $now - $user['ts'] < self::EXPIRES && $user['name'];
+	}
+
+
 	function __destruct(){
 		$now= time();
 		$change=0;
@@ -30,7 +36,7 @@ class State extends Chat
 		}
 
 		if($change){
-			self::$db->replace(['users'=>array_filter($users)]);
+			self::$db->set(['users'=>array_filter($users)]);
 		}
 	}
 }

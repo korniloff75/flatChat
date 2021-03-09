@@ -144,13 +144,16 @@ function post(url, reqParams, callback) {
 	var sendDialog = document.getElementById("sendDialog");
 
 	var msgs = document.getElementById("msgsContent");
+	var f = document.getElementById("sendForm"),
+		name = f.elements.name,
+		text = f.elements.text,
+		usersList = document.querySelector('.users'),
+		attach= f['attach[]'],
+		attachNode= f.querySelector('.attaches>div');
+
 	var oAS = document.getElementById("autoScroll");
 	var oSND = document.getElementById("playSound");
 	var oAH = document.getElementById("autoHeight");
-	var f = document.getElementById("sendForm");
-	var name = f.elements.name;
-	var text = f.elements.text,
-		usersList = document.querySelector('.users');;
 
 	// StateScript.then(s=>{s.msgs= msgs});
 
@@ -574,6 +577,9 @@ function post(url, reqParams, callback) {
 					f.reset();
 					name.value= Chat.name;
 
+					showAttaches();
+					countChars.call(f.text);
+
 					StateScript.then(s=>s.findMyPosts(msgs));
 				}
 			);
@@ -670,10 +676,40 @@ function post(url, reqParams, callback) {
 		document.querySelector('#maxLen').textContent= count;
 	};
 
-	// on(f.text, 'keyup', countChars);
+	function showAttaches(){
+		if (!attach.files.length){
+			attachNode.parentNode.hidden= 1;
+			return;
+		}
+
+		attachNode.innerHTML='';
+		attachNode.parentNode.hidden= 0;
+
+		for(var file of attach.files){
+			var p= document.createElement('p');
+			p.textContent= file.name;
+			attachNode.appendChild(p);
+		}
+	}
+
+
 	on(f.text, 'input', countChars);
 	// ?
 	on(f.text, 'change', countChars);
+	on(f, 'change', function(e){
+		showAttaches();
+	});
+
+	// *remove attaches
+	on(attachNode.parentNode, 'click', function(e) {
+		var t= e.target;
+		e.preventDefault();
+
+		if(t.closest('.clear')){
+			attach.value='';
+			showAttaches();
+		}
+	});
 
 
 	// *Клик по имени
@@ -713,7 +749,8 @@ function post(url, reqParams, callback) {
 		});
 
 		StateScript.then(s=>s.findMyPosts(msgs));
+
+		showAttaches();
 	});
 
 })(window);
-
