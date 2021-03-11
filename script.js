@@ -1,5 +1,8 @@
 'use strict';
 import * as Adm from './assets/Admin.js';
+import * as BB from './assets/BB.js';
+import * as State from './assets/State.js';
+import * as Img from './assets/Images.js';
 
 // console.log({Adm});
 
@@ -16,10 +19,9 @@ else {
 	var console= _w.console;
 }
 
-var BBscript= import ('./assets/BB.js');
-var StateScript= import ('./assets/State.js');
-var Imgscript= import ('./assets/Images.js');
-// var Admin= import ('./assets/Images.js');
+// var BBscript= import ('./assets/BB.js');
+// var StateScript= import ('./assets/State.js');
+// var Imgscript= import ('./assets/Images.js');
 
 
 var smoothScrollTo = (function (_w) {
@@ -173,7 +175,6 @@ var oAS = document.getElementById("autoScroll");
 var oSND = document.getElementById("playSound");
 var oAH = document.getElementById("autoHeight");
 
-// StateScript.then(s=>{s.msgs= msgs});
 
 function hideName(){
 	if(f.name.type !== 'hidden' && Chat.name){
@@ -484,7 +485,7 @@ function refreshAfter (handler, success, statusCode, response) {
 		if (html !== undefined) {
 			msgs.innerHTML = html;
 
-			StateScript.then(s=>s.findMyPosts(msgs));
+			State.findMyPosts(msgs);
 
 			if (oAS.checked) scrollBottom();
 
@@ -501,10 +502,9 @@ function refreshAfter (handler, success, statusCode, response) {
 		}
 
 		// *Every
-		StateScript.then(State=>{
-			State.setDB(response.state)
-			.hilightUsers(msgs, usersList);
-		});
+		State.setDB(response.state)
+		.hilightUsers(msgs, usersList);
+
 	}
 
 	if (handler) handler(success, statusCode, html);
@@ -515,13 +515,13 @@ function refreshAfter (handler, success, statusCode, response) {
  * Long Polling
  * @param {bool} rewait - Ожидание перед запросом
  */
-var poll = (function () {
+export var poll = (function () {
 	var t,
 		inProgress = false,
 		data= { mode: "list" };
 
 	var rq = function () {
-		if (inProgress) return;
+		if (inProgress || poll.stop) return;
 
 		if(!Chat.name){
 			data.name= f.name.value;
@@ -583,36 +583,35 @@ function formSubmit (e) {
 	}
 
 	// *Smiles
-	BBscript.then(BB=>{
-		BB.replaceText(f.text);
-		// console.log(f.text.value);
-		// debugger;
+	BB.replaceText(f.text);
+	// console.log(f.text.value);
+	// debugger;
 
-		var fd= new FormData(f);
-		fd.append('mode','post');
-		fd.append('lastMod',0);
-		fd.append('ts', parseInt(Date.now()/1000));
-		fd.responseType= 'json';
+	var fd= new FormData(f);
+	fd.append('mode','post');
+	fd.append('lastMod',0);
+	fd.append('ts', parseInt(Date.now()/1000));
+	fd.responseType= 'json';
 
-		refresh(
-			fd,
-			function (state, status, txt) {
-				if (state) {
-					text.value = "";
-					ah(text);
-				}
-
-				// *Очищаем
-				f.reset();
-				name.value= Chat.name;
-
-				showAttaches();
-				countChars.call(f.text);
-
-				StateScript.then(s=>s.findMyPosts(msgs));
+	refresh(
+		fd,
+		function (state, status, txt) {
+			if (state) {
+				text.value = "";
+				ah(text);
 			}
-		);
-	});
+
+			// *Очищаем
+			f.reset();
+			name.value= Chat.name;
+
+			showAttaches();
+			countChars.call(f.text);
+
+			State.findMyPosts(msgs);
+		}
+	);
+
 
 	return false;
 };
@@ -742,16 +741,14 @@ on(attachNode.parentNode, 'click', function(e) {
 
 
 // *Клик по имени
-BBscript.then(BB=>{
-	on(msgs, 'click', e=>{
-		var name= e.target.closest('span.name');
-		if(!name) return;
+on(msgs, 'click', e=>{
+	var name= e.target.closest('span.name');
+	if(!name) return;
 
-		e.stopPropagation();
-		e.preventDefault();
+	e.stopPropagation();
+	e.preventDefault();
 
-		BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
-	});
+	BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
 });
 
 
@@ -767,17 +764,12 @@ on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 
 	countChars.call(f.text);
 
-	BBscript.then(BB=>{
-		var panel= BB.createPanel(f.text);
-		sendDialog.insertBefore(panel, f.text);
+	var panel= BB.createPanel(f.text);
+	sendDialog.insertBefore(panel, f.text);
 
-	});
+	Img.init(msgs);
 
-	Imgscript.then(I=>{
-		I.init(msgs);
-	});
-
-	StateScript.then(s=>s.findMyPosts(msgs));
+	State.findMyPosts(msgs);
 
 	showAttaches();
 

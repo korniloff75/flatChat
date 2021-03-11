@@ -1,11 +1,24 @@
 'use strict';
 // native
 
-import {on,Ajax,refresh} from '../script.js';
+import {on,Ajax,refresh,poll} from '../script.js';
 
-var msgs = document.getElementById("msgsContent");
+var _w= window,
+	msgs = document.getElementById("msgsContent");
 
 console.log('Admin module included');
+
+// *logOut
+var logoutBtn= document.querySelector('.logout');
+
+logoutBtn && on(logoutBtn, 'click', e=>{
+	if(!confirm("Вы точно хотите выйти\nиз своей учётной записи?")) return;
+	poll.stop=1;
+	Ajax.post('', {
+		logOut: true,
+	}, ()=>_w.location.reload());
+});
+
 
 on(msgs,'click',e=>{
 	var t= e.target,
@@ -21,10 +34,18 @@ on(msgs,'click',e=>{
 	}
 
 	// *Edit post
-	if((btn= t.closest('.edit')) && !msg.area){
+	if((btn= t.closest('.edit'))){
+		if(msg.area) {
+			// console.log(msg.area);
+			msg.area.remove();
+			msg.save.remove();
+			msg.area= null;
+			return;
+		}
+
 		msg.area= document.createElement('textarea');
 		msg.area.className= 'editarea';
-		var save= document.createElement('button');
+		var save= msg.save= document.createElement('button');
 		save.className= 'saveEdits';
 		save.textContent= '💾 SAVE';
 		save.title= "Сохранить";
@@ -34,16 +55,15 @@ on(msgs,'click',e=>{
 
 		msg.appendChild(msg.area);
 		msg.appendChild(save);
+		return;
 	}
 
 	// *Save edits
 	if((btn= t.closest('.saveEdits'))){
 		var area= msg.querySelector('.editarea');
-		refresh({
+		return refresh({
 			num: num,
 			saveEdits: area.value,
-		}, (success,status,resp)=>{
-			area.remove();
 		});
 	}
 
@@ -51,7 +71,7 @@ on(msgs,'click',e=>{
 	if((btn= t.closest('.del'))){
 		if(!confirm("Удалить пост "+num+"?")) return;
 
-		refresh({
+		return refresh({
 			removePost: num,
 		}, (success,status,resp)=>{
 			return null

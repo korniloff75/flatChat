@@ -293,6 +293,7 @@ class Chat
 	 */
 	protected function c_saveEdits($text)
 	{
+		if(!is_adm()) return;
 		$state= new DbJSON(State::BASE_PATHNAME);
 		$file= &$this->_checkDB()->file;
 		$num= filter_var($_REQUEST['num'], FILTER_SANITIZE_NUMBER_INT);
@@ -316,6 +317,7 @@ class Chat
 	 */
 	protected function c_removePost($num)
 	{
+		if(!is_adm()) return;
 		$state= new DbJSON(State::BASE_PATHNAME);
 		$file= &$this->_checkDB()->file;
 		$num-= $state->startIndex + 1;
@@ -331,6 +333,30 @@ class Chat
 	}
 
 
+	protected function c_logOut($a)
+	{
+		tolog(__METHOD__,null,['$_SESSION'=>$_SESSION]);
+		$_SESSION= [];
+
+		if (ini_get("session.use_cookies")) {
+			$params = session_get_cookie_params();
+			setcookie(session_name(), '', time() - 42000,
+					$params["path"], $params["domain"],
+					$params["secure"], $params["httponly"]
+			);
+		}
+
+		// Наконец, уничтожаем сессию.
+		session_destroy();
+		echo "Сессия удалена";
+		// header('Location: /');
+		die;
+
+
+		// $this->data['mode']= 'list';
+	}
+
+
 	/**
 	 * Исправлена работа с кириллицей (!!!)
 	 * https://snipp.ru/php/problem-domdocument
@@ -338,8 +364,6 @@ class Chat
 	private function _renderAdmPost($n,&$i)
 	{
 		$t= $this->_renderPost($n,$i);
-
-		// $t = mb_convert_encoding ($t, "UTF-8");
 
 		$doc = new DOMDocument("1.0","UTF-8");
 		$doc->loadHTML("\xEF\xBB\xBF" . $t);

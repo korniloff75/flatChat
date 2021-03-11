@@ -11,7 +11,7 @@ if(
 		$base->set(['pwd'=>hash('sha256',$pwd)]);
 	}
 	elseif(hash('sha256',$pwd) === $base->pwd){
-		session_start();
+		// session_start();
 		$_SESSION['adm']= true;
 		echo "<h2>You are admin!</h2>
 		<a href='/'><button class='button'>to chat</button></a><pre>";

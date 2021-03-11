@@ -104,17 +104,14 @@ form {
 	display: inline;
 }
 
-h1 {float:left;
+h1 {
+	float: left;
 	font-family: Verdana;
-	margin:0;padding:0;
+	margin: 0 1em 0 0;
+	padding: 0;
 	font-size: 2.5em;
 	font-weight: normal;
 	color: #CB1E1E;
-	/*text-shadow: 0 1px 0 #ccc, 0 2px 0 #c9c9c9, 0 3px 0 #bbb, 0 4px 0 #b9b9b9,
-		0 5px 0 #aaa, 0 6px 1px rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 0, 0, 0.1),
-		0 1px 3px rgba(0, 0, 0, 0.3), 0 3px 5px rgba(0, 0, 0, 0.2),
-		0 5px 10px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.2),
-		0 20px 20px rgba(0, 0, 0, 0.15);*/
 }
 
 a {
@@ -182,6 +179,24 @@ a:hover {
 	overflow: hidden;
 	border:1px solid #ddd;
 	border-radius:5px;
+}
+
+.checkbox .options {
+	display: inline-flex;
+	margin-top: 1em;
+	margin-right: 1em;
+	font-family: Tahoma;
+	font-size: 0.8em;
+	font-weight: bold;
+	cursor: pointer;
+	color: #707070;
+}
+
+.checkbox .options input {
+	vertical-align: top;
+	cursor: pointer;
+	width: 1em;
+	height: 1em;
 }
 
 #msgsContent {
@@ -306,24 +321,6 @@ a:hover {
 	font-size: 80%;
 	font-style: italic;
 	border-radius: 1em;
-}
-
-#msgsDialog .options {
-	display: inline-block;
-	margin-top: 1em;
-	margin-right: 1em;
-	font-family: Tahoma;
-	font-size: 0.8em;
-	font-weight: bold;
-	cursor: pointer;
-	color: #707070;
-}
-
-#msgsDialog .options input {
-	vertical-align: top;
-	cursor: pointer;
-	width: 1em;
-	height: 1em;
 }
 
 #sendDialog textarea,
@@ -707,7 +704,7 @@ span.name{
 	cursor: pointer;
 }
 
-.saveEdits, .adm > *{
+.logout, .saveEdits, .adm > *{
 	cursor: pointer;
 	/* box-sizing: border-box; */
 }
@@ -738,6 +735,9 @@ span.name{
 
 
 @media (max-width:500px){
+	.checkbox{
+		display: none;
+	}
 	#sendDialog textarea[name="text"] {
 		min-height: 4em;
 		resize: none;
