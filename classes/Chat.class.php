@@ -86,9 +86,11 @@ class Chat
 	{
 		// if($cookieName = (@$_COOKIE["userName"] ?? null))
 		// 	$cookieName = self::cleanName( $cookieName );
-		foreach($_GET as $cmd=>&$val){
-			$val= filter_input(INPUT_GET, $cmd, FILTER_SANITIZE_STRING);
+		foreach($_REQUEST as $cmd=>&$val){
+			$val= filter_var($val, FILTER_SANITIZE_STRING);
+
 			if(method_exists(__CLASS__, "c_$cmd")){
+				tolog(__METHOD__,null,['$cmd'=>$cmd, '$val'=>$val]);
 				$this->{"c_$cmd"}($val);
 			}
 		}
@@ -109,6 +111,7 @@ class Chat
 		// if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
+		$mode= &$this->data['mode'];
 
 		$cook= json_encode([
 			'name'=> $this->name,
@@ -126,7 +129,7 @@ class Chat
 			break;
 		}
 
-		$this->data['mode'] = $mode ?? null;
+		// $this->data['mode'] = $mode ?? null;
 
 		if ( $cook !== @$_COOKIE["chatUser"] ) setcookie( "chatUser", $cook, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH, '', false, true );
 	}
@@ -286,6 +289,49 @@ class Chat
 
 
 	/**
+	 * Сохраняем редактирование постов
+	 */
+	protected function c_saveEdits($text)
+	{
+		$state= new DbJSON(State::BASE_PATHNAME);
+		$file= &$this->_checkDB()->file;
+		$num= filter_var($_REQUEST['num'], FILTER_SANITIZE_NUMBER_INT);
+		$num-= $state->startIndex + 1;
+
+		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
+
+		$data['text']= self::cleanText($text);
+
+		$file[$num]= implode(self::DELIM, $data);
+
+		tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
+
+		file_put_contents( $this->dbPathname, $file, LOCK_EX );
+
+		$this->data['mode']= 'list';
+	}
+
+	/**
+	 * !Удаление постов
+	 */
+	protected function c_removePost($num)
+	{
+		$state= new DbJSON(State::BASE_PATHNAME);
+		$file= &$this->_checkDB()->file;
+		$num-= $state->startIndex + 1;
+
+		unset($file[$num]);
+		$file= array_filter($file);
+
+		// tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
+
+		file_put_contents( $this->dbPathname, $file, LOCK_EX );
+
+		$this->data['mode']= 'list';
+	}
+
+
+	/**
 	 * Исправлена работа с кириллицей (!!!)
 	 * https://snipp.ru/php/problem-domdocument
 	 */
@@ -334,7 +380,7 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite">Цитировать</div>':'';
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b class='num'>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite</div>"
 		. "<div class='post'>{$text}</div>";
 

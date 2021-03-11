@@ -707,6 +707,35 @@ span.name{
 	cursor: pointer;
 }
 
+.saveEdits, .adm > *{
+	cursor: pointer;
+	/* box-sizing: border-box; */
+}
+
+.editarea{
+	width: 100%;
+	height: 5em;
+	resize: vertical;
+}
+
+.edit, .saveEdits {
+	color: blue;
+	border-color: #def;
+	background: #def;
+}
+.edit:hover, .saveEdits:hover {
+	box-shadow: 0 0 2px rgba(0,0,0,.3);
+	border-color: #67A1D7;
+	color: #fff;
+	background: #67A1D7;
+}
+
+.del{
+	color: #fff;
+	background: red;
+	border-color: red;
+}
+
 
 @media (max-width:500px){
 	#sendDialog textarea[name="text"] {

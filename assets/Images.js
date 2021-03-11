@@ -1,4 +1,5 @@
 // ?
+import {css,on} from '../script.js';
 export var inited;
 
 /**

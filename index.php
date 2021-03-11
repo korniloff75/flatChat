@@ -116,11 +116,18 @@ $Chat= new Chat;
 				State= <?=$Chat->Out()['state'] ?? '[]'?>;
 		</script>
 
-		<script src="script.js"></script>
+
+
+		<script src="/script.js" type="module"></script>
 
 		<script src="./assets/BB.js" type="module"></script>
 		<script src="./assets/State.js" type="module"></script>
 		<script src="./assets/Images.js" type="module"></script>
+		<?php //todo ?>
+		<script src="./assets/modal/modal.js" type="module"></script>
+		<?php if(is_adm()): ?>
+		<script src="/assets/Admin.js" type="module" defer></script>
+		<?php endif?>
 
 	</body>
 </html>
