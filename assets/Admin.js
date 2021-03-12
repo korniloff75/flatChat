@@ -7,7 +7,7 @@ import {modal} from './modal/modal.js';
 var _w= window,
 	msgs = document.getElementById("msgsContent");
 
-console.log('Admin module included');
+console.log('Admin module included', {msgs});
 
 // *logOut
 var logoutBtn= document.querySelector('.logout');

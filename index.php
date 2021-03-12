@@ -18,7 +18,7 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1); */
 
-require_once $_SERVER['DOCUMENT_ROOT'].'/define.php';
+require_once __DIR__.'/define.php';
 
 
 tolog(__LINE__,null,['$_REQUEST'=>$_REQUEST, '$_REQUEST["mode"]'=>@$_REQUEST["mode"],'$_FILES'=>$_FILES]);
@@ -43,29 +43,6 @@ $Chat= new Chat;
 
 	<body>
 		<main id="wrapper">
-			<header class="box">
-				<h1><?= HEADER ?></h1>
-
-				<div class="checkbox">
-
-					<label class="options first"><input id="autoScroll" type="checkbox" checked="checked"> прокручивать вниз</label>
-					<label class="options"><input id="playSound" type="checkbox" checked="checked"> звук</label>
-					<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
-				</div>
-
-				<h3 class="auth">
-
-				<?php
-				// var_dump($_SESSION);
-				if(is_adm()){
-					echo "(=Admin=) <button class='logout' title='Logout'>Logout</button>";
-				}
-				else{
-					echo "<a href='/login.php'><button class='button' title='Login'>Login</button></a>";
-				}
-				?>
-				</h3>
-			</header>
 
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
@@ -73,7 +50,12 @@ $Chat= new Chat;
 					<?#die?>
 				</div>
 				<div class="right" style="position:relative;">
-					<a href="#sendForm" title="Написать"><svg class="toForm" viewBox="0 0 465.882 465.882" xmlns="http://www.w3.org/2000/svg"><path d="m465.882 0-465.882 262.059 148.887 55.143 229.643-215.29-174.674 235.65.142.053-.174-.053v128.321l83.495-97.41 105.77 39.175z"></path></svg></a>
+					<!-- <a href="#sendForm" title="Написать" onclick=" document.querySelector('#sendDialog textarea').focus()"> -->
+					<svg class="toForm" viewBox="0 0 465.882 465.882" xmlns="http://www.w3.org/2000/svg"><path d="m465.882 0-465.882 262.059 148.887 55.143 229.643-215.29-174.674 235.65.142.053-.174-.053v128.321l83.495-97.41 105.77 39.175z"></path></svg>
+					<!-- </a> -->
+					<script>
+
+					</script>
 				</div>
 
 
@@ -85,7 +67,7 @@ $Chat= new Chat;
 				<form action="/bot.php" method="post" id="sendForm">
 					<div id="sendDialog" class="block2">
 						<input type="text" name="name" value="<?=$Chat->name?>" maxLength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" required />
-						<textarea name="text" placeholder="Текст" maxLength="<?=\MAXUSERTEXTLEN?>" required></textarea>
+						<textarea name="text" placeholder="Текст" maxLength="<?=\MAXUSERTEXTLEN?>" required autofocus></textarea>
 						<div class="submit">
 							<label class="input__file button" for="attach">Добавить файл
 								<input type="file" name="attach[]" id="attach" multiple hidden>
@@ -114,6 +96,30 @@ $Chat= new Chat;
 
 		</main><!-- #wrapper -->
 
+		<header class="box">
+			<h1><?= HEADER ?></h1>
+
+			<div class="checkbox">
+
+				<label class="options first"><input id="autoScroll" type="checkbox" checked="checked"> прокручивать вниз</label>
+				<label class="options"><input id="playSound" type="checkbox" checked="checked"> звук</label>
+				<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
+			</div>
+
+			<h3 class="auth">
+
+			<?php
+			// var_dump($_SESSION);
+			if(is_adm()){
+				echo "(=Admin=) <button class='logout' title='Logout'>Logout</button>";
+			}
+			else{
+				echo "<a href='/login.php'><button class='button' title='Login'>Login</button></a>";
+			}
+			?>
+			</h3>
+		</header>
+
 		<footer class="right" style="font-size:.7em;background: #000; padding-top:1em;">
 			<a href="//github.com/korniloff75/flatChat" target="_blank" title="Репозиторий">
 				KorniloFF &copy;
@@ -130,7 +136,13 @@ $Chat= new Chat;
 				State= <?=$Chat->Out()['state'] ?? '[]'?>;
 		</script>
 
-
+		<script type="module">
+		import {scrollIntoView, on} from './script.js';
+		on(document.querySelector('.toForm'), 'click', e=>{
+			e.stopPropagation();
+			scrollIntoView(document.querySelector('#sendDialog'),{block:'end'}, e);
+		})
+		</script>
 
 		<script src="/script.js" type="module"></script>
 

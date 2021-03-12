@@ -23,11 +23,12 @@ define( "CHATTRIM", 50 * 1024 ); //Максимальная длина пере�
 define( "MAXUSERNAMELEN", 20 ); //Максимальная длина имени пользователя
 define( "MAXUSERTEXTLEN", 1024 ); //Максимальная длина сообщения пользователя
 
+$_SERVER['DOCUMENT_ROOT']= __DIR__;
 define( "DR", $_SERVER['DOCUMENT_ROOT'] );
 
 function _autoloader($class)
 {
-	include_once DR."/classes/$class.class.php";
+	include_once __DIR__."/classes/$class.class.php";
 }
 
 spl_autoload_register('_autoloader');
@@ -38,7 +39,7 @@ function tolog()
 	global $log;
 
 	if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] === 'post'){
-		$log = $log ?? new Logger('my.log', DR);
+		$log = $log ?? new Logger('my.log', __DIR__);
 		call_user_func_array([$log,'add'], func_get_args());
 	}
 }

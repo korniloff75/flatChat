@@ -1,32 +1,6 @@
 /* @import 'https://fonts.googleapis.com/css?family=Prompt:400,700'; */
 
-.modal {
-  display: block;
-
-  width: 600px;
-  max-width: 100%;
-
-  min-height: 200px;
-  max-height: 100%;
-
-  position: absolute;
-
-  z-index: 1000;
-
-  left: 50%;
-  top: 50%;
-
-  /* Центруем */
-  transform: translate(-50%, -50%);
-
-  background: white;
-  box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.9);
-}
-.modal-overlay.closed {
-  width:0;
-  /* display: none; */
-}
-
+/* Фон */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -36,6 +10,40 @@
   z-index: 900;
   transition: .5s;
   background: rgba(0, 0, 0, 0.6);
+}
+.modal-overlay.closed {
+  width:0;
+  height: 0;
+  overflow: hidden;
+  /* display: none; */
+}
+
+.modal {
+  display: block;
+
+  width: 50%;
+  min-width: 300px;
+  max-width: 100%;
+
+  min-height: 200px;
+  max-height: 100%;
+
+  position: absolute;
+
+  z-index: 1000;
+
+  right: 50%;
+  top: 50%;
+
+  /* Центруем */
+  transform: translate(50%, -50%);
+
+  background: white;
+  box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.9);
+}
+
+.closed .modal{
+  /* transform: translate(-90%, -90%); */
 }
 
 .modal .modal-guts {
@@ -52,18 +60,15 @@
 .modal-guts > pre {
 	display: inline-block;
 	white-space: pre-wrap;
-  transition: .5s;
 }
 .closed .modal-guts {
-	width: 0;
   overflow: hidden;
 }
 .closed .modal-guts>pre {
-	width: 0;
   overflow: hidden;
 }
 
-
+/* Кнопки */
 .modal [class*=-button]{
   position: absolute;
   right: 20px;

@@ -23,6 +23,24 @@ else {
 // var StateScript= import ('./assets/State.js');
 // var Imgscript= import ('./assets/Images.js');
 
+export function scrollIntoView(el,opts,e){
+	console.log(Element);
+	e && e.preventDefault();
+
+	opts= Object.assign({
+		behavior: 'smooth',
+		block: 'start',
+		inline: 'center'
+	}, (opts || {}));
+
+	try {
+		el.scrollIntoView(opts);
+	} catch (err) {
+		// location.replace(`#${el.id}`);
+	}
+	return false;
+}
+
 
 var smoothScrollTo = (function (_w) {
 	'use strict';
@@ -173,7 +191,6 @@ var f = document.getElementById("sendForm"),
 	attach= f['attach[]'],
 	attachNode= f.querySelector('.attaches>div');
 
-var oAS = document.getElementById("autoScroll");
 var oSND = document.getElementById("playSound");
 var oAH = document.getElementById("autoHeight");
 
@@ -406,6 +423,9 @@ var tipUpper = (function () {
 
 
 _w.scrollBottom= function scrollBottom() {
+	var oAS = document.getElementById("autoScroll");
+	if(!oAS.checked) return;
+
 	var os = msgs.onscroll;
 	msgs.onscroll = function (e) {
 		if (!e) e = _w.event;
@@ -489,7 +509,7 @@ function refreshAfter (handler, success, statusCode, response) {
 
 			State.findMyPosts(msgs);
 
-			if (oAS.checked) scrollBottom();
+			scrollBottom();
 
 			if (oSND.checked) {
 				if (snd) {
@@ -523,11 +543,12 @@ export var poll = (function () {
 		data= { mode: "list" };
 
 	var rq = function () {
-		if (inProgress || poll.stop) return;
+		console.log({Chat});
+		if (inProgress || poll.stop || !Chat.name) return;
 
-		if(!Chat.name){
+		/* if(!Chat.name){
 			data.name= f.name.value;
-		}
+		} */
 
 		inProgress = true;
 		// msgsDialogWaiter.show(true, false);
@@ -550,9 +571,9 @@ export var poll = (function () {
 	};
 })();
 
-oAS.onchange = function () {
-	this.checked && scrollBottom();
-};
+/* oAS.onchange = function () {
+	scrollBottom();
+}; */
 
 oSND.onchange = function () {
 	if (oSND.checked === false) {
@@ -620,8 +641,7 @@ function formSubmit (e) {
 
 on(f,'submit', formSubmit);
 
-
-msgs.onclick = function (e) {
+on(msgs,'click',e=>{
 	e = e || _w.event;
 
 	var t = e.target || e.srcElement,
@@ -641,17 +661,24 @@ msgs.onclick = function (e) {
 	if(s && vb) {
 		var post= s.querySelector('.post').cloneNode(true);
 		[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
-		speak(post.textContent);
+		speak(post.textContent.replace(/\p{S}/iug,''));
 		return;
 	}
-};
+});
+
 
 // *Озвучка текста
 function speak(txt){
 	const synth = window.speechSynthesis;
-	if(synth.speaking){
-		synth.cancel();
+	if(synth.pending){
+		return;
 	}
+	else if(synth.speaking){
+		// synth.pause();
+		synth.cancel();
+		return;
+	}
+	// console.log({synth});
 	var t= new SpeechSynthesisUtterance(txt);
 	t.lang= 'ru';
 	synth.speak(t);
@@ -702,7 +729,7 @@ name.onkeydown = text.onkeydown = function (e) {
 	if (e.keyCode === 13 && e.ctrlKey) formSubmit();
 };
 
-if (oAS.checked) scrollBottom();
+scrollBottom();
 
 text.focus();
 
