@@ -211,7 +211,7 @@ a:hover {
 #msgsContent {
 	width: 100%;
 	/* height: 30em; */
-	height: 90vh;
+	height: 85vh;
 	overflow-y: auto;
 }
 
@@ -742,6 +742,14 @@ span.name{
 	border-color: red;
 }
 
+.toForm {
+	width: 4em;
+	fill: #abc;
+	position: absolute;
+	right: 1em;
+	/* bottom: 0; */
+	z-index: 100;
+}
 
 @media (max-width:500px){
 	.checkbox{

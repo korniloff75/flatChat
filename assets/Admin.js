@@ -2,6 +2,7 @@
 // native
 
 import {on,Ajax,refresh,poll} from '../script.js';
+import {modal} from './modal/modal.js';
 
 var _w= window,
 	msgs = document.getElementById("msgsContent");
@@ -12,11 +13,15 @@ console.log('Admin module included');
 var logoutBtn= document.querySelector('.logout');
 
 logoutBtn && on(logoutBtn, 'click', e=>{
-	if(!confirm("Вы точно хотите выйти\nиз своей учётной записи?")) return;
-	poll.stop=1;
-	Ajax.post('', {
-		logOut: true,
-	}, ()=>_w.location.reload());
+	// if(!confirm("Вы точно хотите выйти\nиз своей учётной записи?")) return;
+
+	return modal("Вы точно хотите выйти\nиз своей учётной записи?")
+		.then(ok=>{
+			poll.stop=1;
+			Ajax.post('', {
+				logOut: true,
+			}, ()=>_w.location.reload());
+		}, err=>false)
 });
 
 
@@ -73,12 +78,15 @@ on(msgs,'click',e=>{
 
 	// *Remove post
 	if((btn= t.closest('.del'))){
-		if(!confirm("Удалить пост "+num+"?")) return;
+		// if(!confirm("Удалить пост "+num+"?")) return;
 
-		return refresh({
-			removePost: num,
-		}, (success,status,resp)=>{
-			return null
-		});
+	return modal("Удалить пост "+num+"?")
+		.then(ok=>{
+			refresh({
+				removePost: num,
+			})
+		}, err=>{
+			return new Error(`Пост №${num} не был удалён`);
+		})
 	}
 }); // /Обработка элементов .msg

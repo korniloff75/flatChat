@@ -77,13 +77,13 @@ class Chat
 	}
 
 
-	protected function _defineUID($name, $IP)
+	static function defineUID($name, $IP)
 	{
-		return $name . substr($IP, 0, strrpos($this->IP, '.')+1);
+		return $name . substr($IP, 0, strrpos($IP, '.')+1);
 	}
 
 
-	private function _controller()
+	protected function _controller()
 	{
 		// if($cookieName = (@$_COOKIE["userName"] ?? null))
 		// 	$cookieName = self::cleanName( $cookieName );
@@ -104,7 +104,7 @@ class Chat
 		}
 
 		$this->data['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
-		$this->data['UID']= $this->_defineUID($this->name, $this->IP);
+		$this->data['UID']= self::defineUID($this->name, $this->IP);
 
 		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
 
@@ -143,7 +143,7 @@ class Chat
 			exit( 0 );
 		}
 
-		$this->data['myUID']= $this->_defineUID($this->name, $this->IP);
+		$this->data['myUID']= self::defineUID($this->name, $this->IP);
 
 		$this->exit = true;
 
@@ -401,7 +401,7 @@ class Chat
 	{
 		// *Последовательность данных
 		list($IP,$ts,$name,$text,$files)= $i;
-		$UID= $this->_defineUID($name, $IP);
+		$UID= self::defineUID($name, $IP);
 		if($this->useStartIndex){
 			$n+= State::$db->get('startIndex');
 		}
@@ -433,7 +433,7 @@ class Chat
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				// $f= self::getPathFromRoot($f);
-				$t.= "<img src='/assets/placeholder.svg' data-src='$f' draggable='false' />";
+				$t.= "<img src='/assets/placeholder.svg' data-src='/$f' draggable='false' />";
 			}
 			$t.= '</div>';
 		}

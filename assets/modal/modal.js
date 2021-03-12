@@ -1,4 +1,4 @@
-import {on,Ajax,refresh} from '../../script.js';
+import {on,off,refresh} from '../../script.js';
 
 var dfr= document.createDocumentFragment(),
 	wrapper= document.createElement('div'),
@@ -17,9 +17,11 @@ content.className= 'modal-guts';
 close.className= 'close-button';
 ok.className= 'ok-button';
 
-close.textContent= 'X';
+close.textContent= '❌';
+close.title= 'Отмена';
 // ok.textContent= '✅';
 ok.textContent= '☑';
+ok.title= 'Подтвердить';
 
 modalWin.appendChild(close);
 modalWin.appendChild(ok);
@@ -29,22 +31,6 @@ wrapper.appendChild(modalWin);
 dfr.appendChild(style);
 dfr.appendChild(wrapper);
 document.body.appendChild(dfr);
-
-
-// *Закрываем окно
-// on(wrapper,'click',closeModal);
-// on(close,'click',closeModal);
-
-function closeModal(e){
-	if (e.target !== e.currentTarget) return;
-
-	e.stopPropagation();
-	wrapper.classList.add('closed')
-}
-
-/* content.innerHTML= `<h1>Заголовок</h1>
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae expedita corrupti laudantium aperiam, doloremque explicabo ipsum earum dicta saepe delectus totam vitae ipsam doloribus et obcaecati facilis eius assumenda, cumque.</p>
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Repudiandae expedita corrupti laudantium aperiam, doloremque explicabo ipsum earum dicta saepe delectus totam vitae ipsam doloribus et obcaecati facilis eius assumenda, cumque.</p>`; */
 
 
 /**
@@ -58,26 +44,28 @@ function closeModal(e){
 export function modal(txt, opts){
 	if(!(txt= txt.trim())) new Error("Нет текста для отображения");
 
-	content.innerHTML+= `<pre>${txt}</pre>`;
+	content.innerHTML= `<pre>${txt}</pre>`;
 
 	wrapper.classList.remove('closed');
 	return new Promise((resolve,reject)=>{
-		on(wrapper,'click',e=>{
-			e.stopPropagation();
-			var t= e.target;
-			console.log({t,ok});
+		wrapper.onclick= resolve;
+		wrapper.onkeydown= e=>{
+			console.log(e.key);
+		}
+	}).then(e=>{
+		e.stopPropagation();
+		var t= e.target;
+		console.log('wrapper was clicked!!!', {t,ok});
 
-			if(t === ok){
-				resolve(123);
-				wrapper.classList.add('closed');
-			}
-			else if(t === close || t === wrapper ){
-				reject(321);
-				wrapper.classList.add('closed');
-			}
-
-		})
+		if(t === ok){
+			wrapper.classList.add('closed');
+			console.log('resolve');
+			return Promise.resolve();
+		}
+		else if(t === close || t === wrapper ){
+			wrapper.classList.add('closed');
+			console.log('reject');
+			return Promise.reject();
+		}
 	})
 }
-
-// ?test

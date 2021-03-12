@@ -78,7 +78,7 @@ export function on(obj, event, handler) {
 	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
 }
 
-function off(obj, event, handler) {
+export function off(obj, event, handler) {
 	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
 }
@@ -160,8 +160,6 @@ export var Ajax={
 
 // ?
 // var post= Ajax.post;
-
-
 
 var msgsDialog = document.getElementById("msgsDialog");
 var sendDialog = document.getElementById("sendDialog");
@@ -640,10 +638,11 @@ msgs.onclick = function (e) {
 };
 
 
+// *Цитата
 function addCite(msg,e){
 	// e.preventDefault();
 	e.stopPropagation();
-	// *Цитата
+
 	var ps = msg.getElementsByTagName("span");
 	var name = ps[0].innerText || ps[0].textContent;
 	var misc = ps[1].innerText || ps[1].textContent;
@@ -661,7 +660,7 @@ function addCite(msg,e){
 	text.value += "[cite]" + name + " " + misc + "\n" + txt.replace(/(^|\n)/g, "$1>");
 
 	var href= location.href.split('#')[0];
-	text.value += "\n>" + href + '#' + msg.id + "\n***[/cite]\n";
+	text.value += "\n>" + href + '#' + msg.id + "[/cite]\n";
 
 	text.focus();
 }
