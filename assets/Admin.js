@@ -20,6 +20,7 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 });
 
 
+// *Обработка элементов .msg
 on(msgs,'click',e=>{
 	var t= e.target,
 		msg= t.closest('.msg');
@@ -80,4 +81,4 @@ on(msgs,'click',e=>{
 			return null
 		});
 	}
-});
+}); // /Обработка элементов .msg

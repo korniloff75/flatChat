@@ -1,0 +1,6 @@
+AddDefaultCharset UTF-8
+
+Options Indexes
+
+# Начальный файл
+DirectoryIndex test.php

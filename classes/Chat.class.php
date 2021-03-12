@@ -325,6 +325,7 @@ class Chat
 
 		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
 
+		// *Удаляем прикрепления
 		if(!empty($files= json_decode($data['files']))) foreach($files as $f){
 			tolog(__METHOD__,null,['$f'=>\DR.'/'. $f]);
 			unlink(\DR.'/'. $f);
@@ -333,7 +334,7 @@ class Chat
 		unset($file[$num]);
 		$file= array_filter($file);
 
-		// tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
+		tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
 
 		file_put_contents( $this->dbPathname, $file, LOCK_EX );
 
@@ -354,7 +355,6 @@ class Chat
 			);
 		}
 
-		// Наконец, уничтожаем сессию.
 		session_destroy();
 		echo "Сессия удалена";
 		// header('Location: /');

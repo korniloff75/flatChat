@@ -71,6 +71,9 @@ export function css (els, cssObj) {
 }
 
 export function on(obj, event, handler) {
+	if(!obj){
+		return;
+	}
 	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
 	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
 }
