@@ -8,6 +8,7 @@ class Chat
 	const
 		DBPATHNAME= \DBFILE,
 		ARH_PATHNAME= \DR.'/db',
+		FILES_DIR= '/files_B',
 		DELIM= "<~>",
 		MAX_LINES= 200,
 		DELTA_LINES= 100;
@@ -148,7 +149,7 @@ class Chat
 
 		// *Uploads
 		Uploads::$allow = ['jpg','jpeg','png','gif'];
-		Uploads::$pathname = \DR.'/files_B';
+		Uploads::$pathname = \DR.self::FILES_DIR;
 		$upload = new Uploads(null, 'attach');
 
 		tolog('Uploads',null,['$upload'=>$upload]);
@@ -321,6 +322,13 @@ class Chat
 		$state= new DbJSON(State::BASE_PATHNAME);
 		$file= &$this->_checkDB()->file;
 		$num-= $state->startIndex + 1;
+
+		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
+
+		if(!empty($files= json_decode($data['files']))) foreach($files as $f){
+			tolog(__METHOD__,null,['$f'=>\DR.'/'. $f]);
+			unlink(\DR.'/'. $f);
+		}
 
 		unset($file[$num]);
 		$file= array_filter($file);

@@ -22,8 +22,11 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 
 on(msgs,'click',e=>{
 	var t= e.target,
-		msg= t.closest('.msg'),
-		num= msg.querySelector('.num').textContent,
+		msg= t.closest('.msg');
+
+		if(!msg) return;
+
+		var num= msg.querySelector('.num').textContent,
 		adm= t.closest('.adm'),
 		btn;
 
