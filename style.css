@@ -261,7 +261,7 @@ a:hover {
 	padding-right: 0.5em;
 	color: #CB1E1E;
 }
-#msgsContent .msg .info .cite {
+#msgsContent .msg .info .btn {
 	display: inline-block;
 	/* height: 2.5em; */
 	margin: 0;
@@ -273,7 +273,7 @@ a:hover {
 	background: #6494C1;
 	border-radius: 5px;
 }
-#msgsContent .msg .info .cite:hover {
+#msgsContent .msg .info .btn:hover {
 	box-shadow:0 0 2px rgba(0,0,0,.3);
 	background:#67A1D7;
 }

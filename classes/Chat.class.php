@@ -410,10 +410,10 @@ class Chat
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
 		// *Цитировать
-		$cite= $this->useStartIndex? '<div class="cite">Цитировать</div>':'';
+		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
 		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b class='num'>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
-		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite</div>"
+		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice btn' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 
 		// *BB-codes

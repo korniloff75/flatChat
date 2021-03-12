@@ -30,5 +30,13 @@ require_once $_SERVER['DOCUMENT_ROOT'].'/index.php';
 
 	document.querySelector('#modal-btn2').onclick= e=> modal('Ещё <b>текст</b> проверяем с <u>разметкой</u>.');
 
+	/* const synth = window.speechSynthesis;
+	if(synth.speaking){
+		synth.cancel();
+	}
+	var t= new SpeechSynthesisUtterance('вечерело однако, на землю ложился иней.');
+	t.lang= 'ru';
+	synth.speak(t); */
+
 </script>
 </div>
