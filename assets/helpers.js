@@ -2,11 +2,88 @@
 
 let _w= window;
 
+export var Ajax={
+	get: function(){
+		Ajax.method= 'get';
+		return Ajax.request.apply(null, arguments);
+	},
+	post: function(){
+		Ajax.method= 'post';
+		// console.log(['post'].concat(arguments));
+		return Ajax.request.apply(null, arguments);
+	},
+
+	request: function (url, reqParams, callback) {
+		var XMLo;
+
+		reqParams= reqParams || {responseType:'json'};
+
+		if (_w.XMLHttpRequest) {
+			try { XMLo = new XMLHttpRequest(); }
+			catch (e) { XMLo = null; }
+		} else if (_w.ActiveXObject) {
+			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
+			catch (e) {
+				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
+				catch (e) { XMLo = null; }
+			}
+		}
+
+		if (XMLo == null) return null;
+
+		XMLo.open(Ajax.method, url, true);
+
+		if(reqParams.responseType) XMLo.responseType = reqParams.responseType;
+
+		// console.log(reqParams, XMLo.responseType);
+
+		if(reqParams instanceof FormData){
+			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
+			// *Не меняем
+		}
+		else{
+			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+			if (reqParams) {
+				var prm = "";
+				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
+				reqParams = prm;
+			}
+			else {
+				reqParams = " ";
+			}
+		}
+
+		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+		XMLo.setRequestHeader("Accept", "*\/*");
+
+		XMLo.onreadystatechange = function () {
+			if (XMLo.readyState !== 4) return;
+			var resp= XMLo.response;
+
+			// if (XMLo.status == 200 || XMLo.status == 0) {
+			if (XMLo.status === 200) {
+				console.log({XMLo});
+
+				callback&&callback(true, XMLo.status, resp);
+				return Promise.resolve(XMLo);
+			}
+
+			XMLo = null;
+		};
+
+		XMLo.send(reqParams);
+
+		return (XMLo !== null);
+	}
+}
+
+
 /**
  * Прокрутка к элементу
- * @param {Node} el 
- * @param {obj} opts 
- * optional @param {Event} e 
+ * @param {Node} el
+ * @param {obj} opts
+ * optional @param {Event} e
  */
 export function scrollIntoView(el,opts,e){
 	console.log(Element);
@@ -84,4 +161,22 @@ export function on(obj, event, handler) {
 export function off(obj, event, handler) {
 	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
+}
+
+
+// *Озвучка текста
+export function speak(txt){
+	const synth = window.speechSynthesis;
+	if(synth.pending){
+		return;
+	}
+	else if(synth.speaking){
+		// synth.pause();
+		synth.cancel();
+		return;
+	}
+	// console.log({synth});
+	var t= new SpeechSynthesisUtterance(txt);
+	t.lang= 'ru';
+	synth.speak(t);
 }

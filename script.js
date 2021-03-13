@@ -1,10 +1,10 @@
 'use strict';
-import {scrollIntoView, css, on, off} from './assets/helpers.js';
-export {scrollIntoView, css, on, off};
+import {Ajax, scrollIntoView, css, on, off, speak} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
 import * as Img from './assets/Images.js';
+export {Ajax, scrollIntoView, css, on, off, speak};
 
 // console.log({Adm});
 
@@ -21,86 +21,6 @@ else {
 	var console= _w.console;
 }
 
-// var BBscript= import ('./assets/BB.js');
-// var StateScript= import ('./assets/State.js');
-// var Imgscript= import ('./assets/Images.js');
-
-
-export var Ajax={
-	get: function(){
-		Ajax.method= 'get';
-		return Ajax.request.apply(null, arguments);
-	},
-	post: function(){
-		Ajax.method= 'post';
-		// console.log(['post'].concat(arguments));
-		return Ajax.request.apply(null, arguments);
-	},
-
-	request: function (url, reqParams, callback) {
-		var XMLo;
-
-		reqParams= reqParams || {responseType:'json'};
-
-		if (_w.XMLHttpRequest) {
-			try { XMLo = new XMLHttpRequest(); }
-			catch (e) { XMLo = null; }
-		} else if (_w.ActiveXObject) {
-			try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
-			catch (e) {
-				try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
-				catch (e) { XMLo = null; }
-			}
-		}
-
-		if (XMLo == null) return null;
-
-		XMLo.open(Ajax.method, url, true);
-
-		if(reqParams.responseType) XMLo.responseType = reqParams.responseType;
-
-		// console.log(reqParams, XMLo.responseType);
-
-		if(reqParams instanceof FormData){
-			// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
-			// *Не меняем
-		}
-		else{
-			XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-			if (reqParams) {
-				var prm = "";
-				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-				reqParams = prm;
-			}
-			else {
-				reqParams = " ";
-			}
-		}
-
-		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-		XMLo.setRequestHeader("Accept", "*\/*");
-
-		XMLo.onreadystatechange = function () {
-			if (XMLo.readyState !== 4) return;
-			var resp= XMLo.response;
-
-			// if (XMLo.status == 200 || XMLo.status == 0) {
-			if (XMLo.status === 200) {
-				console.log({XMLo});
-
-				callback&&callback(true, XMLo.status, resp);
-				return Promise.resolve(XMLo);
-			}
-
-			XMLo = null;
-		};
-
-		XMLo.send(reqParams);
-
-		return (XMLo !== null);
-	}
-}
 
 // ?
 // var post= Ajax.post;
@@ -109,18 +29,23 @@ var msgsDialog = document.getElementById("msgsDialog");
 var sendDialog = document.getElementById("sendDialog");
 
 var msgs = document.getElementById("msgsContent");
-var f = document.getElementById("sendForm"),
-	name = f.elements.name,
+var f = document.getElementById("sendForm");
+
+if(f){
+	var name = f.elements.name,
 	text = f.elements.text,
 	usersList = document.querySelector('.users'),
 	attach= f['attach[]'],
 	attachNode= f.querySelector('.attaches>div');
+}
+
 
 var oSND = document.getElementById("playSound");
 var oAH = document.getElementById("autoHeight");
 
 
 function hideName(){
+	if(!f) return;
 	if(f.name.type !== 'hidden' && Chat.name){
 		f.name.type= 'hidden';
 		f.name.value= Chat.name;
@@ -164,7 +89,7 @@ function ah(el, maxH, state) {
 		el._ah_();
 	}
 }
-if (oAH.checked) ah(text, 500, true);
+if (oAH && oAH.checked) ah(text, 500, true);
 
 // var msgsDialogWaiter = WAITER(msgsDialog);
 // var sendDialogWaiter = WAITER(sendDialog);
@@ -501,18 +426,20 @@ export var poll = (function () {
 	scrollBottom();
 }; */
 
-oSND.onchange = function () {
+// *Вкл. звук
+oSND && (oSND.onchange = function () {
 	if (oSND.checked === false) {
 		if (snd) {
 			snd.pause();
 			snd.currentTime = 0;
 		}
 	}
-};
+});
 
-oAH.onclick = function () {
+// *Вкл. autoHeight
+oAH && (oAH.onclick = function () {
 	ah(text, 500, oAH.checked);
-};
+});
 
 
 // *Отправка
@@ -521,6 +448,7 @@ function formSubmit (e) {
 		e.stopPropagation();
 		e.preventDefault();
 	}
+
 	if (!(name.value= name.value.trim())) {
 		tipUpper(name, "Пожалуйста, введите свое имя");
 		return false;
@@ -563,18 +491,21 @@ function formSubmit (e) {
 	return false;
 };
 
+on(f,'submit', formSubmit);
 
+
+// *Scroll to posts
 on(document.querySelector('.svg-toRead'), 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(msgs,{block:'start'}, e);
 });
 
+// *Scroll to form
 on(document.querySelector('.svg-toForm'), 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(sendDialog,{block:'end'}, e);
 });
 
-on(f,'submit', formSubmit);
 
 on(msgs,'click',e=>{
 	e = e || _w.event;
@@ -600,24 +531,6 @@ on(msgs,'click',e=>{
 		return;
 	}
 });
-
-
-// *Озвучка текста
-function speak(txt){
-	const synth = window.speechSynthesis;
-	if(synth.pending){
-		return;
-	}
-	else if(synth.speaking){
-		// synth.pause();
-		synth.cancel();
-		return;
-	}
-	// console.log({synth});
-	var t= new SpeechSynthesisUtterance(txt);
-	t.lang= 'ru';
-	synth.speak(t);
-}
 
 
 // *Цитата
@@ -701,13 +614,14 @@ function showAttaches(){
 	}
 }
 
-
-on(f.text, 'input', countChars);
-// ?
-on(f.text, 'change', countChars);
-on(f, 'change', function(e){
-	showAttaches();
-});
+if(f){
+	on(f.text, 'input', countChars);
+	// ?
+	on(f.text, 'change', countChars);
+	on(f, 'change', function(e){
+		showAttaches();
+	});
+}
 
 // *remove attaches
 on(attachNode.parentNode, 'click', function(e) {
@@ -736,7 +650,7 @@ on(msgs, 'click', e=>{
 
 
 
-// *
+// *ready
 on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 	scrollIntoView(msgs, {block:'start'});
 
@@ -744,10 +658,12 @@ on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 	// var msgs= document.querySelectorAll('.msg');
 	// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
 
-	countChars.call(f.text);
+	if(f){
+		countChars.call(f.text);
 
-	var panel= BB.createPanel(f.text);
-	sendDialog.insertBefore(panel, f.text);
+		var panel= BB.createPanel(f.text);
+		sendDialog.insertBefore(panel, f.text);
+	}
 
 	Img.init(msgs);
 

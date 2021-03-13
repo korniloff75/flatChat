@@ -27,6 +27,25 @@ $Arh->useStartIndex= false;
 			<?#die?>
 		</div>
 	</div>
+
+	<script type="module">
+		import {on,speak} from './assets/helpers.js';
+
+		on(document.getElementById("msgsContent"),'click',e=>{
+			var t = e.target,
+				s= t.closest('.msg'),
+				vb= t.closest('.voice');
+
+			if(s && vb) {
+				var post= s.querySelector('.post').cloneNode(true);
+				[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
+				speak(post.textContent.replace(/\p{S}/iug,''));
+				return;
+			}
+		});
+	</script>
+
+	<script src="./assets/helpers.js" type="module"></script>
 </body>
 </html>
 
