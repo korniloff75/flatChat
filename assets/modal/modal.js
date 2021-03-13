@@ -9,7 +9,7 @@ var dfr= document.createDocumentFragment(),
 	style= document.createElement('link');
 
 // style.href= document.currentScript.src + '/style.css';
-style.href= '/assets/modal/style.css';
+style.href= './assets/modal/style.css';
 style.rel= 'stylesheet';
 wrapper.className= 'modal-overlay closed';
 modalWin.className= 'modal';

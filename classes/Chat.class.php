@@ -88,9 +88,9 @@ class Chat
 		// if($cookieName = (@$_COOKIE["userName"] ?? null))
 		// 	$cookieName = self::cleanName( $cookieName );
 		foreach($_REQUEST as $cmd=>&$val){
-			$val= filter_var($val, FILTER_SANITIZE_STRING);
 
 			if(method_exists(__CLASS__, "c_$cmd")){
+				$val= filter_var($val, FILTER_SANITIZE_STRING);
 				tolog(__METHOD__,null,['$cmd'=>$cmd, '$val'=>$val]);
 				$this->{"c_$cmd"}($val);
 			}
@@ -228,6 +228,10 @@ class Chat
 	public function Out( $status = null, $is_modified = false )
 	:string
 	{
+		header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+		header('Pragma: no-cache'); // HTTP 1.0.
+		header('Expires: 0'); // Proxies.
+
 		$out= &$this->out;
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
 
@@ -429,11 +433,11 @@ class Chat
 			"<del>$2</del>",
 		], $t);
 
-		if($files= json_decode($files, 1)){
+		if($files= json_decode($files)){
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				// $f= self::getPathFromRoot($f);
-				$t.= "<img src='/assets/placeholder.svg' data-src='/$f' draggable='false' />";
+				$t.= "<img src='./assets/placeholder.svg' data-src='./$f' draggable='false' />";
 			}
 			$t.= '</div>';
 		}
@@ -459,8 +463,10 @@ class Chat
 	// *Обработка поста
 	static function cleanText( $str ) {
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
+		// $str = filter_var(trim( $str ), FILTER_SANITIZE_SPECIAL_CHARS);
+		// $str= htmlspecialchars(trim( $str ));
 		$str = preg_replace( ["~\r~u", "~([\s\n]){5,}~u", "~\n~u"], ["", "$1$1$1$1", "<br />"], $str );
-		return mb_substr( $str, 0, MAXUSERTEXTLEN );;
+		return mb_substr( $str, 0, MAXUSERTEXTLEN );
 	}
 
 

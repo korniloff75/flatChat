@@ -5,16 +5,20 @@ require_once 'define.php';
 if(
 	!empty($_POST)
 	&& !empty($pwd= filter_var($_POST['pwd'], FILTER_SANITIZE_STRING))
+	|| is_adm()
 ){
 	$base= new DbJSON(\DR.'/assets/adm.json');
 	if(!$base->count()){
 		$base->set(['pwd'=>hash('sha256',$pwd)]);
 	}
-	elseif(hash('sha256',$pwd) === $base->pwd){
+	elseif(
+		hash('sha256',$pwd) === $base->pwd
+		|| is_adm()
+	){
 		// session_start();
 		$_SESSION['adm']= true;
 		echo "<h2>You are admin!</h2>
-		<a href='/'><button class='button'>to chat</button></a><pre>";
+		<a href='./'><button class='button'>to chat</button></a><pre>";
 		// var_dump($_SERVER);
 
 		// header('Location: '.$_SERVER['HTTP_ORIGIN']);
@@ -41,7 +45,7 @@ if(
 	</style>
 </head>
 <body>
-	<form action="/bot.php" method="post">
+	<form action="./bot.php" method="post">
 		<input type="text" name="pwd">
 		<button>GO</button>
 	</form>

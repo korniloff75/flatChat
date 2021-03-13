@@ -23,8 +23,12 @@ define( "CHATTRIM", 50 * 1024 ); //Максимальная длина пере�
 define( "MAXUSERNAMELEN", 20 ); //Максимальная длина имени пользователя
 define( "MAXUSERTEXTLEN", 1024 ); //Максимальная длина сообщения пользователя
 
+// *Глобальный корень
+define( "GDR", $_SERVER['DOCUMENT_ROOT'] );
+// *Корень чата
 $_SERVER['DOCUMENT_ROOT']= __DIR__;
 define( "DR", $_SERVER['DOCUMENT_ROOT'] );
+
 
 function _autoloader($class)
 {

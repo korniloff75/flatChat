@@ -211,7 +211,7 @@ a:hover {
 #msgsContent {
 	width: 100%;
 	/* height: 30em; */
-	height: 85vh;
+	max-height: 85vh;
 	overflow-y: auto;
 }
 
@@ -742,14 +742,23 @@ span.name{
 	border-color: red;
 }
 
-.toForm {
+[class|=svg]{
 	width: 4em;
 	fill: #abc;
 	position: absolute;
-	right: 1em;
-	/* bottom: 0; */
 	z-index: 100;
+	cursor:pointer;
 }
+
+.svg-toRead {
+	left: 1em;
+}
+
+.svg-toForm {
+	right: 1em;
+}
+
+
 
 @media (max-width:500px){
 	.checkbox{
@@ -763,5 +772,9 @@ span.name{
 	.block2 {
 		border-width: 1px;
 		padding: .5em;
+	}
+
+	[class|=svg]{
+		width: 2.5em;
 	}
 }

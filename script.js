@@ -1,4 +1,6 @@
 'use strict';
+import {scrollIntoView, css, on, off} from './assets/helpers.js';
+export {scrollIntoView, css, on, off};
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -23,83 +25,6 @@ else {
 // var StateScript= import ('./assets/State.js');
 // var Imgscript= import ('./assets/Images.js');
 
-export function scrollIntoView(el,opts,e){
-	console.log(Element);
-	e && e.preventDefault();
-
-	opts= Object.assign({
-		behavior: 'smooth',
-		block: 'start',
-		inline: 'center'
-	}, (opts || {}));
-
-	try {
-		el.scrollIntoView(opts);
-	} catch (err) {
-		// location.replace(`#${el.id}`);
-	}
-	return false;
-}
-
-
-var smoothScrollTo = (function (_w) {
-	'use strict';
-
-	var timer, start, factor;
-
-	return function (targetY, duration, el) {
-		el= el || _w;
-		var offset = el.pageYOffset,
-				delta  = targetY - el.pageYOffset; // Y-offset difference
-		duration = duration || 1000;              // default 1 sec animation
-		start = Date.now();                       // get start time
-		factor = 0;
-
-		if( timer ) {
-			clearInterval(timer); // stop any running animations
-		}
-
-		function step() {
-			var y;
-			factor = (Date.now() - start) / duration; // get interpolation factor
-			if( factor >= 1 ) {
-				clearInterval(timer); // stop animation
-				factor = 1;           // clip to max 1.0
-			}
-			y = factor * delta + offset;
-			el.scrollBy(0, y - el.pageYOffset);
-		}
-
-		timer = setInterval(step, 50);
-		return timer;
-	};
-})(window);
-
-
-export function css (els, cssObj) {
-	if(!els.length) els=[els];
-
-	[].forEach.call(els, el => {
-		// console.log({el});
-		Object.keys(cssObj).forEach(st=>{
-			el.style[st]= cssObj[st];
-			// console.log(st,el.style[st]);
-		});
-	});
-}
-
-export function on(obj, event, handler) {
-	if(!obj){
-		return;
-	}
-	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
-}
-
-export function off(obj, event, handler) {
-	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
-}
 
 export var Ajax={
 	get: function(){
@@ -246,7 +171,8 @@ if (oAH.checked) ah(text, 500, true);
 
 var snd = null;
 try {
-	snd = new Audio("/assets/chat2.mp3");
+	snd = new Audio("./assets/chat2.mp3");
+	snd.volume= .5;
 }
 catch (e) {
 	snd = null;
@@ -517,7 +443,7 @@ function refreshAfter (handler, success, statusCode, response) {
 					snd.currentTime = 0;
 					snd.play()
 					.catch((err) => {
-						console.log(err);
+						console.log('Аудио не воспроизвелось: \n'+err);
 					});
 				}
 			}
@@ -634,10 +560,19 @@ function formSubmit (e) {
 			State.findMyPosts(msgs);
 		}
 	);
-
-
 	return false;
 };
+
+
+on(document.querySelector('.svg-toRead'), 'click', e=>{
+	e.stopPropagation();
+	scrollIntoView(msgs,{block:'start'}, e);
+});
+
+on(document.querySelector('.svg-toForm'), 'click', e=>{
+	e.stopPropagation();
+	scrollIntoView(sendDialog,{block:'end'}, e);
+});
 
 on(f,'submit', formSubmit);
 
@@ -729,9 +664,6 @@ name.onkeydown = text.onkeydown = function (e) {
 	if (e.keyCode === 13 && e.ctrlKey) formSubmit();
 };
 
-scrollBottom();
-
-text.focus();
 
 poll(true);
 
@@ -806,7 +738,8 @@ on(msgs, 'click', e=>{
 
 // *
 on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
-	smoothScrollTo(msgs.offsetTop, 500);
+	scrollIntoView(msgs, {block:'start'});
+
 	scrollBottom();
 	// var msgs= document.querySelectorAll('.msg');
 	// smoothScrollTo(msgs[msgs.length-1].offsetTop, 500, document.querySelector('#msgsContent'));
