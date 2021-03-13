@@ -42,8 +42,7 @@ export function findMyPosts (msgs) {
 export function hilightUsers (box, listNode){
 	if(!users) return;
 
-	var uInfo= box.querySelectorAll('.info'),
-		keysDB;
+	var uInfo= box.querySelectorAll('.info');
 
 	addToUsersList(listNode);
 
@@ -74,7 +73,7 @@ export function hilightUsers (box, listNode){
 }
 
 
-
+// *Текущие пользователи
 function addToUsersList (listNode) {
 		var dfr= document.createDocumentFragment(),
 			now= Date.now()/1000; //sec;

@@ -1,5 +1,6 @@
 // ?
-import {css,on} from '../script.js';
+import {css,on} from '../../script.js';
+import {addStyle} from '../helpers.js';
 export var inited;
 
 /**
@@ -11,14 +12,18 @@ export function init(box) {
 	let ims = box.querySelectorAll('img');
 
 	// if (inited || !ims.length) return;
-	if (!ims.length) return;
+	if (inited || !ims.length) return;
 
 	inited= 1;
 
+	const boxSelector= box.id? '#'+box.id: '.'+box.className.split(' ').join('.');
+
+	addStyle('./assets/Images/Images.css');
 	css(ims, { cursor: 'zoom-in' });
 
 	// *Подгрузка изображений во вьюпорте
 	showVisible(ims);
+
 	on(box,'scroll',e=>showVisible(box.querySelectorAll('img')));
 
 	let
@@ -81,19 +86,19 @@ export function init(box) {
 		// console.log(t, gcs, parseInt(gcs.width));
 		console.log(window.innerHeight / window.innerWidth, parseInt(gcs.height) / parseInt(gcs.width));
 
+		// *Определение пропорций изображения
 		if (
-			parseInt(gcs.width) > parseInt(gcs.height)
-			|| window.innerHeight / window.innerWidth >= parseInt(gcs.height) / parseInt(gcs.width)
+			window.innerHeight / window.innerWidth >= parseInt(gcs.height) / parseInt(gcs.width)
 		) {
 			css(img, {
 				width: '100%',
-				height: '',
+				height: 'auto',
 			})
 		}
 		else {
 			css(img, {
 				height: window.innerHeight + 'px',
-				width: '',
+				width: 'auto',
 			})
 		}
 	});
@@ -155,3 +160,6 @@ function showVisible(ims) {
 	}
 	// console.log(ims[0],ims);
 }
+
+/* addStyle('./Images.css');
+addStyle('./Images.css'); */

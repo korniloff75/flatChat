@@ -6,7 +6,7 @@ class State extends Chat
 		EXPIRES= 24*3600,
 		BASE_PATHNAME= \DR.'/state.json';
 
-	static $db;
+	public $db;
 
 	public function __construct(array $data)
 	{
@@ -15,16 +15,16 @@ class State extends Chat
 		$UID= $data['UID'];
 		unset($data['UID']);
 
-		self::$db= new DbJSON(self::BASE_PATHNAME);
+		$this->db= new DbJSON(self::BASE_PATHNAME);
 
-		self::$db->set(['users'=>[$UID=>$data]]);
+		$this->db->set(['users'=>[$UID=>$data]]);
 	}
 
 
 	function __destruct(){
 		$now= time();
 		$change=0;
-		foreach(($users= self::$db->get('users')) as $uid=>$user){
+		foreach(($users= $this->db->get('users')) as $uid=>$user){
 			if($now - $user['ts'] < self::EXPIRES && $user['name']) continue;
 
 			unset($users[$uid]);
@@ -32,7 +32,7 @@ class State extends Chat
 		}
 
 		if($change){
-			self::$db->set(['users'=>array_filter($users)]);
+			$this->db->set(['users'=>array_filter($users)]);
 		}
 	}
 }

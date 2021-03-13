@@ -1,8 +1,19 @@
 'use strict';
 
-let _w= window;
+const _w= window;
 
-export var Ajax={
+// *noConsole
+if(
+	/\.ru/i.test(location.host)
+	&& !location.search.includes('dev')
+){
+	_w.console= {
+		log: ()=>false,
+		info: ()=>false,
+	}
+}
+
+export const Ajax={
 	get: function(){
 		Ajax.method= 'get';
 		return Ajax.request.apply(null, arguments);
@@ -81,12 +92,11 @@ export var Ajax={
 
 /**
  * Прокрутка к элементу
- * @param {Node} el
- * @param {obj} opts
- * optional @param {Event} e
+ * @param {Node} targetEl - целевой элемент
+ * @param {obj} opts - параметры для scrollIntoView
+ * optional @param {Event} e - событие вызова
  */
-export function scrollIntoView(el,opts,e){
-	console.log(Element);
+export function scrollIntoView(targetEl,opts,e){
 	e && e.preventDefault();
 
 	opts= Object.assign({
@@ -96,23 +106,31 @@ export function scrollIntoView(el,opts,e){
 	}, (opts || {}));
 
 	try {
-		el.scrollIntoView(opts);
+		targetEl.scrollIntoView(opts);
 	} catch (err) {
 		// location.replace(`#${el.id}`);
-		smoothScrollTo(el.offsetTop, 500, el);
+		smoothScrollTo(targetEl, 500);
 	}
 	return false;
 }
 
-
-var smoothScrollTo = (function (_w) {
+/**
+ * polifill 4 scrollIntoView
+ * @param {node|int} targetY
+ * @param {int} duration
+ * optional @param {node} wrapper
+ */
+const smoothScrollTo = (function (_w) {
 
 	var timer, start, factor;
 
-	return function (targetY, duration, el) {
-		el= el || _w;
-		var offset = el.pageYOffset,
-				delta  = targetY - el.pageYOffset; // Y-offset difference
+	return function (targetY, duration, wrapper) {
+		if(targetY instanceof HTMLElement){
+			targetY= targetY.offsetTop;
+		}
+		wrapper= wrapper || _w;
+		var offset = wrapper.pageYOffset,
+				delta  = targetY - wrapper.pageYOffset; // Y-offset difference
 		duration = duration || 1000;              // default 1 sec animation
 		start = Date.now();                       // get start time
 		factor = 0;
@@ -129,7 +147,7 @@ var smoothScrollTo = (function (_w) {
 				factor = 1;           // clip to max 1.0
 			}
 			y = factor * delta + offset;
-			el.scrollBy(0, y - el.pageYOffset);
+			wrapper.scrollBy(0, y - wrapper.pageYOffset);
 		}
 
 		timer = setInterval(step, 50);
@@ -138,6 +156,10 @@ var smoothScrollTo = (function (_w) {
 })(window);
 
 
+/**
+ * @param {Node|NodeList} els
+ * @param {obj} cssObj - CSS rules
+ */
 export function css (els, cssObj) {
 	if(!els.length) els=[els];
 
@@ -150,14 +172,37 @@ export function css (els, cssObj) {
 	});
 }
 
+/**
+ *
+ * @param {Node|selector} n
+ * optional @param {Node} ctx - контекст поиска
+ * @returns {Node}
+ */
+function getNode(n, ctx){
+	ctx= ctx || document;
+	return (n instanceof String)? document.querySelector(n): n;
+}
+
+/**
+ * Навешиваем обработчик(и)
+ * @param {Node|selector} obj
+ * @param {Event.responseType} event
+ * @param {function} handler
+ */
 export function on(obj, event, handler) {
 	if(!obj){
 		return;
 	}
-	if (typeof (obj.addEventListener) != 'undefined') obj.addEventListener(event, handler, true);
-	else if (typeof (obj.attachEvent) != 'undefined') obj.attachEvent('on' + event, handler, true);
+	event= event.split(' ');
+	obj= getNode(obj);
+
+	event.forEach(e=>{
+		if (obj.addEventListener !== undefined) obj.addEventListener(e, handler, true);
+		else if (obj.attachEvent !== undefined) obj.attachEvent('on' + e, handler, true);
+	});
 }
 
+// *Удаляем обработчик
 export function off(obj, event, handler) {
 	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
 	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
@@ -179,4 +224,27 @@ export function speak(txt){
 	var t= new SpeechSynthesisUtterance(txt);
 	t.lang= 'ru';
 	synth.speak(t);
+}
+
+
+/**
+ * Асинхронная подгрузка стиля
+ * @param {url} href
+ */
+export function addStyle(href){
+	href= href.replace(/^\/|\.\//g,'');
+	if(href.indexOf('http') !== 0){
+		href= `${location.protocol}//${location.host}${location.pathname}${href}`;
+	}
+	if(document.querySelector(`link[href='${href}']`)){
+		return console.log(`Style already ${href} exist in `, document.styleSheets );
+	}
+	//
+
+	let style= document.createElement('link');
+
+	style.href= href;
+	style.rel= 'stylesheet';
+	document.head.appendChild(style);
+	console.log({style});
 }

@@ -662,10 +662,9 @@ text-align:left;margin-top:20px;
 
 
 /*  */
-#allEntries.test img{width:200px;}
+/* #allEntries.test img{width:200px;}
 
 #\$mw{
-/*   visibility: hidden; */
   width: 0;
   position:fixed;
   left:0; top:0;
@@ -684,7 +683,7 @@ text-align:left;margin-top:20px;
 }
 #\$mw.mod-show{
   width: 100%;
-}
+} */
 
 .right{
 	text-align: right;

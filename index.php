@@ -63,14 +63,14 @@ $Chat= new Chat;
 			</div>
 
 			<div class="item-block">
-				<p class="right">Вы можете ввести <strong id="maxLen"><?=\MAXUSERTEXTLEN?></strong> символов</p>
+				<p class="right">Вы можете ввести <strong id="maxLen"><?=Chat::MAXUSERTEXTLEN?></strong> символов</p>
 
 				<form action="/bot.php" method="post" id="sendForm">
 					<div id="sendDialog" class="block2">
-						<input type="text" name="name" value="<?=$Chat->name?>" maxLength="<?=\MAXUSERNAMELEN?>" placeholder="Имя" required />
-						<textarea name="text" placeholder="Текст" maxLength="<?=\MAXUSERTEXTLEN?>" required autofocus></textarea>
+						<input type="text" name="name" value="<?=$Chat->name?>" maxLength="<?=Chat::MAXUSERNAMELEN?>" placeholder="Имя" required />
+						<textarea name="text" placeholder="Текст" maxLength="<?=Chat::MAXUSERTEXTLEN?>" required autofocus></textarea>
 						<div class="submit">
-							<label class="input__file button" for="attach">Добавить файл
+							<label class="input__file button" for="attach" title="jpg,png,gif">Добавить изображение
 								<input type="file" name="attach[]" id="attach" multiple hidden>
 							</label>
 							<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
@@ -87,7 +87,6 @@ $Chat= new Chat;
 
 			<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
 			<div class="users box">
-
 			</div>
 
 			<h3>Архивные посты</h3>
@@ -133,8 +132,8 @@ $Chat= new Chat;
 		<script type="text/javascript">
 			const REFRESHTIME= <?=\REFRESHTIME?>;
 			let Chat= <?=$Chat->getJsonData()?>,
-				lastMod= <?=$Chat->lastMod?>,
-				State= <?=$Chat->Out()['state'] ?? '[]'?>;
+				LastMod= <?=$Chat->lastMod?>,
+				Out= <?=$Chat->Out()?>;
 		</script>
 
 		<script src="./script.js" type="module"></script>
@@ -142,7 +141,7 @@ $Chat= new Chat;
 		<script src="./assets/helpers.js" type="module"></script>
 		<script src="./assets/BB.js" type="module"></script>
 		<script src="./assets/State.js" type="module"></script>
-		<script src="./assets/Images.js" type="module"></script>
+		<script src="./assets/Images/Images.js" type="module"></script>
 		<?php //todo ?>
 		<script src="./assets/modal/modal.js" type="module"></script>
 		<?php if(is_adm()): ?>

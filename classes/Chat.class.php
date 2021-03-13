@@ -6,15 +6,20 @@ class Chat
 	use Helpers;
 
 	const
-		DBPATHNAME= \DBFILE,
+		DBPATHNAME= \DR."/chat.db",
 		ARH_PATHNAME= \DR.'/db',
 		FILES_DIR= '/files_B',
 		DELIM= "<~>",
 		MAX_LINES= 200,
-		DELTA_LINES= 100;
+		DELTA_LINES= 100,
+		MAXUSERTEXTLEN= 1024,
+		MAXUSERNAMELEN= 20;
 
 	static
+		// *Отладка
+		$dev= true,
 		$log,
+		// *Порядок данных
 		$indexes= ['IP','ts','name','text','files'];
 
 	public
@@ -28,18 +33,20 @@ class Chat
 		$exit= false;
 
 	protected
-		$data=[];
+		$data=[],
+		$State;
 
 	public function __construct($dbPathname=null)
 	{
 		$this->dbPathname= $dbPathname ?? self::DBPATHNAME;
 
-		$this->_controller();
+		$this->_setData()
+			->_controller();
 
 		tolog(__METHOD__,null,['data'=>$this->data]);
 
 		// if(!$this->mode || $this->name){
-			new State($this->data);
+
 		// }
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
@@ -50,7 +57,6 @@ class Chat
 		if ( $this->mode == "list" ) {
 			$this->exit = true;
 
-			// $rlm = preg_match( "~^\\d+$~u", @$_POST["lastMod"] ) ? (int)$_POST["lastMod"] : 0;
 			$rlm = (int)filter_var($_REQUEST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
 
 			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
@@ -83,19 +89,8 @@ class Chat
 	}
 
 
-	protected function _controller()
+	private function _setData()
 	{
-		// if($cookieName = (@$_COOKIE["userName"] ?? null))
-		// 	$cookieName = self::cleanName( $cookieName );
-		foreach($_REQUEST as $cmd=>&$val){
-
-			if(method_exists(__CLASS__, "c_$cmd")){
-				$val= filter_var($val, FILTER_SANITIZE_STRING);
-				tolog(__METHOD__,null,['$cmd'=>$cmd, '$val'=>$val]);
-				$this->{"c_$cmd"}($val);
-			}
-		}
-
 		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
 			$this->data= array_merge($this->data, $chatUser);
 		}
@@ -111,6 +106,25 @@ class Chat
 		$this->data['ts'] = filter_var(@$_REQUEST["ts"]);
 		// if(!$this->name) $this->data['name']= $cookieName;
 		$this->data['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
+
+		$this->State= new State($this->data);
+
+		return $this;
+	}
+
+
+	protected function _controller()
+	{
+		// if($cookieName = (@$_COOKIE["userName"] ?? null))
+		// 	$cookieName = self::cleanName( $cookieName );
+		foreach($_REQUEST as $cmd=>&$val){
+
+			if(method_exists(__CLASS__, "c_$cmd")){
+				$val= filter_var($val, FILTER_SANITIZE_STRING);
+				tolog(__METHOD__,null,['$cmd'=>$cmd, '$val'=>$val]);
+				$this->{"c_$cmd"}($val);
+			}
+		}
 
 		$mode= &$this->data['mode'];
 
@@ -216,7 +230,7 @@ class Chat
 				// *Добавляем в архив
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
-				State::$db->set(['startIndex'=>State::$db->get('startIndex') + ($count - self::MAX_LINES)]);
+				$this->State->db->set(['startIndex'=>$this->State->db->get('startIndex') + ($count - self::MAX_LINES)]);
 			}
 
 		}
@@ -228,9 +242,11 @@ class Chat
 	public function Out( $status = null, $is_modified = false )
 	:string
 	{
-		header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
-		header('Pragma: no-cache'); // HTTP 1.0.
-		header('Expires: 0'); // Proxies.
+		if(self::$dev){
+			header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+			header('Pragma: no-cache'); // HTTP 1.0.
+			header('Expires: 0'); // Proxies.
+		}
 
 		$out= &$this->out;
 		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
@@ -244,8 +260,7 @@ class Chat
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
-		$out['state']= State::$db->get();
-		// $out['Chat']= $this->getData();
+		$out['state']= $this->State->db->get();
 		$out['Chat']= $this->data;
 
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
@@ -284,8 +299,7 @@ class Chat
 	 */
 	public function c_getPost($num)
 	{
-		$state= new DbJSON(State::BASE_PATHNAME);
-		$num-= $state->startIndex + 1;
+		$num-= $this->State->db->startIndex + 1;
 
 		$post= array_combine(self::$indexes, explode(self::DELIM, $this->_checkDB()->file[$num]));
 		echo json_encode($post, JSON_UNESCAPED_UNICODE);
@@ -299,10 +313,9 @@ class Chat
 	protected function c_saveEdits($text)
 	{
 		if(!is_adm()) return;
-		$state= new DbJSON(State::BASE_PATHNAME);
 		$file= &$this->_checkDB()->file;
 		$num= filter_var($_REQUEST['num'], FILTER_SANITIZE_NUMBER_INT);
-		$num-= $state->startIndex + 1;
+		$num-= $this->State->db->startIndex + 1;
 
 		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
 
@@ -323,9 +336,9 @@ class Chat
 	protected function c_removePost($num)
 	{
 		if(!is_adm()) return;
-		$state= new DbJSON(State::BASE_PATHNAME);
+
 		$file= &$this->_checkDB()->file;
-		$num-= $state->startIndex + 1;
+		$num-= $this->State->db->startIndex + 1;
 
 		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
 
@@ -377,6 +390,8 @@ class Chat
 	{
 		$t= $this->_renderPost($n,$i);
 
+		if(!is_adm()) return $t;
+
 		$doc = new DOMDocument("1.0","UTF-8");
 		$doc->loadHTML("\xEF\xBB\xBF" . $t);
 
@@ -407,7 +422,7 @@ class Chat
 		list($IP,$ts,$name,$text,$files)= $i;
 		$UID= self::defineUID($name, $IP);
 		if($this->useStartIndex){
-			$n+= State::$db->get('startIndex');
+			$n+= $this->State->db->startIndex;
 		}
 
 		// *Ссылки
@@ -456,7 +471,7 @@ class Chat
 	static function cleanName( $str ) {
 		$str = filter_var(trim( $str ), FILTER_SANITIZE_STRING);
 		$str = preg_replace( "~[^_0-9a-zа-яё\-\$]~iu", "", $str );
-		return mb_substr( $str, 0, MAXUSERNAMELEN );
+		return mb_substr( $str, 0, self::MAXUSERNAMELEN );
 	}
 
 
@@ -466,7 +481,7 @@ class Chat
 		// $str = filter_var(trim( $str ), FILTER_SANITIZE_SPECIAL_CHARS);
 		// $str= htmlspecialchars(trim( $str ));
 		$str = preg_replace( ["~\r~u", "~([\s\n]){5,}~u", "~\n~u"], ["", "$1$1$1$1", "<br />"], $str );
-		return mb_substr( $str, 0, MAXUSERTEXTLEN );
+		return mb_substr( $str, 0, self::MAXUSERTEXTLEN );
 	}
 
 

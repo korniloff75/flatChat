@@ -3,33 +3,19 @@ import {Ajax, scrollIntoView, css, on, off, speak} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
-import * as Img from './assets/Images.js';
+import * as Img from './assets/Images/Images.js';
 export {Ajax, scrollIntoView, css, on, off, speak};
 
-// console.log({Adm});
+// *Glob server vars
+console.log({Chat, LastMod, Out});
 
-let _w= window;
+const _w= window;
 
-// *noConsole
-if(/\.ru/i.test(location.host)){
-	var console= {
-		log: ()=>false,
-		info: ()=>false,
-	}
-}
-else {
-	var console= _w.console;
-}
+const msgsDialog = document.getElementById("msgsDialog");
+const sendDialog = document.getElementById("sendDialog");
 
-
-// ?
-// var post= Ajax.post;
-
-var msgsDialog = document.getElementById("msgsDialog");
-var sendDialog = document.getElementById("sendDialog");
-
-var msgs = document.getElementById("msgsContent");
-var f = document.getElementById("sendForm");
+const msgs = document.getElementById("msgsContent");
+const f = document.getElementById("sendForm");
 
 if(f){
 	var name = f.elements.name,
@@ -301,7 +287,7 @@ export function refresh(params, handler) {
 		Object.assign(params, {responseType:'json'});
 	// }
 
-	params.lastMod = params.lastMod == 0? 0 : lastMod;
+	params.lastMod = params.lastMod == 0? 0 : LastMod;
 
 	Ajax.post(
 		_w.location.toString(),
@@ -350,7 +336,7 @@ function refreshAfter (handler, success, statusCode, response) {
 				html = html.substring(p + 1);
 
 				if (s === "NONMODIFIED") html = undefined;
-				if (s === "OK") lastMod = lm;
+				if (s === "OK") LastMod = lm;
 			}
 		}
 
@@ -578,9 +564,6 @@ name.onkeydown = text.onkeydown = function (e) {
 };
 
 
-poll(true);
-
-
 // *Считаем символы
 function countChars(e) {
 	var
@@ -652,6 +635,7 @@ on(msgs, 'click', e=>{
 
 // *ready
 on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
+	poll(true);
 	scrollIntoView(msgs, {block:'start'});
 
 	scrollBottom();
@@ -669,12 +653,11 @@ on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
 
 	State.findMyPosts(msgs);
 
+	// todo
+	State.setDB(Out.state)
+	.hilightUsers(msgs, usersList);
+
 	showAttaches();
 
 	console.log({Adm});
-
-	/* Admin.then(Adm=>{
-		console.log(Adm.PanelHandles);
-		Adm.PanelHandles();
-	}) */
 });
