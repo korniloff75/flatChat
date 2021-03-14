@@ -45,7 +45,7 @@ if(
 	</style>
 </head>
 <body>
-	<form action="./bot.php" method="post">
+	<form action="./core/bot.php" method="post">
 		<input type="text" name="pwd">
 		<button>GO</button>
 	</form>

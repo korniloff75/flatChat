@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . "/../Helpers.trait.php";
+require_once \DR . "/core/Helpers.trait.php";
 
 class Chat
 {
@@ -432,7 +432,7 @@ class Chat
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
 		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b class='num'>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
-		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice btn' title='Озвучить текст'>📢🎧</div></div>"
+		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 
 		// *BB-codes
@@ -459,6 +459,14 @@ class Chat
 
 		$t.= "</div>\n\n";
 		return $t;
+	}
+
+	static function footerHTML()
+	{
+		// die('!!!');
+		ob_start();
+		require_once \DR.'/core/footer.php';
+		return ob_get_clean();
 	}
 
 
@@ -489,7 +497,7 @@ class Chat
 	function getArhive()
 	{
 		foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
-			echo "<a href='/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
+			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
 		}
 	}
 } // Chat

@@ -648,42 +648,7 @@ text-align:left;margin-top:20px;
 	zoom: 1;
 }
 
-/* #sendDialog{
-	width: 100%;
-	height: 50px;
-	position: fixed;
-	bottom: 0;
-	z-index: 1000;
-}
 
-#sendDialog:hover, #sendDialog:focus{
-	height: unset;
-} */
-
-
-/*  */
-/* #allEntries.test img{width:200px;}
-
-#\$mw{
-  width: 0;
-  position:fixed;
-  left:0; top:0;
-  display:flex;
-  transition: width .5s ease-in;
-  text-align:center;
-  z-index:1000;
-  background:#f0f5f9;
-}
-
-#\$mw img{
-  max-width: 100%;
-}
-#\$mw.mod-show img{
-  visibility: visible;
-}
-#\$mw.mod-show{
-  width: 100%;
-} */
 
 .right{
 	text-align: right;
@@ -725,22 +690,26 @@ span.name{
 
 .edit, .saveEdits {
 	color: blue;
-	border-color: #def;
-	background: #def;
+	/* border-color: #def;
+	background: #def; */
 }
-.edit:hover, .saveEdits:hover {
-	box-shadow: 0 0 2px rgba(0,0,0,.3);
-	border-color: #67A1D7;
+
+.edit:hover, .saveEdits:hover{
+	box-shadow: 0 0 2px #0000004d;
+	/* border-color: #67A1D7;
 	color: #fff;
-	background: #67A1D7;
+	background: #67A1D7; */
 }
 
 .del{
-	color: #fff;
-	background: red;
-	border-color: red;
+	color: red;
 }
 
+.del:hover {
+	box-shadow: 0 0 2px 0px #c22;
+}
+
+/* SVG buttons */
 [class|=svg]{
 	width: 4em;
 	fill: #abc;
@@ -759,6 +728,8 @@ span.name{
 
 
 
+/* ***** */
+/* media */
 @media (max-width:500px){
 	.checkbox{
 		display: none;

@@ -24,13 +24,13 @@ define( "CHATTRIM", 50 * 1024 ); //Максимальная длина пере�
 // *Глобальный корень
 define( "GDR", $_SERVER['DOCUMENT_ROOT'] );
 // *Корень чата
-$_SERVER['DOCUMENT_ROOT']= __DIR__;
+$_SERVER['DOCUMENT_ROOT']= dirname(__DIR__);
 define( "DR", $_SERVER['DOCUMENT_ROOT'] );
 
 
 function _autoloader($class)
 {
-	include_once __DIR__."/classes/$class.class.php";
+	include_once \DR."/classes/$class.class.php";
 }
 
 spl_autoload_register('_autoloader');
