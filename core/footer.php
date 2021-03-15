@@ -1,6 +1,11 @@
 <?php
-global $Chat;
+// global $Chat;
 ?>
+
+<h3>Архивные посты</h3>
+<div class="arhive box">
+	<?=$Chat->getArhive()?>
+</div>
 
 <footer class="right" style="font-size:.7em;background: #000; padding-top:1em;">
 			<a href="//github.com/korniloff75/flatChat" target="_blank" title="Репозиторий">
@@ -11,7 +16,7 @@ global $Chat;
 
 <script type="text/javascript">
 	const REFRESHTIME= <?=\REFRESHTIME?>;
-	let Chat= <?=$Chat->getJsonData()?>,
+	let Chat= <?=$Chat->getJsonUState()?>,
 		LastMod= <?=$Chat->lastMod?>,
 		Out= <?=$Chat->Out()?>;
 </script>
@@ -22,6 +27,7 @@ global $Chat;
 <script src="./assets/BB.js" type="module"></script>
 <script src="./assets/State.js" type="module"></script>
 <script src="./assets/Images/Images.js" type="module"></script>
+<script src="./assets/Template/tpl.mod.js" type="module"></script>
 <?php //todo ?>
 <script src="./assets/modal/modal.js" type="module"></script>
 <?php if(is_adm()): ?>

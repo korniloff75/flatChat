@@ -41,9 +41,10 @@ trait Helpers
 
 
 	// *Переводим все слеши в Unix
-	public static function fixSlashes(string $path)
-	:string
+	public static function fixSlashes(?string $path)
+	:?string
 	{
+		if(!$path) return null;
 		$path = str_replace("\\", '/', $path);
 		return preg_replace("#(?!https?|^)//+#", '/', $path);
 	}

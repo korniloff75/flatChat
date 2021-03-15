@@ -1,6 +1,6 @@
 <?php
 
-class State extends Chat
+class State /* extends Chat */
 {
 	const
 		EXPIRES= 24*3600,

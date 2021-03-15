@@ -3,8 +3,8 @@ require_once 'define.php';
 
 // *try log in
 if(
-	!empty($_POST)
-	&& !empty($pwd= filter_var($_POST['pwd'], FILTER_SANITIZE_STRING))
+	!empty($pwd= filter_var(@$_POST['pwd'], FILTER_SANITIZE_STRING))
+	&& !empty($_POST)
 	|| is_adm()
 ){
 	$base= new DbJSON(\DR.'/assets/adm.json');
@@ -18,7 +18,7 @@ if(
 		// session_start();
 		$_SESSION['adm']= true;
 		echo "<h2>You are admin!</h2>
-		<a href='./'><button class='button'>to chat</button></a><pre>";
+		<a href='../'><button class='button'>to chat</button></a><pre>";
 		// var_dump($_SERVER);
 
 		// header('Location: '.$_SERVER['HTTP_ORIGIN']);
@@ -45,8 +45,8 @@ if(
 	</style>
 </head>
 <body>
-	<form action="./core/bot.php" method="post">
-		<input type="text" name="pwd">
+	<form action="./bot.php" method="post">
+		<input type="text" name="pwd" autofocus>
 		<button>GO</button>
 	</form>
 
@@ -57,81 +57,21 @@ if(
 			e.preventDefault();
 			var fd= new FormData(f);
 
-			post('', fd, render);
+			fetch('', {method:'post', body:fd}).then(r=>{
+				console.log(r,r.text);
+				if (r.ok) {
+					return r.text();
+				} else {
+					alert("Ошибка HTTP: " + response.status);
+				}
+			}).then(render)
+			.catch(function(err) {
+				console.log({err});
+			});
 		}
 
-		function post(url, reqParams, callback) {
-			var XMLo,
-				_w= window,
-				response;
-
-			if (_w.XMLHttpRequest) {
-				try { XMLo = new XMLHttpRequest(); }
-				catch (e) { XMLo = null; }
-			} else if (_w.ActiveXObject) {
-				try { XMLo = new ActiveXObject("Msxml2.XMLHTTP"); }
-				catch (e) {
-					try { XMLo = new ActiveXObject("Microsoft.XMLHTTP"); }
-					catch (e) { XMLo = null; }
-				}
-			}
-
-			if (XMLo == null) return null;
-
-			XMLo.open("POST", url, true);
-
-			if(reqParams instanceof FormData){
-				// XMLo.setRequestHeader("Content-Type", "multipart/form-data");
-				// *Не меняем
-			}
-			else{
-				XMLo.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
-				if (reqParams) {
-					var prm = "";
-					for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
-					reqParams = prm;
-				}
-				else {
-					reqParams = " ";
-				}
-			}
-
-			XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-			XMLo.setRequestHeader("Accept", "*/*");
-
-			XMLo.onreadystatechange = function () {
-				if (XMLo.readyState !== 4) return;
-
-				// if (XMLo.status == 200 || XMLo.status == 0) {
-				if (XMLo.status === 200) {
-					// console.log({XMLo});
-
-					try {
-						response= JSON.parse(XMLo.responseText)
-					} catch (err) {
-						response= XMLo.responseText
-					}
-
-					// console.log({response});
-					callback&&callback(true, XMLo.status, response, (XMLo.responseXML ? XMLo.responseXML.documentElement : null));
-				}
-				else if(XMLo.status !== 0){
-					callback&&callback(false, XMLo.status, response);
-				}
-
-				XMLo = null;
-			};
-
-			XMLo.send(reqParams);
-
-			return (XMLo !== null);
-		}
-
-		function render (success,status,response) {
-			if(success){
-				document.body.innerHTML= response;
-			}
+		function render (txt) {
+			document.body.innerHTML= txt;
 		}
 
 	</script>

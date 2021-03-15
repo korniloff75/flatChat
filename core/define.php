@@ -30,7 +30,7 @@ define( "DR", $_SERVER['DOCUMENT_ROOT'] );
 
 function _autoloader($class)
 {
-	include_once \DR."/classes/$class.class.php";
+	include_once \DR."/core/classes/$class.class.php";
 }
 
 spl_autoload_register('_autoloader');
@@ -40,8 +40,9 @@ function tolog()
 {
 	global $log;
 
-	if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] === 'post'){
-		$log = $log ?? new Logger('my.log', __DIR__);
+	// *Отсекаем поллинги
+	if(@$_REQUEST["mode"] !== 'list'){
+		$log = $log ?? new Logger('my.log', \DR);
 		call_user_func_array([$log,'add'], func_get_args());
 	}
 }

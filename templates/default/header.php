@@ -1,5 +1,6 @@
 <?php
 // global $Chat;
+// var_dump($Chat);
 ?>
 <header class="box">
 	<h1><?= HEADER ?></h1>
@@ -23,4 +24,23 @@
 	}
 	?>
 	</h3>
+
+	<style>
+		#settings {
+			clear:both;
+		}
+	</style>
+
+	<div id="settings">
+		<strong>Шаблон</strong> -
+		<select class="templates">
+			<?php
+			// tolog('$Chat->templatePath= ' . $Chat->templatePath, null, [$Chat]);
+
+			foreach(new FilesystemIterator (dirname($Chat->templatePath)) as $tfi){
+				echo "<option value={$tfi->getPathname()}>{$tfi->getFilename()}</option>";
+			}
+			?>
+		</select>
+	</div>
 </header>

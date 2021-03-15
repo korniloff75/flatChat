@@ -71,8 +71,10 @@ on(msgs,'click',e=>{
 	if((btn= t.closest('.saveEdits'))){
 		var area= msg.querySelector('.editarea');
 		return refresh({
+			responseType:'json',
 			num: num,
 			saveEdits: area.value,
+			mode: 'set',
 		});
 	}
 
@@ -83,6 +85,7 @@ on(msgs,'click',e=>{
 	return modal("Удалить пост "+num+"?")
 		.then(ok=>{
 			refresh({
+				responseType:'json',
 				removePost: num,
 			})
 		}, err=>{

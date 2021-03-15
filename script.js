@@ -283,9 +283,9 @@ _w.scrollBottom= function scrollBottom() {
  * @param {function} handler
  */
 export function refresh(params, handler) {
-	// if(!(params instanceof FormData)){
-		Object.assign(params, {responseType:'json'});
-	// }
+	/* if(!(params instanceof FormData)){
+		params= Object.assign({responseType:'json'}, params );
+	} */
 
 	params.lastMod = params.lastMod == 0? 0 : LastMod;
 
@@ -313,13 +313,13 @@ function refreshAfter (handler, success, statusCode, response) {
 	}
 
 	if (response !== undefined) {
-		var html= (response instanceof String)
-			? response
-			: response.html;
+		var html= (response instanceof Object)
+			? response.html
+			: response;
 
 		Object.assign(Chat, response.Chat);
 
-		// console.log({Chat});
+		// console.log({response}, (response instanceof String));
 
 		hideName();
 
@@ -377,7 +377,7 @@ function refreshAfter (handler, success, statusCode, response) {
 export var poll = (function () {
 	var t,
 		inProgress = false,
-		data= { mode: "list" };
+		data= { mode: "list", responseType:'json' };
 
 	var rq = function () {
 		console.log({Chat});
@@ -455,6 +455,7 @@ function formSubmit (e) {
 	fd.append('lastMod',0);
 	fd.append('ts', parseInt(Date.now()/1000));
 	fd.responseType= 'json';
+	// fd.responseType= 'text/html';
 
 	refresh(
 		fd,

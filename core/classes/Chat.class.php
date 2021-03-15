@@ -26,8 +26,8 @@ class Chat
 	public
 		$dbPathname,
 		$file,
-		$lastMod,
-		$useStartIndex= true,
+		$lastMod, //*Последнее изменение $file
+		$useStartIndex= true, // *Увеличивать номер поста
 		$templatePath,
 		$templateDir,
 		$out=[];
@@ -36,29 +36,29 @@ class Chat
 		$exit= false;
 
 	protected
-		$data=[],
-		$State,
-		$renderMods=[];
+		$uState=[], // *Данные пользователя
+		$State, // *Общие данные
+		$renderMods=[]; //*Элементы шаблона
+
 
 	public function __construct($dbPathname=null)
 	{
 		$this->dbPathname= $dbPathname ?? self::DBPATHNAME;
 
-		$this->_setData()
+		$this->_setUState()
 			->_controller();
 
-		tolog(__METHOD__,null,['data'=>$this->data]);
-
-		// if(!$this->mode || $this->name){
-
-		// }
+		tolog(__METHOD__,null,['uState'=>$this->uState]);
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'post')
 			$this->_newPost();
+		if ( $this->mode === "set" ) {
+			$this->exit = true;
+		}
 		// *Update list
-		if ( $this->mode == "list" ) {
+		if ( $this->mode === "list" ) {
 			$this->exit = true;
 
 			$rlm = (int)filter_var($_REQUEST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
@@ -67,6 +67,8 @@ class Chat
 			else echo $this->Out( "OK", true );
 		}
 
+		tolog(__METHOD__,null,['$this->mode'=>$this->mode]);
+
 		if ( $this->exit ) exit( 0 );
 
 	}//__construct
@@ -74,13 +76,13 @@ class Chat
 
 	function __get($n)
 	{
-		return $this->$n ?? $this->data[$n];
+		return $this->$n ?? $this->uState[$n];
 	}
 
-	public function getJsonData()
+	public function getJsonUState()
 	:string
 	{
-		return json_encode($this->data,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+		return json_encode($this->uState,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -90,25 +92,25 @@ class Chat
 	}
 
 
-	private function _setData()
+	private function _setUState()
 	{
 		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
-			$this->data= array_merge($this->data, $chatUser);
+			$this->uState= array_merge($this->uState, $chatUser);
 		}
 		else{
-			$this->data['IP']= self::realIP();
+			$this->uState['IP']= self::realIP();
 		}
 
-		$this->data['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
-		$this->data['UID']= self::defineUID($this->name, $this->IP);
+		$this->uState['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
+		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
 		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
 
-		$this->data['ts'] = filter_var(@$_REQUEST["ts"]);
-		// if(!$this->name) $this->data['name']= $cookieName;
-		$this->data['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
+		$this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
+		// if(!$this->name) $this->uState['name']= $cookieName;
+		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
-		$this->State= new State($this->data);
+		$this->State= new State($this->uState);
 
 		return $this;
 	}
@@ -116,9 +118,13 @@ class Chat
 
 	protected function _controller()
 	{
-		// if($cookieName = (@$_COOKIE["userName"] ?? null))
-		// 	$cookieName = self::cleanName( $cookieName );
-		foreach($_REQUEST as $cmd=>&$val){
+		// *Получаем данные из fetch
+		$inp_data= json_decode(
+			file_get_contents('php://input'),1
+		) ?? [];
+		tolog(__METHOD__,null,['$inp_data'=>$inp_data, file_get_contents('php://input')]);
+
+		foreach($_REQUEST= array_merge($_REQUEST, $inp_data) as $cmd=>&$val){
 
 			if(method_exists(__CLASS__, "c_$cmd")){
 				$val= filter_var($val, FILTER_SANITIZE_STRING);
@@ -127,7 +133,7 @@ class Chat
 			}
 		}
 
-		$mode= &$this->data['mode'];
+		$mode= &$this->uState['mode'];
 
 		$cook= json_encode([
 			'name'=> $this->name,
@@ -135,17 +141,9 @@ class Chat
 			'UID'=> $this->UID,
 		], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-		switch( @$_REQUEST["mode"] ) {
-			case "post":
-				$mode = "post";
-			break;
+		$mode = @$_REQUEST["mode"];
 
-			case "list":
-				$mode = "list";
-			break;
-		}
-
-		// $this->data['mode'] = $mode ?? null;
+		// $this->uState['mode'] = $mode ?? null;
 
 		if ( $cook !== @$_COOKIE["chatUser"] ) setcookie( "chatUser", $cook, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH, '', false, true );
 	}
@@ -158,7 +156,7 @@ class Chat
 			exit( 0 );
 		}
 
-		$this->data['myUID']= self::defineUID($this->name, $this->IP);
+		$this->uState['myUID']= self::defineUID($this->name, $this->IP);
 
 		$this->exit = true;
 
@@ -170,7 +168,6 @@ class Chat
 		tolog('Uploads',null,['$upload'=>$upload]);
 
 		// *Write
-		// file_put_contents( $this->dbPathname, $this->Template(), LOCK_EX|FILE_APPEND );
 		$this->_save($upload->loaded);
 
 		$this->mode = "list";
@@ -195,7 +192,7 @@ class Chat
 	/**
 	 * static output content
 	 */
-	public function getHTML()
+	public function getContent()
 	:string
 	{
 		$this->Out(null, true);
@@ -254,7 +251,7 @@ class Chat
 		}
 
 		$out= &$this->out;
-		$out['html']= ( $status !== null ) ? "{$status}:{$this->lastMod}\n": '';
+		$out['html']= !is_null($status)? "{$status}:{$this->lastMod}\n": '';
 
 		if ( $is_modified ) {
 			$out['html'].= $this->_parse();
@@ -266,7 +263,7 @@ class Chat
 		// var_dump($out);
 
 		$out['state']= $this->State->db->get();
-		$out['Chat']= $this->data;
+		$out['Chat']= $this->uState;
 
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
@@ -301,6 +298,7 @@ class Chat
 	/**
 	 * Отдаём пост по $num
 	 * @param {} num - Номер поста из клиента
+	 * todo при сохранении сжираются переводы строк.
 	 */
 	public function c_getPost($num)
 	{
@@ -332,7 +330,7 @@ class Chat
 
 		file_put_contents( $this->dbPathname, $file, LOCK_EX );
 
-		$this->data['mode']= 'list';
+		$this->mode = "list";
 	}
 
 	/**
@@ -354,13 +352,13 @@ class Chat
 		}
 
 		unset($file[$num]);
-		$file= array_filter($file);
+		$file= array_values(array_filter($file));
 
 		tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
 
 		file_put_contents( $this->dbPathname, $file, LOCK_EX );
 
-		$this->data['mode']= 'list';
+		$this->mode= 'list';
 	}
 
 
@@ -382,8 +380,6 @@ class Chat
 		// header('Location: /');
 		die;
 
-
-		// $this->data['mode']= 'list';
 	}
 
 
@@ -499,6 +495,7 @@ class Chat
 	}
 
 
+	// *Собираем шаблон
 	private function _scanModsContent()
 	{
 		$def_dir= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
@@ -507,7 +504,7 @@ class Chat
 
 		foreach(['head','header','footer'] as $mod){
 			$modPathname= "{$this->templatePath}/$mod.php";
-			if(!file_exists($mod) && $this->templatePath !== $def_dir) $modPathname= "$def_dir/$mod.php";
+			if(!file_exists($modPathname) && $this->templatePath !== $def_dir) $modPathname= "$def_dir/$mod.php";
 
 			ob_start();
 			include_once $modPathname;
@@ -521,14 +518,26 @@ class Chat
 	/**
 	 * optional @param {string} template - Название шаблона
 	 */
-	function RenderStaticContent($template=null)
+	public function setTemplate($template=null)
 	{
-		$this->templatePath= \DR.'/templates/' . ($template ?? self::TEMPLATE_DEFAULT);
+		$template= &$this->State->db->users[$this->UID]['template'];
+
+		tolog(__METHOD__,null,['$template'=>$template]);
+
+		$this->templatePath= $template ?? \DR.'/templates/' . self::TEMPLATE_DEFAULT;
 		$this->templateDir= '/'. self::getPathFromRoot($this->templatePath);
 
 		// tolog(__METHOD__,null,['$this->templatePath'=>$this->templatePath]);
 		// trigger_error($this->templatePath);
 
 		return $this->_scanModsContent();
+	}
+
+	protected function c_changeTemplate($template)
+	{
+		if($template= self::fixSlashes($template)){
+			// $this->State->db->set(['template'=>$template
+			$this->State->db->set(['users'=>[$this->UID=>['template'=>$template]]]);
+		}
 	}
 } // Chat

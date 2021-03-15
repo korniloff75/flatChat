@@ -12,8 +12,10 @@ tolog(__LINE__,null,['$_REQUEST'=>$_REQUEST, '$_REQUEST["mode"]'=>@$_REQUEST["mo
 
 $Chat= new Chat;
 
-// *Выводим в шаблон default
-$template= $Chat->RenderStaticContent('default');
+// tolog('$Chat',null,[$Chat]);
+
+// *Выводим в шаблон
+$template= $Chat->setTemplate();
 
 // var_dump($template);
 
@@ -37,7 +39,7 @@ $template= $Chat->RenderStaticContent('default');
 
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
-					<?=$Chat->getHTML()?>
+					<?=$Chat->getContent()?>
 					<?#die?>
 				</div>
 
@@ -75,11 +77,6 @@ $template= $Chat->RenderStaticContent('default');
 
 			<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
 			<div class="users box">
-			</div>
-
-			<h3>Архивные посты</h3>
-			<div class="arhive box">
-				<?=$Chat->getArhive()?>
 			</div>
 
 		</main><!-- #wrapper -->

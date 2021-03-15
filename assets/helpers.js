@@ -40,7 +40,7 @@ export const Ajax={
 			}
 		}
 
-		if (XMLo == null) return null;
+		if (XMLo === null) return null;
 
 		XMLo.open(Ajax.method, url, true);
 
@@ -78,6 +78,9 @@ export const Ajax={
 
 				callback&&callback(true, XMLo.status, resp);
 				return Promise.resolve(XMLo);
+			}
+			else{
+				return Promise.reject(XMLo);
 			}
 
 			XMLo = null;
@@ -180,12 +183,12 @@ export function css (els, cssObj) {
  */
 function getNode(n, ctx){
 	ctx= ctx || document;
-	return (n instanceof String)? document.querySelector(n): n;
+	return (n instanceof Object)? n: ctx.querySelector(n);
 }
 
 /**
  * Навешиваем обработчик(и)
- * @param {Node|selector} obj
+ * @param {Node|string} obj - Node | selector
  * @param {Event.responseType} event
  * @param {function} handler
  */
@@ -195,6 +198,13 @@ export function on(obj, event, handler) {
 	}
 	event= event.split(' ');
 	obj= getNode(obj);
+	/* try{
+		obj= (obj instanceof Object)? obj: document.querySelector(obj);
+	}
+	catch{
+		console.log({obj});
+	}
+ */
 
 	event.forEach(e=>{
 		if (obj.addEventListener !== undefined) obj.addEventListener(e, handler, true);
