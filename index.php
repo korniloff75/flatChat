@@ -1,19 +1,4 @@
 <?php
-/*
-.......................................................
-.                     Мини-Чат                        .
-.                версия от 02.07.2020                 .
-.												UTF-8                         .
-.                                                     .
-.                  (C) By Protocoder                  .
-.           https://protocoder.ru/minichat            .
-.                                                     .
-. распространяется по лицензии Creative Commons BY-NC .
-.   http://creativecommons.org/licenses/by-nc/3.0/    .
-.......................................................
-*/
-
-
 /* ini_set('error_reporting', E_ALL & ~E_NOTICE);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1); */
@@ -27,6 +12,11 @@ tolog(__LINE__,null,['$_REQUEST'=>$_REQUEST, '$_REQUEST["mode"]'=>@$_REQUEST["mo
 
 $Chat= new Chat;
 
+// *Выводим в шаблон default
+$template= $Chat->RenderStaticContent('default');
+
+// var_dump($template);
+
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -38,9 +28,7 @@ $Chat= new Chat;
 		<meta name="robots" content="index, follow">
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-		<link rel="icon" href="./chat.svg" type="image/x-icon">
-
-		<link rel="stylesheet" href="./style.css">
+		<?=$template['head']?>
 
 	</head>
 
@@ -96,31 +84,9 @@ $Chat= new Chat;
 
 		</main><!-- #wrapper -->
 
-		<header class="box">
-			<h1><?= HEADER ?></h1>
+		<?=$template['header']?>
 
-			<div class="checkbox">
-
-				<label class="options first"><input id="autoScroll" type="checkbox" checked="checked"> прокручивать вниз</label>
-				<label class="options"><input id="playSound" type="checkbox" checked="checked"> звук</label>
-				<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
-			</div>
-
-			<h3 class="auth">
-
-			<?php
-			// var_dump($_SESSION);
-			if(is_adm()){
-				echo "(=Admin=) <button class='logout' title='Logout'>Logout</button>";
-			}
-			else{
-				echo "<a href='./core/login.php'><button class='button' title='Login'>Login</button></a>";
-			}
-			?>
-			</h3>
-		</header>
-
-		<?=Chat::footerHTML()?>
+		<?=$template['footer']?>
 
 	</body>
 </html>

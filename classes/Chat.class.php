@@ -13,7 +13,8 @@ class Chat
 		MAX_LINES= 200,
 		DELTA_LINES= 100,
 		MAXUSERTEXTLEN= 1024,
-		MAXUSERNAMELEN= 20;
+		MAXUSERNAMELEN= 20,
+		TEMPLATE_DEFAULT= 'default';
 
 	static
 		// *Отладка
@@ -27,6 +28,8 @@ class Chat
 		$file,
 		$lastMod,
 		$useStartIndex= true,
+		$templatePath,
+		$templateDir,
 		$out=[];
 
 	private
@@ -34,7 +37,8 @@ class Chat
 
 	protected
 		$data=[],
-		$State;
+		$State,
+		$renderMods=[];
 
 	public function __construct($dbPathname=null)
 	{
@@ -61,9 +65,6 @@ class Chat
 
 			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true );
-		}
-		else{
-			// session_start();
 		}
 
 		if ( $this->exit ) exit( 0 );
@@ -191,7 +192,11 @@ class Chat
 	}
 
 
+	/**
+	 * static output content
+	 */
 	public function getHTML()
+	:string
 	{
 		$this->Out(null, true);
 		return $this->out['html'];
@@ -461,14 +466,6 @@ class Chat
 		return $t;
 	}
 
-	static function footerHTML()
-	{
-		// die('!!!');
-		ob_start();
-		require_once \DR.'/core/footer.php';
-		return ob_get_clean();
-	}
-
 
 	static function makeURL( $matches ) {
 		return '<a href="' . ( mb_strpos( $matches[1], "://" ) === false ? "http://" : "" ) . $matches[1] . '" target="_blank">' . $matches[1] . '</a>';
@@ -499,5 +496,39 @@ class Chat
 		foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
 			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
 		}
+	}
+
+
+	private function _scanModsContent()
+	{
+		$def_dir= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
+
+		// *Перебираем элементы страницы
+
+		foreach(['head','header','footer'] as $mod){
+			$modPathname= "{$this->templatePath}/$mod.php";
+			if(!file_exists($mod) && $this->templatePath !== $def_dir) $modPathname= "$def_dir/$mod.php";
+
+			ob_start();
+			include_once $modPathname;
+			$this->renderMods[$mod]= ob_get_clean();
+		}
+
+		return $this->renderMods;
+	}
+
+
+	/**
+	 * optional @param {string} template - Название шаблона
+	 */
+	function RenderStaticContent($template=null)
+	{
+		$this->templatePath= \DR.'/templates/' . ($template ?? self::TEMPLATE_DEFAULT);
+		$this->templateDir= '/'. self::getPathFromRoot($this->templatePath);
+
+		// tolog(__METHOD__,null,['$this->templatePath'=>$this->templatePath]);
+		// trigger_error($this->templatePath);
+
+		return $this->_scanModsContent();
 	}
 } // Chat

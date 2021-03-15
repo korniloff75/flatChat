@@ -52,7 +52,8 @@ trait Helpers
 	public static function getPathFromRoot(string $absPath)
 	:string
 	{
-		return str_replace(self::fixSlashes($_SERVER['DOCUMENT_ROOT']) . '/', '', self::fixSlashes($absPath));
+		$Root= defined('GDR')? \GDR: $_SERVER['DOCUMENT_ROOT'];
+		return str_replace(self::fixSlashes($Root) . '/', '', self::fixSlashes($absPath));
 	}
 
 	// *Реальный IP
