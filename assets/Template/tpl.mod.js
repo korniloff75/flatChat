@@ -1,3 +1,4 @@
+'use strict';
 import {on} from '../helpers.js';
 
 let templateSel= document.querySelector('#settings .templates');

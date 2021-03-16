@@ -39,7 +39,7 @@ $template= $Chat->setTemplate();
 
 			<div id="msgsDialog" class="block">
 				<div id="msgsContent">
-					<?=$Chat->getContent()?>
+					<?=$Chat->getHTMLContent()?>
 					<?#die?>
 				</div>
 
@@ -75,11 +75,11 @@ $template= $Chat->setTemplate();
 
 			</div><!-- .item-block -->
 
-			<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
-			<div class="users box">
-			</div>
-
 		</main><!-- #wrapper -->
+
+		<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
+		<div class="users box">
+		</div>
 
 		<?=$template['header']?>
 

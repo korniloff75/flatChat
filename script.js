@@ -481,42 +481,23 @@ function formSubmit (e) {
 on(f,'submit', formSubmit);
 
 
-// *Scroll to posts
-on(document.querySelector('.svg-toRead'), 'click', e=>{
+// *Scroll to posts/form
+let toReadSvg= document.querySelector('.svg-toRead'),
+	toFormSvg= document.querySelector('.svg-toForm');
+
+on(toReadSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(msgs,{block:'start'}, e);
+	e.currentTarget.style.display='none';
+	toFormSvg.style.display='';
 });
 
 // *Scroll to form
-on(document.querySelector('.svg-toForm'), 'click', e=>{
+on(toFormSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(sendDialog,{block:'end'}, e);
-});
-
-
-on(msgs,'click',e=>{
-	e = e || _w.event;
-
-	var t = e.target || e.srcElement,
-		s= t.closest('.msg'),
-		c=  t.closest('a[href*=\'#\']'),
-		ac= t.closest('.cite'),
-		vb= t.closest('.voice');
-
-	// *Переход с цитаты к посту
-	if(c) return goCite(c,e);
-
-	// if (!t.closest('.cite')) return true;
-
-	// *Вставляем цитату
-	if (s && ac) return addCite(s,e);
-
-	if(s && vb) {
-		var post= s.querySelector('.post').cloneNode(true);
-		[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
-		speak(post.textContent.replace(/\p{S}/iug,''));
-		return;
-	}
+	e.currentTarget.style.display='none';
+	toReadSvg.style.display='';
 });
 
 
@@ -619,15 +600,39 @@ on(attachNode.parentNode, 'click', function(e) {
 });
 
 
-// *Клик по имени
-on(msgs, 'click', e=>{
-	var name= e.target.closest('span.name');
-	if(!name) return;
 
-	e.stopPropagation();
-	e.preventDefault();
+on(msgs,'click',e=>{
+	e = e || _w.event;
 
-	BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
+	var t = e.target || e.srcElement,
+		msg= t.closest('.msg'),
+		ancor=  t.closest('a[href*=\'#\']'),
+		cite= t.closest('.cite'),
+		vb= t.closest('.voice');
+
+	// *Клик по имени
+	var name= t.closest('span.name');
+	if(name) {
+		e.stopPropagation();
+		e.preventDefault();
+
+		return BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
+	}
+
+	// *Переход с цитаты к посту
+	if(ancor) return goCite(ancor,e);
+
+	// if (!t.closest('.cite')) return true;
+
+	// *Вставляем цитату
+	if (msg && cite) return addCite(msg,e);
+
+	if(msg && vb) {
+		var post= msg.querySelector('.post').cloneNode(true);
+		[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
+		speak(post.textContent.replace(/\p{S}/iug,''));
+		return;
+	}
 });
 
 

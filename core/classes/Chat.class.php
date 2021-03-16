@@ -106,10 +106,9 @@ class Chat
 		$this->uState['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
-		tolog(__METHOD__,null,['$chatUser'=>$chatUser, $this->name, $this->IP, self::defineUID($this->name, $this->IP)]);
+		// tolog(__METHOD__,null,['$chatUser'=>$chatUser, $this->name, $this->IP, self::defineUID($this->name, $this->IP)]);
 
 		$this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
-		// $this->uState['template'] = filter_var(@$_REQUEST["ts"]);
 
 		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
@@ -119,7 +118,7 @@ class Chat
 
 		$this->uState= $this->State->db->users[$this->UID];
 		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
-		
+
 
 		return $this;
 	}
@@ -131,7 +130,7 @@ class Chat
 		$inp_data= json_decode(
 			file_get_contents('php://input'),1
 		) ?? [];
-		tolog(__METHOD__,null,['$inp_data'=>$inp_data, file_get_contents('php://input')]);
+		tolog(__METHOD__,null,['$inp_data'=>$inp_data]);
 
 		foreach($_REQUEST= array_merge($_REQUEST, $inp_data) as $cmd=>&$val){
 
@@ -201,7 +200,7 @@ class Chat
 	/**
 	 * static output content
 	 */
-	public function getContent()
+	public function getHTMLContent()
 	:string
 	{
 		$this->Out(null, true);
@@ -219,8 +218,11 @@ class Chat
 
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
-		if(!is_dir(self::ARH_PATHNAME)){
-			mkdir(self::ARH_PATHNAME);
+		if(
+			!is_dir(self::ARH_PATHNAME)
+			&& !mkdir(self::ARH_PATHNAME, 0755, true)
+		){
+			throw new Exception("Невозможно создать директорию " . self::ARH_PATHNAME . ". Попробуйте создать её вручную");
 		}
 
 		if(

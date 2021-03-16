@@ -43,7 +43,7 @@ function tolog()
 	// *Отсекаем поллинги
 	if(@$_REQUEST["mode"] !== 'list'){
 		$log = $log ?? new Logger('my.log', \DR);
-		call_user_func_array([$log,'add'], func_get_args());
+		return call_user_func_array([$log,'add'], func_get_args());
 	}
 }
 

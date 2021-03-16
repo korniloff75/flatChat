@@ -64,16 +64,16 @@ td {
 	line-height: 1.3em;
 }
 
-html,
-body {
+
+html, body {
 	margin: 0;
 	padding: 0;
 	outline: 0;
 	font-size: 100%;
 	font-family: inherit;
-	background-color: #111;
+	background-color: #111922;
 	font-family: Tahoma;
-	color: #eee;
+	color: #bcd;
 	line-height: 1em;
 	height: 100%;
 }
@@ -143,14 +143,15 @@ a:hover {
 
 .box {
 	position: relative;
-	background: #159;
+	background: #123;
 	text-align: left;
-	margin: 0;margin-bottom:20px;
+	margin: 0;
+	margin-bottom: 20px;
 	z-index: 1;
 	padding: .5em;
 	max-width: 100%;
 	overflow: hidden;
-	box-shadow:0 0 5px rgba(0,0,0,.2);
+	box-shadow: 0 0 5px rgba(0,0,0,.2);
 }
 
 .users {
@@ -179,15 +180,15 @@ a:hover {
 }
 
 .checkbox {
-	float:right;
-	background: #eee;
+	float: right;
+	/* background: #eee; */
 	text-align: left;
 	margin: 0;
 	z-index: 1;
-	padding:1em;
+	padding: 1em;
 	overflow: hidden;
-	border:1px solid #ddd;
-	border-radius:5px;
+	border: 1px solid #456;
+	border-radius: 5px;
 }
 
 .checkbox .options {
@@ -223,16 +224,14 @@ a:hover {
 	position: relative;
 	z-index: 1;
 	word-wrap: break-word;
-	background: #eee;
+	background: #357;
 }
 
-#msgsContent .msg:hover{
-	background: #fefefe;
+#msgsContent .msg:hover {
+	background: #468;
 }
-
 #msgsContent .msg.myPost {
 	margin-left: 10%;
-	background: #cde;
 }
 
 #msgsContent .msg + .msg {
@@ -243,7 +242,7 @@ a:hover {
 	display: flex;
 	flex-wrap: wrap;
 	margin-bottom: 0.2em;
-	color: #0056c6;
+	color: #9be;
 	position: relative;
 	justify-content: space-between;
 }
@@ -318,10 +317,11 @@ a:hover {
 #msgsContent .msg .post {
 	padding: 1em;
 	margin-top: 1em;
-	background: #fff;
+	background: #cde;
 	font-size: 100%;
 	border-radius: 5px;
-	border:1px solid #f2f2f2;
+	border: 1px solid #f2f2f2;
+	color: #227;
 }
 
 #msgsContent .msg .cite_disp {
@@ -366,14 +366,11 @@ a:hover {
 label.input__file {
 	flex: 0 0 170px;
 	cursor: pointer;
-	color: #777;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 }
-label.input__file:hover {
-	color: #555;
-}
+
 label.input__file::before{
 	content: "📎";
 	font-size: 1.8em;
@@ -392,6 +389,8 @@ label.input__file::before{
 #sendDialog textarea[name="text"] {
 	min-height: 10em;
 	resize: none;
+	background: #123;
+	color: #def;
 }
 
 .waiter {
@@ -413,8 +412,8 @@ label.input__file::before{
 	padding: .1em 0 1em 1em;
 	padding-right: 0;
 	-webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
-	box-shadow:0 0 5px rgba(0,0,0,.2);
-	background: #fafafa;
+	box-shadow: 0 0 5px rgba(0,0,0,.2);
+	/* background: #fafafa; */
 }
 
 .block .ct,
@@ -504,16 +503,18 @@ margin:50px 0;
 .item-block p{
 font-size:90%;margin-bottom:5px;
 }
+
 .block2 {
 	position: relative;
 	display: block;
-	background: #eee;
-	border:2px solid #fefefe;
+	background: #246;
+	border: 2px solid #135;
 	margin: 0;
 	z-index: 1;
 	padding: .9em;
 	max-width: 100%;
-	overflow: hidden;box-shadow:0 0 5px rgba(0,0,0,.2);
+	overflow: hidden;
+	box-shadow: 0 0 5px rgba(0,0,0,.2);
 }
 
 .block2 .bb{
@@ -538,45 +539,30 @@ text-align:left;margin-top:20px;
 .button {
 	display: inline-block;
 	position: relative;
-
 	padding: 0.2em 0.4em;
 	vertical-align: top;
-
 	cursor: pointer;
 	text-decoration: none;
-
-	/* font-family: Tahoma;
-	font-weight: bold; */
 	font: .9em Tahoma bold;
 	color: #555555;
 	height: inherit;
-
 	border-radius: 0.18em;
-
-	border: 1px solid #c2c2c2;
-
+	border: 1px solid #123;
 	border-radius: 0.18em;
-
 	-webkit-box-shadow: inset 0 0 1px #ffffff;
 	box-shadow: inset 0 0 1px #ffffff;
-
 	background: #e5e5e5 -webkit-linear-gradient(180deg, #ffffff, #dfdfdf);
 	background: #e5e5e5 -moz-linear-gradient(180deg, #ffffff, #dfdfdf);
 	background: #e5e5e5 -ms-linear-gradient(180deg, #ffffff, #dfdfdf);
-	background: #e5e5e5 linear-gradient(180deg, #ffffff, #dfdfdf);
-
-	text-shadow: #ffffff 0px 1px 0;
-
+	background: #e5e5e5 linear-gradient(180deg, #123,#456);
+	/* text-shadow: #ffffff 0px 1px 0; */
 	text-align: center;
-
 	outline: none;
-
 	z-index: 1;
+	color: #abcbcd;
 }
-
 .button:hover {
-	border-color: #9a9a9a;
-
+	border-color: #cde;
 	-webkit-box-shadow: 0px 0px 2px #a0a0a0;
 	box-shadow: 0px 0px 2px #a0a0a0;
 }
