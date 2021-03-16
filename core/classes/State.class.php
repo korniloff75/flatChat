@@ -8,20 +8,21 @@ class State /* extends Chat */
 
 	public $db;
 
-	public function __construct(array $data)
+	public function __construct(array $uState)
 	{
 		// *Последнее обращение к серверу
-		$data['ts']= time();
-		$UID= $data['UID'];
-		unset($data['UID']);
+		$uState['ts']= time();
+		$UID= $uState['UID'];
+		// unset($uState['UID']);
 
 		$this->db= new DbJSON(self::BASE_PATHNAME);
 
-		$this->db->set(['users'=>[$UID=>$data]]);
+		$this->db->set(['users'=>[$UID=>$uState]]);
 	}
 
 
 	function __destruct(){
+		// *Чистим старых пользователей
 		$now= time();
 		$change=0;
 		foreach(($users= $this->db->get('users')) as $uid=>$user){

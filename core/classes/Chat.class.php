@@ -82,12 +82,14 @@ class Chat
 	public function getJsonUState()
 	:string
 	{
+		tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
 		return json_encode($this->uState,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
 	static function defineUID($name, $IP)
 	{
+		// tolog(__METHOD__,null,[$name,$IP,($name . substr($IP, 0, strrpos($IP, '.')+1))]);
 		return $name . substr($IP, 0, strrpos($IP, '.')+1);
 	}
 
@@ -104,16 +106,20 @@ class Chat
 		$this->uState['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
-		tolog(__METHOD__,null,['$chatUser'=>$chatUser]);
+		tolog(__METHOD__,null,['$chatUser'=>$chatUser, $this->name, $this->IP, self::defineUID($this->name, $this->IP)]);
 
 		$this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
-		// if(!$this->name) $this->uState['name']= $cookieName;
+		// $this->uState['template'] = filter_var(@$_REQUEST["ts"]);
+
 		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 		// *Записали и обновили $this->uState
+		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
 		$this->State= new State($this->uState);
 
 		$this->uState= $this->State->db->users[$this->UID];
+		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
+		
 
 		return $this;
 	}
@@ -540,7 +546,7 @@ class Chat
 	// *Сохраняем выбранный шаблон
 	protected function c_changeTemplate($template=null)
 	{
-		tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
+		tolog(__METHOD__,null,['$this->uState'=>$this->uState, '$this->UID'=>$this->UID]);
 
 		if($template= self::fixSlashes($template)){
 			// $this->State->db->set(['template'=>$template
