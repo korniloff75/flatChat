@@ -1,8 +1,9 @@
 import {on} from '../helpers.js';
 
-// let templateSel= document.querySelector();
+let templateSel= document.querySelector('#settings .templates');
 
-on('#settings .templates', 'click change', e=>{
+// todo remove click
+on(templateSel, 'click change', e=>{
 	let t= e.target;
 	fetch('',{
 		method:'post',
@@ -12,3 +13,8 @@ on('#settings .templates', 'click change', e=>{
 		})
 	})
 });
+
+console.log(Chat.template);
+if(Chat.template){
+	templateSel.value= Chat.template;
+}

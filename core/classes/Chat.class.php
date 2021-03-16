@@ -76,7 +76,7 @@ class Chat
 
 	function __get($n)
 	{
-		return $this->$n ?? $this->uState[$n];
+		return $this->$n ?? $this->uState[$n] ?? null;
 	}
 
 	public function getJsonUState()
@@ -110,7 +110,10 @@ class Chat
 		// if(!$this->name) $this->uState['name']= $cookieName;
 		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
+		// *Записали и обновили $this->uState
 		$this->State= new State($this->uState);
+
+		$this->uState= $this->State->db->users[$this->UID];
 
 		return $this;
 	}
@@ -516,13 +519,14 @@ class Chat
 
 
 	/**
+	 * *Сборка выбранного шаблона
 	 * optional @param {string} template - Название шаблона
 	 */
 	public function setTemplate($template=null)
 	{
-		$template= &$this->State->db->users[$this->UID]['template'];
+		$template= $this->uState['template'];
 
-		tolog(__METHOD__,null,['$template'=>$template]);
+		tolog(__METHOD__,null,['$template'=>$template, '$this->uState'=>$this->uState]);
 
 		$this->templatePath= $template ?? \DR.'/templates/' . self::TEMPLATE_DEFAULT;
 		$this->templateDir= '/'. self::getPathFromRoot($this->templatePath);
@@ -533,8 +537,11 @@ class Chat
 		return $this->_scanModsContent();
 	}
 
-	protected function c_changeTemplate($template)
+	// *Сохраняем выбранный шаблон
+	protected function c_changeTemplate($template=null)
 	{
+		tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
+
 		if($template= self::fixSlashes($template)){
 			// $this->State->db->set(['template'=>$template
 			$this->State->db->set(['users'=>[$this->UID=>['template'=>$template]]]);

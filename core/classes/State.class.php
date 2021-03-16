@@ -25,7 +25,10 @@ class State /* extends Chat */
 		$now= time();
 		$change=0;
 		foreach(($users= $this->db->get('users')) as $uid=>$user){
-			if($now - $user['ts'] < self::EXPIRES && $user['name']) continue;
+			if(
+				!empty($uid)
+				&& $now - $user['ts'] < self::EXPIRES && $user['name']
+			) continue;
 
 			unset($users[$uid]);
 			$change=1;
