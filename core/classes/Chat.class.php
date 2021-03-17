@@ -222,6 +222,7 @@ class Chat
 			!is_dir(self::ARH_PATHNAME)
 			&& !mkdir(self::ARH_PATHNAME, 0755, true)
 		){
+			header('Content-Type: text/html; charset=utf-8');
 			throw new Exception("Невозможно создать директорию " . self::ARH_PATHNAME . ". Попробуйте создать её вручную");
 		}
 
@@ -500,7 +501,7 @@ class Chat
 	// *Архив
 	function getArhive()
 	{
-		foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
+		if(is_dir(self::ARH_PATHNAME)) foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
 			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
 		}
 	}
