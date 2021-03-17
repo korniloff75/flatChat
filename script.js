@@ -32,11 +32,12 @@ var oAH = document.getElementById("autoHeight");
 
 function hideName(){
 	if(!f) return;
-	if(f.name.type !== 'hidden' && Chat.name){
-		f.name.type= 'hidden';
-		f.name.value= Chat.name;
-		console.log(f.name.value);
-	}
+
+	f.name.value= f.name.value || Chat.name || null;
+
+	f.name.type= f.name.value? 'hidden': 'text';
+
+	console.log(f.name.value);
 }
 
 hideName();
@@ -457,11 +458,10 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
-	scrollIntoView(msgs,{block:'start'});
-
 	refresh(
 		fd,
 		function (state, status, txt) {
+			scrollIntoView(msgs,{block:'start'});
 			if (state) {
 				text.value = "";
 				ah(text);
@@ -510,6 +510,7 @@ on(toReadSvg, 'click', e=>{
 on(toFormSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(sendDialog.closest('.item-block'),{block:'end'}, e);
+	// f.text.focus();
 });
 
 
@@ -617,9 +618,12 @@ on(msgs,'click',e=>{
 
 	var t = e.target || e.srcElement,
 		msg= t.closest('.msg'),
+		checkbox= t.closest('.checkbox'),
 		ancor=  t.closest('a[href*=\'#\']'),
 		cite= t.closest('.cite'),
 		vb= t.closest('.voice');
+
+	if(!msg) return;
 
 	// *Клик по имени
 	var name= t.closest('span.name');
@@ -636,13 +640,18 @@ on(msgs,'click',e=>{
 	// if (!t.closest('.cite')) return true;
 
 	// *Вставляем цитату
-	if (msg && cite) return addCite(msg,e);
+	if (cite) return addCite(msg,e);
 
-	if(msg && vb) {
+	if(vb) {
 		var post= msg.querySelector('.post').cloneNode(true);
 		[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
 		speak(post.textContent.replace(/\p{S}/iug,''));
 		return;
+	}
+
+	// *Выделяем посты
+	if(checkbox){
+		checkbox= checkbox.querySelector('input');
 	}
 });
 

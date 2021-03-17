@@ -95,7 +95,7 @@ export const Ajax={
 
 /**
  * Прокрутка к элементу
- * @param {Node} targetEl - целевой элемент
+ * @param {Node|String} targetEl - целевой элемент
  * @param {obj} opts - параметры для scrollIntoView
  * optional @param {Event} e - событие вызова
  */
@@ -107,6 +107,8 @@ export function scrollIntoView(targetEl,opts,e){
 		block: 'start',
 		inline: 'center'
 	}, (opts || {}));
+
+	targetEl= getNode(targetEl);
 
 	try {
 		targetEl.scrollIntoView(opts);

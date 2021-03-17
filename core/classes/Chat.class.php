@@ -444,7 +444,7 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><b class='num'>$n</b>. <span class=\"state\"></span><span class=\"name\">$name"
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><label class='checkbox'><input type='checkbox'><b class='num'>$n</b>.</label> <span class=\"state\"></span><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 
