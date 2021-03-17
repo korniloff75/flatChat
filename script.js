@@ -1,5 +1,5 @@
 'use strict';
-import {Ajax, scrollIntoView, css, on, off, speak} from './assets/helpers.js';
+import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -457,6 +457,8 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
+	scrollIntoView(msgs,{block:'start'});
+
 	refresh(
 		fd,
 		function (state, status, txt) {
@@ -485,19 +487,29 @@ on(f,'submit', formSubmit);
 let toReadSvg= document.querySelector('.svg-toRead'),
 	toFormSvg= document.querySelector('.svg-toForm');
 
+on(_w, 'scroll', e=>{
+	if(elemInViewport(msgs, .9)){
+		toReadSvg.style.display='none';
+		toFormSvg.style.display='';
+	}
+	else if(elemInViewport(sendDialog, .9)){
+		toReadSvg.style.display='';
+		toFormSvg.style.display='none';
+	}
+	// console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
+})
+
+console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
+
 on(toReadSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(msgs,{block:'start'}, e);
-	e.currentTarget.style.display='none';
-	toFormSvg.style.display='';
 });
 
 // *Scroll to form
 on(toFormSvg, 'click', e=>{
 	e.stopPropagation();
-	scrollIntoView(sendDialog,{block:'end'}, e);
-	e.currentTarget.style.display='none';
-	toReadSvg.style.display='';
+	scrollIntoView(sendDialog.closest('.item-block'),{block:'end'}, e);
 });
 
 
@@ -580,9 +592,8 @@ function showAttaches(){
 }
 
 if(f){
-	on(f.text, 'input', countChars);
-	// ?
-	on(f.text, 'change', countChars);
+	on(f.text, 'input change', countChars);
+
 	on(f, 'change', function(e){
 		showAttaches();
 	});

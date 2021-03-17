@@ -248,14 +248,6 @@ a:hover {
 	justify-content: space-between;
 }
 
-#msgsContent .msg .info .number {
-	display:inline-block;width:25px;height:25px;
-	border:1px solid #eee;
-	background:#fcfcfc;
-	border-radius:5px;
-	line-height:25px;text-align:center;
-	color: #666;
-}
 #msgsContent .msg .info .name {
 	font-weight: bold;
 	padding-right: 0.5em;

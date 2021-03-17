@@ -160,6 +160,24 @@ const smoothScrollTo = (function (_w) {
 
 
 /**
+ * *Определяем видимость элемента
+ * @param {Node} el
+ * @param {float} kt - коэффициент 0...1
+ * @returns {bool} true - когда элемент находится во вьюпорте
+ */
+export function elemInViewport(el,kt) {
+	let
+		{top,left,bottom,right}= el.getBoundingClientRect(),
+		width = document.documentElement.clientWidth,
+		height = document.documentElement.clientHeight,
+		maxWidth = right - left,
+		maxHeight = bottom - top;
+
+	return Math.min(height,bottom)- Math.max(0,top) >= maxHeight*kt && Math.min(width,right)- Math.max(0,left)>= maxWidth*kt
+}
+
+
+/**
  * @param {Node|NodeList} els
  * @param {obj} cssObj - CSS rules
  */

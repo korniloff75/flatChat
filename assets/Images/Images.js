@@ -1,6 +1,6 @@
 // ?
 import {css,on} from '../../script.js';
-import {addStyle} from '../helpers.js';
+import {addStyle, elemInViewport} from '../helpers.js';
 export var inited;
 
 /**
@@ -129,21 +129,6 @@ export function init(box) {
 }
 
 
-function isVisible(elem) {
-	let coords = elem.getBoundingClientRect();
-
-	let windowHeight = document.documentElement.clientHeight;
-
-	// *верхний край элемента виден?
-	let topVisible = coords.top > 0 && coords.top < windowHeight;
-
-	// *нижний край элемента виден?
-	let bottomVisible = coords.bottom < windowHeight && coords.bottom > 0;
-
-	return topVisible || bottomVisible;
-}
-
-
 /**
  *
  * @param {nodeList} imgs
@@ -153,13 +138,10 @@ function showVisible(ims) {
 		let realSrc = img.dataset.src;
 		if (!realSrc) continue;
 
-		if (realSrc && isVisible(img)) {
+		if (realSrc && elemInViewport(img, .3)) {
 			img.src = realSrc;
 			img.dataset.src = '';
 		}
 	}
 	// console.log(ims[0],ims);
 }
-
-/* addStyle('./Images.css');
-addStyle('./Images.css'); */

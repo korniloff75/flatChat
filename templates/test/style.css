@@ -247,18 +247,13 @@ a:hover {
 	justify-content: space-between;
 }
 
-#msgsContent .msg .info .number {
-	display:inline-block;width:25px;height:25px;
-	border:1px solid #eee;
-	background:#fcfcfc;
-	border-radius:5px;
-	line-height:25px;text-align:center;
-	color: #666;
+#msgsContent .msg .info .num {
+	color: #def;
 }
 #msgsContent .msg .info .name {
 	font-weight: bold;
 	padding-right: 0.5em;
-	color: #CB1E1E;
+	color: #f77;
 }
 #msgsContent .msg .info .btn {
 	display: inline-block;
@@ -351,7 +346,7 @@ a:hover {
 #sendDialog input[type="text"],
 #sendDialog input[type="password"] {
 	min-height: 1.6em;
-	padding: 0 0.2em;
+	padding: 0 .2em;
 }
 
 #sendDialog .submit {
@@ -360,7 +355,7 @@ a:hover {
 	margin-top: 0.5em;
 	justify-content: space-between;
 	align-items: center;
-	/* align-content: center; */
+	padding: 0 1em;
 }
 
 label.input__file {
@@ -511,7 +506,7 @@ font-size:90%;margin-bottom:5px;
 	border: 2px solid #135;
 	margin: 0;
 	z-index: 1;
-	padding: .9em;
+	/* padding: .9em; */
 	max-width: 100%;
 	overflow: hidden;
 	box-shadow: 0 0 5px rgba(0,0,0,.2);
