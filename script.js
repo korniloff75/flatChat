@@ -612,13 +612,16 @@ on(attachNode.parentNode, 'click', function(e) {
 });
 
 
+let selectedPanel= `<div class='selectedPanel'>
+	<div class='voice button' title='Озвучить текст'>📢🎧</div>
+</div>`;
 
 on(msgs,'click',e=>{
 	e = e || _w.event;
 
 	var t = e.target || e.srcElement,
 		msg= t.closest('.msg'),
-		checkbox= t.closest('.checkbox'),
+		select= t.closest('.select'),
 		ancor=  t.closest('a[href*=\'#\']'),
 		cite= t.closest('.cite'),
 		vb= t.closest('.voice');
@@ -645,13 +648,13 @@ on(msgs,'click',e=>{
 	if(vb) {
 		var post= msg.querySelector('.post').cloneNode(true);
 		[].forEach.call(post.querySelectorAll('.cite_disp'), i=>i.remove());
-		speak(post.textContent.replace(/\p{S}/iug,''));
-		return;
+		return speak(post.textContent.replace(/\p{S}/iug,''));
 	}
 
 	// *Выделяем посты
-	if(checkbox){
-		checkbox= checkbox.querySelector('input');
+	if(select){
+
+		select= select.querySelector('input');
 	}
 });
 
