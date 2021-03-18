@@ -139,6 +139,7 @@ function showVisible(ims) {
 		if (!realSrc) continue;
 
 		if (realSrc && elemInViewport(img, .3)) {
+			console.log({img});
 			img.src = realSrc;
 			img.dataset.src = '';
 		}

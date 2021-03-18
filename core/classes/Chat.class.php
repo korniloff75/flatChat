@@ -465,7 +465,7 @@ class Chat
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				// $f= self::getPathFromRoot($f);
-				$t.= "<img src='./assets/placeholder.svg' data-src='./$f' draggable='false' />";
+				$t.= "<img src='./assets/placeholder.svg' data-src='/$f' draggable='false' />";
 			}
 			$t.= '</div>';
 		}
@@ -513,13 +513,19 @@ class Chat
 		$def_dir= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
 
 		// *Перебираем элементы страницы
-
 		foreach(['head','header','footer'] as $mod){
 			$modPathname= "{$this->templatePath}/$mod.php";
-			if(!file_exists($modPathname) && $this->templatePath !== $def_dir) $modPathname= "$def_dir/$mod.php";
+			if(!file_exists($modPathname) && $this->templatePath !== $def_dir)
+				$modPathname= "$def_dir/$mod.php";
 
 			ob_start();
 			include_once $modPathname;
+
+			// *Подключаем базовые модули шаблона к пользовательским
+			if(file_exists($coreMod= \DR."/core/$mod.php")){
+				require_once $coreMod;
+			}
+
 			$this->renderMods[$mod]= ob_get_clean();
 		}
 

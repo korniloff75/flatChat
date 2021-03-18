@@ -1,0 +1,1 @@
+<link rel="stylesheet" href="<?=$this->templateDir?>/style.css">

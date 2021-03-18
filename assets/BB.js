@@ -1,6 +1,8 @@
 'use strict';
 // native
 
+import {on} from './helpers.js';
+
 var bbs= ['B','I','U','S','❞'];
 
 var codes= {
@@ -21,16 +23,19 @@ var codes= {
  * @return {node} panel
  */
 export function createPanel (ta){
-	var p = document.createElement('div'),
-		smiles= document.createElement('div'),
-		bb= document.createElement('div');
-
+	const p = document.createElement('div');
 	p.className= 'smile';
-	smiles.className= 'sm';
-	bb.className= 'bb';
+
+	p.insertAdjacentHTML('beforeend',`<div class='bb'></div>
+	<div class='sm'>
+	</div>`);
+
+	const smiles= p.querySelector('.sm'),
+		bb= p.querySelector('.bb');
+
 
 	bbs.forEach(i=>{
-		var b= document.createElement('i');
+		let b= document.createElement('i');
 		b.textContent= i;
 		switch (i) {
 			case 'B':
@@ -62,10 +67,7 @@ export function createPanel (ta){
 		smiles.appendChild(sb);
 	});
 
-	p.appendChild(bb);
-	p.appendChild(smiles);
-
-	p.addEventListener('click',e=>{
+	on(p,'click',e=>{
 		var t= e.target;
 		if(t.closest('.bb')){
 			var c= (t.bb || t.textContent).toLowerCase();

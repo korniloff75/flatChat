@@ -39,3 +39,9 @@ else{
 		?>
 	</select>
 </div>
+
+<!-- Выплывающая панель инструментов при выделении чекбоксов постов -->
+<div id='selectedPanel'>
+	<div class='voice button' title='Озвучить выбранные'>📢🎧</div>
+	<div class='reset button' title='Сброс'>❌</div>
+</div>

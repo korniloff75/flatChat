@@ -115,9 +115,7 @@ label.input__file {
 	align-items: center;
 	justify-content: center;
 }
-label.input__file:hover {
-	color: #555;
-}
+
 label.input__file::before{
 	content: "📎";
 	font-size: 1.8em;
@@ -248,4 +246,3 @@ text-align:left;margin-top:20px;
 	-webkit-box-shadow: inset 0 0 2px #d0d0d0;
 	box-shadow: inset 0 0 2px #d0d0d0;
 }
-

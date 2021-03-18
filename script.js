@@ -501,6 +501,7 @@ on(_w, 'scroll', e=>{
 
 console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
 
+// *Scroll to msgs
 on(toReadSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(msgs,{block:'start'}, e);
@@ -612,10 +613,47 @@ on(attachNode.parentNode, 'click', function(e) {
 });
 
 
-let selectedPanel= `<div class='selectedPanel'>
-	<div class='voice button' title='Озвучить текст'>📢🎧</div>
-</div>`;
 
+// *Пакетная обработка постов
+let selectedPanel= document.querySelector('#selectedPanel'),
+	// voiceBtn= selectedPanel.querySelector('.voice'),
+	selectedPosts= [];
+
+on(selectedPanel, 'click', e=>{
+	e.stopPropagation();
+	const t = e.target;
+
+	console.log({t,selectedPosts});
+
+	if(!selectedPosts.length) return;
+
+	let tmp= document.createElement('div');
+
+	if(t.classList.contains('voice')){
+		selectedPosts.forEach(p=>{
+			let txt= p.querySelector('.post'),
+				num= p.querySelector('.num');
+			tmp.innerHTML += `Пост ${num.textContent}. ${txt.innerHTML}...`;
+		});
+
+		[].forEach.call(tmp.querySelectorAll('.cite_disp'), i=>i.remove());
+
+		speak(tmp.textContent.replace(/\p{S}/iug,''));
+
+		return tmp.remove();
+	}
+
+	if(t.classList.contains('reset')){
+		selectedPosts.forEach(p=>{
+			p.querySelector('.select input').checked= false;
+		});
+		selectedPosts= [];
+		selectedPanel.classList.remove('active');
+		return;
+	}
+});
+
+// *Одиночная обработка постов
 on(msgs,'click',e=>{
 	e = e || _w.event;
 
@@ -640,8 +678,6 @@ on(msgs,'click',e=>{
 	// *Переход с цитаты к посту
 	if(ancor) return goCite(ancor,e);
 
-	// if (!t.closest('.cite')) return true;
-
 	// *Вставляем цитату
 	if (cite) return addCite(msg,e);
 
@@ -651,19 +687,32 @@ on(msgs,'click',e=>{
 		return speak(post.textContent.replace(/\p{S}/iug,''));
 	}
 
+	// todo
 	// *Выделяем посты
 	if(select){
-
 		select= select.querySelector('input');
+
+		selectedPosts= Array.from(msgs.querySelectorAll('.select input'));
+
+		selectedPosts= selectedPosts.filter(i=>i.checked);
+		selectedPosts= selectedPosts.map(i=>i.closest('.msg'));
+
+		console.log({selected: selectedPosts});
+
+		if(selectedPosts.length){
+			selectedPanel.classList.add('active');
+		}
+		else{
+			selectedPanel.classList.remove('active');
+		}
 	}
 });
 
 
 
-
-
-// *ready
-on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
+// *DOM ready
+// on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
+on(_w, 'load', e=>{
 	poll(true);
 	scrollIntoView(msgs, {block:'start'});
 

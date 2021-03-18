@@ -401,7 +401,20 @@ font-size:90%;margin-bottom:5px;
 	zoom: 1;
 }
 
+#selectedPanel{
+	width: 100%;
+	position: fixed;
+	top:-200px;
+	transition: .3s;
+	padding: .1em .5em;
+}
+#selectedPanel.active{
+	top:-0;
+}
 
+#selectedPanel .reset{
+	color: #c22;
+}
 
 .right{
 	text-align: right;

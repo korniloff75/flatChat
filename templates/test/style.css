@@ -14,6 +14,11 @@ html, body {
 }
 
 
+#selectedPanel{
+	color: #bcd;
+	background-color: #111922;
+}
+
 .box {
 	position: relative;
 	background: #123;
@@ -233,4 +238,3 @@ text-align:left;margin-top:20px;
 	-webkit-box-shadow: inset 0 0 2px #d0d0d0;
 	box-shadow: inset 0 0 2px #d0d0d0;
 }
-
