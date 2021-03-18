@@ -1,7 +1,5 @@
 <div class="checkbox">
-
-	<label class="options first"><input id="autoScroll" type="checkbox" checked="checked"> прокручивать вниз</label>
-	<label class="options"><input id="playSound" type="checkbox" checked="checked"> звук</label>
+	<label class="options first"><input id="playSound" type="checkbox" checked="checked"> звук</label>
 	<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
 </div>
 
@@ -43,5 +41,8 @@ else{
 <!-- Выплывающая панель инструментов при выделении чекбоксов постов -->
 <div id='selectedPanel'>
 	<div class='voice button' title='Озвучить выбранные'>📢🎧</div>
-	<div class='reset button' title='Сброс'>❌</div>
+	<div class='reset button' title='Сброс'>⍻</div>
+	<?php if(is_adm()):?>
+	<div class='del button' title='Удалить выбранное'>❌</div>
+	<?php endif?>
 </div>

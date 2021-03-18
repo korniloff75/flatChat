@@ -261,9 +261,6 @@ var tipUpper = (function () {
 
 
 _w.scrollBottom= function scrollBottom() {
-	var oAS = document.getElementById("autoScroll");
-	if(!oAS.checked) return;
-
 	var os = msgs.onscroll;
 	msgs.onscroll = function (e) {
 		if (!e) e = _w.event;
@@ -409,9 +406,6 @@ export var poll = (function () {
 	};
 })();
 
-/* oAS.onchange = function () {
-	scrollBottom();
-}; */
 
 // *Вкл. звук
 oSND && (oSND.onchange = function () {
@@ -615,7 +609,7 @@ on(attachNode.parentNode, 'click', function(e) {
 
 
 // *Пакетная обработка постов
-let selectedPanel= document.querySelector('#selectedPanel'),
+export let selectedPanel= document.querySelector('#selectedPanel'),
 	// voiceBtn= selectedPanel.querySelector('.voice'),
 	selectedPosts= [];
 
@@ -692,21 +686,27 @@ on(msgs,'click',e=>{
 	if(select){
 		select= select.querySelector('input');
 
-		selectedPosts= Array.from(msgs.querySelectorAll('.select input'));
-
-		selectedPosts= selectedPosts.filter(i=>i.checked);
-		selectedPosts= selectedPosts.map(i=>i.closest('.msg'));
-
-		console.log({selected: selectedPosts});
-
-		if(selectedPosts.length){
-			selectedPanel.classList.add('active');
-		}
-		else{
-			selectedPanel.classList.remove('active');
-		}
+		selectedPosts= collectSelected();
 	}
 });
+
+
+export function collectSelected(){
+	let selectedPosts= Array.from(msgs.querySelectorAll('.select input'));
+
+	selectedPosts= selectedPosts.filter(i=>i.checked);
+	selectedPosts= selectedPosts.map(i=>i.closest('.msg'));
+
+	console.log({selectedPosts});
+
+	if(selectedPosts.length){
+		selectedPanel.classList.add('active');
+	}
+	else{
+		selectedPanel.classList.remove('active');
+	}
+	return selectedPosts;
+}
 
 
 

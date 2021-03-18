@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-import {on,Ajax,refresh,poll} from '../script.js';
+import {on,Ajax,refresh,poll, selectedPanel,selectedPosts} from '../script.js';
 import {modal} from './modal/modal.js';
 
 var _w= window,
@@ -93,3 +93,14 @@ on(msgs,'click',e=>{
 		})
 	}
 }); // /Обработка элементов .msg
+
+
+// todo Обработка пакетного выбора
+// *
+/* on(selectedPanel, 'click', e=>{
+	let t= e.target;
+
+	if(t.classList.contains('del')){
+		console.log({t}, collectSelected());
+	}
+}); */

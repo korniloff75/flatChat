@@ -405,11 +405,12 @@ font-size:90%;margin-bottom:5px;
 	width: 100%;
 	position: fixed;
 	top:-200px;
+	z-index: 100;
 	transition: .3s;
 	padding: .1em .5em;
 }
 #selectedPanel.active{
-	top:-0;
+	top: 0;
 }
 
 #selectedPanel .reset{
@@ -467,7 +468,7 @@ span.name{
 	background: #67A1D7; */
 }
 
-.del{
+.del, .button.del{
 	color: red;
 }
 
