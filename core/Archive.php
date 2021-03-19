@@ -5,7 +5,7 @@ require_once 'define.php';
 $pathname= filter_var($_GET['f'], FILTER_SANITIZE_STRING);
 // echo $pathname;
 
-$Arh= new Chat($pathname);
+$Arh= new Chat("../$pathname");
 $Arh->useStartIndex= false;
 
 
@@ -23,7 +23,7 @@ $Arh->useStartIndex= false;
 	<nav style="text-align:center;"><a href="/"><button class="button">В чат</button></a></nav>
 	<div id="msgsDialog" class="block">
 		<div id="msgsContent">
-			<?=$Arh->getHTML()?>
+			<?=$Arh->getHTMLContent()?>
 			<?#die?>
 		</div>
 	</div>

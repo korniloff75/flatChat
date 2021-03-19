@@ -11,7 +11,9 @@ export var inited;
 export function init(box) {
 	let ims = box.querySelectorAll('img');
 
-	// if (inited || !ims.length) return;
+	// *Подгрузка изображений во вьюпорте
+	showVisible(ims);
+
 	if (inited || !ims.length) return;
 
 	inited= 1;
@@ -21,17 +23,18 @@ export function init(box) {
 	addStyle('./assets/Images/Images.css');
 	css(ims, { cursor: 'zoom-in' });
 
-	// *Подгрузка изображений во вьюпорте
-	showVisible(ims);
-
 	on(box,'scroll',e=>showVisible(box.querySelectorAll('img')));
 
 	let
-		mw = document.createElement('div'),
-		img = document.createElement('img'),
-		close = document.createElement('div');
+		mw = document.createElement('div');
 
 	mw.id = "$mw";
+
+	mw.insertAdjacentHTML('beforeend', `<img draggable="false">
+	<div class='close'>❌</div>`);
+
+	let img = mw.querySelector('img'),
+		close = mw.querySelector('.close');
 
 	css(mw, {
 		height: window.innerHeight + 'px',
@@ -42,7 +45,7 @@ export function init(box) {
 	img.draggable = false;
 	css(img, { cursor: 'zoom-out', margin: 'auto' });
 
-	css(close, {
+	/* css(close, {
 		position: 'absolute',
 		right: 0, top: 0,
 		color: '#fff',
@@ -53,7 +56,7 @@ export function init(box) {
 		border: '2px solid',
 		font: 'bold 1em sans-serif',
 	});
-	close.textContent = 'X';
+	close.textContent = '❌'; */
 
 	on(close, 'click', e => {
 		mw.classList.remove('mod-show');

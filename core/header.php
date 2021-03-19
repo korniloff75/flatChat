@@ -3,7 +3,7 @@
 	<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
 </div>
 
-<h3 class="auth">
+<h4 class="auth">
 
 <?php
 // var_dump($_SESSION);
@@ -14,7 +14,7 @@ else{
 	echo "<a href='./core/login.php'><button class='button' title='Login'>Login</button></a>";
 }
 ?>
-</h3>
+</h4><!-- .auth -->
 
 <style>
 	#settings {

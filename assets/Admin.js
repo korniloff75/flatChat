@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-import {on,Ajax,refresh,poll, selectedPanel,selectedPosts} from '../script.js';
+import {on,refresh,poll, selectedPosts} from '../script.js';
 import {modal} from './modal/modal.js';
 
 var _w= window,
@@ -18,9 +18,10 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 	return modal("Вы точно хотите выйти\nиз своей учётной записи?")
 		.then(ok=>{
 			poll.stop=1;
-			Ajax.post('', {
-				logOut: true,
-			}, ()=>_w.location.reload());
+			fetch('', {
+				method: 'post',
+				body: JSON.stringify({logOut: true}),
+			}).then(_w.location.reload.bind(location));
 		}, err=>false)
 });
 
@@ -58,9 +59,11 @@ on(msgs,'click',e=>{
 		save.className= 'saveEdits';
 		save.textContent= '💾 SAVE';
 		save.title= "Сохранить";
-		Ajax.get('?getPost='+num, null, (success,status,resp)=>{
-			msg.area.value= resp.text;
-		});
+
+		fetch('?getPost='+num)
+		.then(resp=>{
+			 return resp.json();
+		}).then(json=>msg.area.value=json.text);
 
 		msg.appendChild(msg.area);
 		msg.appendChild(save);
@@ -96,6 +99,43 @@ on(msgs,'click',e=>{
 
 
 // todo Обработка пакетного выбора
+let selectedPanel= document.querySelector('#selectedPanel');
+	// selectedPosts= [];
+
+on(selectedPanel, 'click', e=>{
+	e.stopPropagation();
+	const t = e.target;
+
+	console.log({t,selectedPosts});
+
+	if(!selectedPosts.length) return;
+
+	let tmp= document.createElement('div');
+
+	// *Удаление
+	if(t.classList.contains('del')){
+		let nums=[];
+		selectedPosts.forEach(p=>{
+			nums.push(+p.querySelector('.num').textContent);
+		});
+
+		console.log({nums});
+
+		modal("Удалить выбранные посты " + nums + '?')
+		.then(ok=>{
+			refresh({
+				responseType:'json',
+				removePost: JSON.stringify(nums),
+			})
+		}, err=>{
+			return new Error(`Посты №${nums} не были удалены!`);
+		});
+
+		selectedPanel.classList.remove('active');
+		return;
+	}
+});
+
 // *
 /* on(selectedPanel, 'click', e=>{
 	let t= e.target;

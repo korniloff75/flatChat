@@ -48,18 +48,20 @@ export function hilightUsers (box, listNode){
 
 	// *Перебираем шапки постов
 	uInfo.forEach(i=>{
-		var name= i.querySelector('span.name').textContent,
+		var name= i.querySelector('span.name'),
 			stateElement= i.querySelector('span.state'),
 			IP= i.dataset.ip,
-			uid= defineUID(name,IP);
+			uid= defineUID(name.textContent,IP);
 
 		if(!users[uid]) return;
 
 		if(users[uid].on){
-			stateElement.classList.add('on');
+			stateElement && stateElement.classList.add('on');
+			name.classList.add('on');
 		}
 		else{
-			stateElement.classList.remove('on');
+			stateElement && stateElement.classList.remove('on');
+			name.classList.remove('on');
 		}
 		// console.log({users, uid}, users[uid]);
 		// debugger;

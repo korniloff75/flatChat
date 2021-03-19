@@ -77,10 +77,6 @@ $template= $Chat->setTemplate();
 
 		</main><!-- #wrapper -->
 
-		<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
-		<div class="users box">
-		</div>
-
 		<?=$template['header']?>
 
 		<?=$template['footer']?>

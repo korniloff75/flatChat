@@ -21,3 +21,15 @@
 #\$mw.mod-show{
   width: 100%;
 }
+
+#\$mw .close{
+  position: absolute;
+	right: 0; top: 0;
+	color: #fff;
+	background: #f33;
+	padding: .3em .5em;
+	cursor: pointer;
+	border-radius: 100%;
+	border: 2px solid;
+	font: bold 1em sans-serif;
+}

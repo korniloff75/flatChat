@@ -5,8 +5,11 @@ class Addons extends Chat
 
 	public function __construct()
 	{
-
+		self::createDir(self::ADDONS_PATHNAME);
 	}
+
+
+
 
 	public function listItems()
 	{

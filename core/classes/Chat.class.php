@@ -218,13 +218,7 @@ class Chat
 
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
-		if(
-			!is_dir(self::ARH_PATHNAME)
-			&& !mkdir(self::ARH_PATHNAME, 0755, true)
-		){
-			header('Content-Type: text/html; charset=utf-8');
-			throw new Exception("Невозможно создать директорию " . self::ARH_PATHNAME . ". Попробуйте создать её вручную");
-		}
+		self::createDir(self::ARH_PATHNAME);
 
 		if(
 			!file_exists($this->dbPathname)
@@ -347,26 +341,35 @@ class Chat
 
 	/**
 	 * !Удаление постов
+	 * @param {int|array} $nums
 	 */
-	protected function c_removePost($num)
+	protected function c_removePost($nums)
 	{
 		if(!is_adm()) return;
 
+		$nums= json_decode($nums, 1);
+		$nums= is_array($nums)? $nums: [$nums];
+
+		tolog(__METHOD__,null,['$nums'=>$nums]);
+
 		$file= &$this->_checkDB()->file;
-		$num-= $this->State->db->startIndex + 1;
 
-		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
+		foreach($nums as $num){
+			$num-= $this->State->db->startIndex + 1;
 
-		// *Удаляем прикрепления
-		if(!empty($files= json_decode($data['files']))) foreach($files as $f){
-			tolog(__METHOD__,null,['$f'=>\DR.'/'. $f]);
-			unlink(\DR.'/'. $f);
+			$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
+
+			// *Удаляем прикрепления
+			if(!empty($files= json_decode($data['files']))) foreach($files as $f){
+				tolog(__METHOD__,null,['$f'=>\DR.'/'. $f]);
+				unlink(\DR.'/'. $f);
+			}
+
+			unset($file[$num]);
+			// tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
 		}
 
-		unset($file[$num]);
 		$file= array_values(array_filter($file));
-
-		tolog(__METHOD__,null,['$num'=>$num,'$data'=>$data]);
 
 		file_put_contents( $this->dbPathname, $file, LOCK_EX );
 
@@ -444,7 +447,7 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b>.</label> <span class=\"state\"></span><span class=\"name\">$name"
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 
@@ -496,6 +499,7 @@ class Chat
 		$str = preg_replace( ["~\r~u", "~([\s\n]){5,}~u", "~\n~u"], ["", "$1$1$1$1", "<br />"], $str );
 		return mb_substr( $str, 0, self::MAXUSERTEXTLEN );
 	}
+
 
 
 	// *Архив

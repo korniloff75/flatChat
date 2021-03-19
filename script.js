@@ -346,6 +346,8 @@ function refreshAfter (handler, success, statusCode, response) {
 
 			scrollBottom();
 
+			Img.init(msgs);
+
 			if (oSND.checked) {
 				if (snd) {
 					snd.pause();
@@ -626,8 +628,9 @@ on(selectedPanel, 'click', e=>{
 	if(t.classList.contains('voice')){
 		selectedPosts.forEach(p=>{
 			let txt= p.querySelector('.post'),
+				name= p.querySelector('.name').textContent,
 				num= p.querySelector('.num');
-			tmp.innerHTML += `Пост ${num.textContent}. ${txt.innerHTML}...`;
+			tmp.innerHTML += `Пост ${num.textContent}. ${name}. ${txt.innerHTML}...`;
 		});
 
 		[].forEach.call(tmp.querySelectorAll('.cite_disp'), i=>i.remove());

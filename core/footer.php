@@ -1,6 +1,6 @@
-<?php
-// global $Chat;
-?>
+<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
+<div class="users box">
+</div>
 
 <h3>Архивные посты</h3>
 <div class="arhive box">

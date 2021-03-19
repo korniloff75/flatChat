@@ -40,6 +40,18 @@ trait Helpers
 	}
 
 
+	static function createDir($pathname)
+	{
+		if(
+			!is_dir($pathname)
+			&& !mkdir($pathname, 0755, true)
+		){
+			header('Content-Type: text/html; charset=utf-8');
+			throw new Exception("Невозможно создать директорию $pathname. Попробуйте создать её вручную");
+		}
+	}
+
+
 	// *Переводим все слеши в Unix
 	public static function fixSlashes(?string $path)
 	:?string
