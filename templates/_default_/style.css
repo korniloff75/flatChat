@@ -79,6 +79,15 @@ html, body {
 	padding-right: 0.5em;
 	color: #CB1E1E;
 }
+#msgsContent .info span.name.on,
+.on {
+color: LightCyan;
+background-color: DarkGreen;
+padding: .1em .3em;
+font-weight: 700;
+/* text-shadow: DarkGreen 3px 3px 0, DarkGreen -3px -3px 0, DarkGreen -3px 3px 0, DarkGreen 3px -3px 0; */
+
+}
 
 
 #msgsContent .msg .post {

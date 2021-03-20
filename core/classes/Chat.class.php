@@ -14,7 +14,7 @@ class Chat
 		DELTA_LINES= 100,
 		MAXUSERTEXTLEN= 1024,
 		MAXUSERNAMELEN= 20,
-		TEMPLATE_DEFAULT= 'default';
+		TEMPLATE_DEFAULT= '_default_';
 
 	static
 		// *Отладка
@@ -468,7 +468,7 @@ class Chat
 			$t.= '<div class="imgs">';
 			foreach($files as $f){
 				// $f= self::getPathFromRoot($f);
-				$t.= "<img src='./assets/placeholder.svg' data-src='/$f' draggable='false' />";
+				$t.= "<img src='./assets/placeholder.svg' data-src='/$f' data-test='".realpath("./$f")."' draggable='false' />";
 			}
 			$t.= '</div>';
 		}
@@ -501,7 +501,7 @@ class Chat
 	}
 
 
-
+	// todo
 	// *Архив
 	function getArhive()
 	{

@@ -1,5 +1,5 @@
 <?php
-require_once $_SERVER['DOCUMENT_ROOT'].'/index.php';
+// require_once $_SERVER['DOCUMENT_ROOT'].'/index.php';
 
 ?>
 <h2>Модальное окно</h2>
@@ -29,6 +29,110 @@ require_once $_SERVER['DOCUMENT_ROOT'].'/index.php';
 	});
 
 	document.querySelector('#modal-btn2').onclick= e=> modal('Ещё <b>текст</b> проверяем с <u>разметкой</u>.');
-
 </script>
+
+
+<!--  -->
+<link rel="stylesheet" type="text/css" media="screen" href="./main.css" />
+<section>
+    <h1>Синтез речи</h1>
+    <p>
+      Введите текст в поле ниже и нажмите кнопку "Play", чтобы прослушать запись. Выбирайте возможные голоса из списка
+      ниже
+    </p>
+    <form>
+      <input type="text" class="text">
+      <div class="row">
+        <div class="values-box">
+          <div class="value-box">
+            <div>Темп (Rate)</div>
+            <div class="value value--rate-value">1</div>
+          </div>
+          <div class="value-box">
+            <div>Диапазон (Pitch)</div>
+            <div class="value value--pitch-value">1</div>
+          </div>
+        </div>
+        <div class="ranges-box">
+          <input type="range" min="0.5" max="2" value="1" step="0.1" id="rate">
+          <input type="range" min="0" max="2" value="1" step="0.1" id="pitch">
+        </div>
+      </div>
+
+      </div>
+
+      <select>
+      </select>
+
+      <button id="play" type="submit">Play</button>
+    </form>
+  </section>
+  <hr>
+  <section class="speech-recognition-section">
+    <h1>Распознавание речи</h1>
+    <p>
+      Нажмите на иконку микрофона, и назовите любой цвет радуги, чтобы изменить фон
+    </p>
+    <div class="audio-record-animation__wrapper">
+      <div style="visibility: hidden;" class="audio-record-animation">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+    <div class="microphone-wrapper">
+      <img class="microphone__image" src="microphone.png" width="50" height="50" alt="">
+      <p class="recognition-result">Результат: по умолчанию</p>
+    </div>
+  </section>
+  <script src="./main.js"></script>
+<!--  -->
+
+
+<button onclick="speech ()">Слушать</button>
+  <button onclick="talk ()">Проговорить</button>
+  <button onclick="stop ()">Остановить</button>
+
+  <script>
+/* 		'use strict';
+  // Создаем распознаватель
+	const SpeechRecognition = window.speechRecognition || window.webkitSpeechRecognition;
+	const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+	const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+
+  // Ставим опцию, чтобы распознавание началось ещё до того, как пользователь закончит говорить
+	console.log({SpeechRecognition}, window.SpeechRecognition);
+  SpeechRecognition.interimResults = true;
+
+  // Какой язык будем распознавать?
+  SpeechRecognition.lang = 'ru-Ru';
+
+  // Используем колбек для обработки результатов
+  SpeechRecognition.onresult = function (event) {
+    var result = event.results[event.resultIndex];
+    if (result.isFinal) {
+      alert('Вы сказали: ' + result[0].transcript);
+    } else {
+      console.log('Промежуточный результат: ', result[0].transcript);
+    }
+  };
+
+  function speech () {
+    // Начинаем слушать микрофон и распознавать голос
+    SpeechRecognition.start();
+  }
+
+  var synth = window.speechSynthesis;
+  var utterance = new SpeechSynthesisUtterance('How about we say this now? This is quite a long sentence to say.');
+
+  function talk () {
+    synth.speak (utterance);
+  }
+
+  function stop () {
+    synth.pause();
+  } */
+  </script>
 </div>

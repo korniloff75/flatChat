@@ -16,11 +16,6 @@ else{
 ?>
 </h4><!-- .auth -->
 
-<style>
-	#settings {
-		clear:both;
-	}
-</style>
 
 <div id="settings">
 	<strong>Шаблон</strong> -

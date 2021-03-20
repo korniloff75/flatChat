@@ -232,7 +232,6 @@ a:hover {
 .on {
 	color: #2f2;
 	font-weight: 700;
-	/* background: ; */
 }
 
 #msgsContent .msg a {
@@ -360,7 +359,8 @@ a:hover {
 margin:50px 0;
 }
 .item-block p{
-font-size:90%;margin-bottom:5px;
+/*? font-size:90%; */
+margin-bottom:5px;
 }
 
 .tipUpper {
@@ -415,6 +415,10 @@ font-size:90%;margin-bottom:5px;
 	border-top-color: #ff00ff;
 	filter: progid:DXImageTransform.Microsoft.Chroma(color='#FF00FF');
 	zoom: 1;
+}
+
+.meta {
+	opacity: .7;
 }
 
 #selectedPanel{
@@ -477,15 +481,10 @@ font-size:90%;margin-bottom:5px;
 
 .edit, .saveEdits {
 	color: blue;
-	/* border-color: #def;
-	background: #def; */
 }
 
 .edit:hover, .saveEdits:hover{
 	box-shadow: 0 0 2px #0000004d;
-	/* border-color: #67A1D7;
-	color: #fff;
-	background: #67A1D7; */
 }
 
 .del, .button.del{
@@ -496,7 +495,7 @@ font-size:90%;margin-bottom:5px;
 	box-shadow: 0 0 2px 0px #c22;
 }
 
-/* SVG buttons */
+/* *SVG* buttons */
 [class|=svg]{
 	width: 4em;
 	fill: #abc;
@@ -509,8 +508,17 @@ font-size:90%;margin-bottom:5px;
 	left: 1em;
 }
 
+.svg-toBottom {
+	left: 49%;
+}
+
 .svg-toForm {
 	right: 1em;
+}
+
+#settings {
+	clear:both;
+	padding: .3em .5em;
 }
 
 

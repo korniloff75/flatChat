@@ -481,6 +481,7 @@ on(f,'submit', formSubmit);
 
 // *Scroll to posts/form
 let toReadSvg= document.querySelector('.svg-toRead'),
+	toBottomSvg= document.querySelector('.svg-toBottom'),
 	toFormSvg= document.querySelector('.svg-toForm');
 
 on(_w, 'scroll', e=>{
@@ -501,6 +502,12 @@ console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
 on(toReadSvg, 'click', e=>{
 	e.stopPropagation();
 	scrollIntoView(msgs,{block:'start'}, e);
+});
+
+// *Scroll to bottom post
+on(toBottomSvg, 'click', e=>{
+	e.stopPropagation();
+	scrollIntoView(msgs.lastElementChild,{block:'start'}, e);
 });
 
 // *Scroll to form
