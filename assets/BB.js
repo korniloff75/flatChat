@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-import {on, prinText} from './helpers.js';
+import {on, SpeechRecognition, prinText} from './helpers.js';
 
 var bbs= ['B','I','U','S','❞'];
 
@@ -26,10 +26,17 @@ export function createPanel (ta){
 	const p = document.createElement('div');
 	p.className= 'smile';
 
-	p.insertAdjacentHTML('beforeend',`<div class='bb'></div>
+	let panelHtml= `<div class='bb'></div>
 	<div class='sm'>
 	</div>
-	<div class='recognition button' title='Голосовой ввод'>🎤</div>`);
+	`;
+
+	if(SpeechRecognition){
+		panelHtml+= "<div class='recognition button' title='Голосовой ввод'>🎤</div>";
+	}
+
+	p.insertAdjacentHTML('beforeend',panelHtml);
+
 
 	const smiles= p.querySelector('.sm'),
 		bb= p.querySelector('.bb'),
@@ -78,13 +85,18 @@ export function createPanel (ta){
 		else if(t.closest('.sm')){
 			insert(' ' + t.textContent + ' ', '', ta);
 		}
+		// *Распознаём звук
 		else if(t.closest('.recognition')){
-			prinText(ta);
+			prinText().then(txt=>{
+				console.log(txt);
+				insert(' ' + txt + ' ', '', ta);
+			}, err=>false);
 		}
 	});
 
 	return p;
 }
+
 
 function replace (txt) {
 	// Duples

@@ -1,5 +1,5 @@
 'use strict';
-import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport} from './assets/helpers.js';
+import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -340,24 +340,7 @@ function refreshAfter (handler, success, statusCode, response) {
 
 		// *if Modifed
 		if (html !== undefined) {
-			msgs.innerHTML = html;
-
-			State.findMyPosts(msgs);
-
-			scrollBottom();
-
-			Img.init(msgs);
-
-			if (oSND.checked) {
-				if (snd) {
-					snd.pause();
-					snd.currentTime = 0;
-					snd.play()
-					.catch((err) => {
-						console.log('Аудио не воспроизвелось: \n'+err);
-					});
-				}
-			}
+			msgsModifed(html);
 		}
 
 		// *Every
@@ -368,6 +351,35 @@ function refreshAfter (handler, success, statusCode, response) {
 
 	if (handler) handler(success, statusCode, html);
 } //refreshAfter
+
+
+// *new post
+function msgsModifed(html){
+	msgs.innerHTML = html;
+
+	State.findMyPosts(msgs);
+
+	scrollBottom();
+
+	Img.init(msgs);
+
+	if (oSND.checked) {
+		if (snd) {
+			snd.pause();
+			snd.currentTime = 0;
+			snd.play()
+			.catch((err) => {
+				console.log('Аудио не воспроизвелось: \n'+err);
+			});
+		}
+	}
+
+	if(document.hidden) sendNotification(`${location.host}${location.pathname}`, {
+		body: 'Получено новое сообщение',
+		icon: 'icon.jpg',
+		dir: 'auto'
+	});
+}
 
 
 /**
@@ -459,7 +471,7 @@ function formSubmit (e) {
 		function (state, status, txt) {
 			scrollIntoView(msgs,{block:'start'});
 			if (state) {
-				text.value = "";
+				text.value = text.textContent = "";
 				ah(text);
 			}
 

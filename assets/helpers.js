@@ -1,5 +1,7 @@
 'use strict';
 
+import { modal } from "./modal/modal.js";
+
 const _w= window;
 
 // *noConsole
@@ -257,11 +259,10 @@ export function speak(txt){
 }
 
 
+export const SpeechRecognition =
+window.SpeechRecognition || window.webkitSpeechRecognition;
+
 export function prinText(ta){
-	// ta= ta || this;
-	// Speech recognition
-	const SpeechRecognition =
-		window.SpeechRecognition || window.webkitSpeechRecognition;
 	const SpeechGrammarList =
 		window.SpeechGrammarList || window.webkitSpeechGrammarList;
 	const SpeechRecognitionEvent =
@@ -278,8 +279,9 @@ export function prinText(ta){
 	recognition.grammars = speechRecognitionList;
 	recognition.lang = 'ru-RU';
 	recognition.interimResults = false;
+	// recognition.interimResults = true;
 	recognition.maxAlternatives = 1;
-
+	recognition.continuous = false;
 
 	recognition.start();
 	console.log('Ready to receive...');
@@ -288,20 +290,51 @@ export function prinText(ta){
 		console.log('Audio START...');
 	};
 
-	recognition.onresult = function(event) {
-		console.log({event});
-		const last = event.results.length - 1;
-		const txt = event.results[last][0].transcript;
-
-		ta.value = ta.textContent = txt;
-		ta.focus();
-		console.log('Confidence: ' + event.results[0][0].confidence);
-	};
-
 	recognition.onspeechend = function(event) {
 		recognition.stop();
 		console.log('Audio END...', {event});
 	};
+
+	return new Promise((res,rej)=>{
+		recognition.onerror = function(err) {
+			console.log(`Error: ${err.message}`, err);
+			 return rej(err);
+		}
+
+		recognition.onresult = function(event) {
+			console.log('Result:', event);
+			const last = event.results.length - 1;
+			const txt = event.results[last][0].transcript;
+
+			// ta.value = ta.textContent = txt;
+			// ta.focus();
+			console.log('Confidence: ' + event.results[0][0].confidence);
+			return res(txt);
+		};
+	});
+}
+
+
+export function sendNotification(title, options) {
+	// Проверим, поддерживает ли браузер HTML5 Notifications
+	if (!("Notification" in window)) {
+	alert('Ваш браузер не поддерживает HTML Notifications, его необходимо обновить.');
+	}
+
+	// Проверим, есть ли права на отправку уведомлений
+	else if (Notification.permission === "granted") {
+	// Если права есть, отправим уведомление
+	var notification = new Notification(title, options);
+	}
+
+	// Если прав нет, пытаемся их получить
+	else if (Notification.permission !== 'denied') {
+		Notification.requestPermission()
+		.then(ok=>new Notification(title, options));
+	} else {
+		// Пользователь ранее отклонил наш запрос на показ уведомлений
+	}
+	return notification;
 }
 
 
