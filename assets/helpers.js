@@ -257,10 +257,52 @@ export function speak(txt){
 }
 
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
-const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+export function prinText(ta){
+	// ta= ta || this;
+	// Speech recognition
+	const SpeechRecognition =
+		window.SpeechRecognition || window.webkitSpeechRecognition;
+	const SpeechGrammarList =
+		window.SpeechGrammarList || window.webkitSpeechGrammarList;
+	const SpeechRecognitionEvent =
+		window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
 
+	if(!SpeechRecognition) return;
+
+	const grammar =
+	'#JSGF V1.0; ';
+
+	const recognition = new SpeechRecognition();
+	const speechRecognitionList = new SpeechGrammarList();
+	speechRecognitionList.addFromString(grammar, 1);
+	recognition.grammars = speechRecognitionList;
+	recognition.lang = 'ru-RU';
+	recognition.interimResults = false;
+	recognition.maxAlternatives = 1;
+
+
+	recognition.start();
+	console.log('Ready to receive...');
+
+	recognition.onaudiostart = function() {
+		console.log('Audio START...');
+	};
+
+	recognition.onresult = function(event) {
+		console.log({event});
+		const last = event.results.length - 1;
+		const txt = event.results[last][0].transcript;
+
+		ta.value = ta.textContent = txt;
+		ta.focus();
+		console.log('Confidence: ' + event.results[0][0].confidence);
+	};
+
+	recognition.onspeechend = function(event) {
+		recognition.stop();
+		console.log('Audio END...', {event});
+	};
+}
 
 
 

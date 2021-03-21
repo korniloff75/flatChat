@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-import {on} from './helpers.js';
+import {on, prinText} from './helpers.js';
 
 var bbs= ['B','I','U','S','❞'];
 
@@ -28,10 +28,12 @@ export function createPanel (ta){
 
 	p.insertAdjacentHTML('beforeend',`<div class='bb'></div>
 	<div class='sm'>
-	</div>`);
+	</div>
+	<div class='recognition button' title='Голосовой ввод'>🎤</div>`);
 
 	const smiles= p.querySelector('.sm'),
-		bb= p.querySelector('.bb');
+		bb= p.querySelector('.bb'),
+		recognition= p.querySelector('.recognition');
 
 
 	bbs.forEach(i=>{
@@ -75,6 +77,9 @@ export function createPanel (ta){
 		}
 		else if(t.closest('.sm')){
 			insert(' ' + t.textContent + ' ', '', ta);
+		}
+		else if(t.closest('.recognition')){
+			prinText(ta);
 		}
 	});
 
