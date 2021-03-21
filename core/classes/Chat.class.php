@@ -559,10 +559,9 @@ class Chat
 	// *Сохраняем выбранный шаблон
 	protected function c_changeTemplate($template=null)
 	{
-		tolog(__METHOD__,null,['$this->uState'=>$this->uState, '$this->UID'=>$this->UID]);
+		// tolog(__METHOD__,null,['$this->uState'=>$this->uState, '$this->UID'=>$this->UID]);
 
 		if($template= self::fixSlashes($template)){
-			// $this->State->db->set(['template'=>$template
 			$this->State->db->set(['users'=>[$this->UID=>['template'=>$template]]]);
 		}
 	}

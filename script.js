@@ -281,29 +281,26 @@ _w.scrollBottom= function scrollBottom() {
  * @param {function} handler
  */
 export function refresh(params, handler) {
-	/* if(!(params instanceof FormData)){
-		params= Object.assign({responseType:'json'}, params );
-	} */
-
 	params.lastMod = params.lastMod == 0? 0 : LastMod;
 
-	Ajax.post(
+	return Ajax.post(
 		_w.location.toString(),
-		params,
-		refreshAfter.bind(null,handler)
-	);
+		params
+	).then(XMLo=>refreshAfter(handler,XMLo));
 };
 
 
 /**
  * *Коллбэк для refresh
  * @param {function} handler - callback after ajax
- * @param {bool} success - result of ajax
- * @param {string} statusCode - must be 200
- * @param {obj|string} response - data from ajax
+ * @param {obj} XMLo - result of ajax
  */
-function refreshAfter (handler, success, statusCode, response) {
+function refreshAfter (handler, XMLo) {
 	// console.log(arguments);
+
+	let success= XMLo.statusText === 'OK',
+		statusCode= XMLo.status,
+		response= XMLo.response;
 
 	if (!success) {
 		tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
@@ -386,27 +383,21 @@ function msgsModifed(html){
  */
 export var poll = (function () {
 	var t,
-		inProgress = false,
 		data= { mode: "list", responseType:'json' };
 
 	var rq = function () {
 		console.log({Chat});
-		if (inProgress || poll.stop || !Chat.name) return;
+		if ( poll.stop || !Chat.name ) return;
 
-		/* if(!Chat.name){
-			data.name= f.name.value;
-		} */
-
-		inProgress = true;
 		// msgsDialogWaiter.show(true, false);
 		refresh(
-			data,
+			data/* ,
 			function (success, status, txt) {
 				// msgsDialogWaiter.show(false);
 				inProgress = false;
 				poll(true);
-			}
-		);
+			} */
+		).then(()=>poll(true));
 	};
 
 	return function (rewait) {
@@ -464,27 +455,24 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
-	refresh(
-		fd,
-		function (state, status, txt) {
-			scrollIntoView(msgs,{block:'start'});
-			if (state) {
-				text.value = text.textContent = "";
-				ah(text);
-			}
+	refresh( fd	)
+	.then(function () {
+		scrollIntoView(msgs,{block:'start'});
+		text.value = text.textContent = "";
+		ah(text);
 
-			// *Очищаем
-			f.reset();
-			name.value= Chat.name;
+		// *Очищаем
+		f.reset();
+		name.value= Chat.name;
 
-			showAttaches();
-			countChars.call(f.text);
+		showAttaches();
+		countChars.call(f.text);
 
-			State.findMyPosts(msgs);
-		}
-	);
+		State.findMyPosts(msgs);
+	});
 	return false;
 };
+
 
 on(f,'submit', formSubmit);
 
@@ -647,6 +635,7 @@ on(selectedPanel, 'click', e=>{
 			let txt= p.querySelector('.post'),
 				name= p.querySelector('.name').textContent,
 				num= p.querySelector('.num');
+
 			tmp.innerHTML += `Пост ${num.textContent}. ${name}. ${txt.innerHTML}...`;
 		});
 
@@ -666,6 +655,7 @@ on(selectedPanel, 'click', e=>{
 		return;
 	}
 });
+
 
 // *Одиночная обработка постов
 on(msgs,'click',e=>{
@@ -701,7 +691,7 @@ on(msgs,'click',e=>{
 		return speak(post.textContent.replace(/\p{S}/iug,''));
 	}
 
-	// todo
+
 	// *Выделяем посты
 	if(select){
 		select= select.querySelector('input');

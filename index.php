@@ -78,7 +78,7 @@ $template= $Chat->setTemplate();
 							<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
 						</div>
 					</div>
-					<div class="attaches">
+					<div class="attaches" hidden>
 						<h3>Прикрепления:</h3>
 						<p><button class="clear button">Очистить</button></p>
 						<div><!-- attach items --></div>

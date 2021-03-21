@@ -70,28 +70,34 @@ export const Ajax={
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*\/*");
 
+		return ajaxHandler(XMLo, reqParams, callback);
+
+		// return (XMLo !== null);
+	}
+}
+
+function ajaxHandler(XMLo, reqParams, callback){
+	return new Promise((res,rej)=>{
 		XMLo.onreadystatechange = function () {
 			if (XMLo.readyState !== 4) return;
-			var resp= XMLo.response;
 
 			// if (XMLo.status == 200 || XMLo.status == 0) {
 			if (XMLo.status === 200) {
 				console.log({XMLo});
-
-				callback&&callback(true, XMLo.status, resp);
-				return Promise.resolve(XMLo);
+				return res(XMLo);
 			}
 			else{
-				return Promise.reject(XMLo);
+				return rej(XMLo);
 			}
 
 			XMLo = null;
 		};
 
 		XMLo.send(reqParams);
-
-		return (XMLo !== null);
-	}
+	}).then(XMLo=>{
+		callback&&callback(true, XMLo.status, XMLo.response);
+		return XMLo;
+	})
 }
 
 
