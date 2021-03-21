@@ -19,6 +19,8 @@ class State /* extends Chat */
 		$this->db= new DbJSON(self::BASE_PATHNAME);
 
 		$this->db->set(['users'=>[$UID=>$uState]]);
+
+		if(!$this->db->startIndex) $this->db->set(['startIndex'=>0]);
 	}
 
 

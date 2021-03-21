@@ -78,11 +78,11 @@ export function createPanel (ta){
 
 	on(p,'click',e=>{
 		var t= e.target;
-		if(t.closest('.bb')){
+		if(t.closest('.bb') && t.tagName === 'I'){
 			var c= (t.bb || t.textContent).toLowerCase();
 			insert('['+c+']', '[/'+c+']', ta);
 		}
-		else if(t.closest('.sm')){
+		else if(t.closest('.sm') && t.tagName === 'I'){
 			insert(' ' + t.textContent + ' ', '', ta);
 		}
 		// *Распознаём звук

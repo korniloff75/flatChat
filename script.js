@@ -363,20 +363,18 @@ function msgsModifed(html){
 
 	Img.init(msgs);
 
-	if (oSND.checked) {
-		if (snd) {
-			snd.pause();
-			snd.currentTime = 0;
-			snd.play()
-			.catch((err) => {
-				console.log('Аудио не воспроизвелось: \n'+err);
-			});
-		}
+	if (oSND.checked && snd) {
+		snd.pause();
+		snd.currentTime = 0;
+		snd.play()
+		.catch((err) => {
+			console.log('Аудио не воспроизвелось: \n'+err);
+		});
 	}
 
 	if(document.hidden) sendNotification(`${location.host}${location.pathname}`, {
 		body: 'Получено новое сообщение',
-		icon: 'icon.jpg',
+		icon: './assets/imgs/mail.png',
 		dir: 'auto'
 	});
 }

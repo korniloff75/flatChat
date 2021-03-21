@@ -238,7 +238,7 @@ class Chat
 				// *Добавляем в архив
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
-				$this->State->db->set(['startIndex'=>$this->State->db->get('startIndex') + ($count - self::MAX_LINES)]);
+				$this->State->db->set(['startIndex'=>($this->State->db->get('startIndex') ?? 0) + ($count - self::MAX_LINES)]);
 			}
 
 		}

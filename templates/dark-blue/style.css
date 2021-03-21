@@ -153,12 +153,8 @@ label.input__file::before{
 
 
 .block {
-	/* position: relative; */
-	padding: .1em 0 1em 1em;
-	padding-right: 0;
 	-webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
 	box-shadow: 0 0 5px rgba(0,0,0,.2);
-	/* background: #fafafa; */
 }
 
 
@@ -169,7 +165,6 @@ label.input__file::before{
 	border: 2px solid #135;
 	margin: 0;
 	z-index: 1;
-	/* padding: .9em; */
 	max-width: 100%;
 	overflow: hidden;
 	box-shadow: 0 0 5px rgba(0,0,0,.2);
@@ -181,7 +176,7 @@ label.input__file::before{
 
 .block2 input[type='text'],
 .block2 textarea{
-	background: #f6f6f6;padding:.5em!important;
+	background: #f6f6f6;padding:.5em !important;
 }
 
 .block2 input[type='text']:focus,

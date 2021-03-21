@@ -142,6 +142,10 @@ a:hover {
 	padding: .3em;
 }
 
+#msgsDialog {
+	background: inherit;
+}
+
 .users {
 	display: flex;
 	flex-wrap: wrap;
@@ -445,6 +449,8 @@ margin-bottom:5px;
 	display: flex;
 	font-size: 2em;
 	justify-content: space-around;
+	/* align-content: center; */
+	align-items: center;
 }
 .smile i {
 	font-style: normal;
@@ -527,6 +533,17 @@ margin-bottom:5px;
 /* ***** */
 /* media */
 @media (max-width:500px){
+	#wrapper {
+		padding: .1em;
+	}
+
+	.block {
+		padding: .1em 0 .5em .5em;
+		-webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
+		box-shadow: 0 0 5px rgba(0,0,0,.2);
+		background: #fafafa;
+	}
+
 	.checkbox{
 		display: none;
 	}
@@ -537,7 +554,6 @@ margin-bottom:5px;
 
 	.block2 {
 		border-width: 1px;
-		padding: .5em;
 	}
 
 	[class|=svg]{

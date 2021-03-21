@@ -270,8 +270,7 @@ export function prinText(ta){
 
 	if(!SpeechRecognition) return;
 
-	const grammar =
-	'#JSGF V1.0; ';
+	const grammar = '#JSGF V1.0; ';
 
 	const recognition = new SpeechRecognition();
 	const speechRecognitionList = new SpeechGrammarList();
@@ -306,9 +305,6 @@ export function prinText(ta){
 			const last = event.results.length - 1;
 			const txt = event.results[last][0].transcript;
 
-			// ta.value = ta.textContent = txt;
-			// ta.focus();
-			console.log('Confidence: ' + event.results[0][0].confidence);
 			return res(txt);
 		};
 	});
@@ -317,8 +313,8 @@ export function prinText(ta){
 
 export function sendNotification(title, options) {
 	// Проверим, поддерживает ли браузер HTML5 Notifications
-	if (!("Notification" in window)) {
-	alert('Ваш браузер не поддерживает HTML Notifications, его необходимо обновить.');
+	if (!window.Notification) {
+	modal('Ваш браузер не поддерживает HTML Notifications, его необходимо обновить.');
 	}
 
 	// Проверим, есть ли права на отправку уведомлений
