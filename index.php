@@ -70,6 +70,7 @@ $template= $Chat->setTemplate();
 				<form action="./core/bot.php" method="post" id="sendForm">
 					<div id="sendDialog" class="block2">
 						<input type="hidden" name="name" value="<?=$Chat->name?>" maxLength="<?=Chat::MAXUSERNAMELEN?>" placeholder="Имя" required />
+						<input type="hidden" name="appeals" value="" placeholder="Обращения" />
 						<textarea name="text" placeholder="Текст" maxLength="<?=Chat::MAXUSERTEXTLEN?>" required autofocus></textarea>
 						<div class="submit">
 							<label class="input__file button" for="attach" title="jpg,png,gif">Добавить изображение

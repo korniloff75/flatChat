@@ -6,7 +6,8 @@
  */
 
 var db={},
-	users;
+	users,
+	appeals= document.querySelector('.appeals');
 
 // console.log({Chat});
 
@@ -23,7 +24,13 @@ export function defineUID (name,IP){
 }
 
 
-// *Выделение постов пользователя
+/**
+ * *Выделение постов пользователя
+ * после отправки и появления новых постов
+ * !deprecated
+ * todo- add appeals, перенести в handlePosts
+ * @param {Node} msgs
+ */
 export function findMyPosts (msgs) {
 	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
 		var uid= msg.dataset.uid;
@@ -35,7 +42,44 @@ export function findMyPosts (msgs) {
 
 
 /**
+ * *Обработка постов после отправки и появления новых
+ *
+ * todo- add appeals
+ * @param {HTMLElement} msgs
+ */
+export function handlePosts (msgs) {
+	let dfr= document.createDocumentFragment();
+
+	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
+		var uid= msg.dataset.uid,
+			appealsList= msg.dataset.appeals.split(',');
+
+		// *Выделение постов пользователя
+		[Chat.myUID, Chat.UID].includes(uid) && msg.classList.add('myPost');
+
+		// console.log({appealsList},Chat.UID);
+
+		// *Обращения
+		if(appealsList.includes(Chat.UID)){
+			let post= msg.querySelector('.post').cloneNode(true),
+				name= msg.querySelector('span.name'),
+				num= msg.querySelector('.num');
+			post.insertAdjacentHTML('afterbegin', `<p><a href="#${msg.id}">${num.textContent}</a> from <b>${name.textContent}</b></p>`);
+			post.insertAdjacentHTML('beforeend', `<hr>`);
+			dfr.appendChild(post);
+		}
+
+		// console.log(uid, [Chat.myUID, Chat.UID].includes(uid));
+	});
+
+	appeals.innerHTML='';
+	appeals.appendChild(dfr);
+}
+
+
+/**
  * *Hilight online users and fill the user list
+ * every update box content
  * @param {HTMLElement} box
  * @param {HTMLElement} listNode
  */
@@ -49,7 +93,7 @@ export function hilightUsers (box, listNode){
 	// *Перебираем шапки постов
 	uInfo.forEach(i=>{
 		var name= i.querySelector('span.name'),
-			stateElement= i.querySelector('span.state'),
+			stateElement= i.querySelector('span.state'), //deprecated
 			IP= i.dataset.ip,
 			uid= defineUID(name.textContent,IP);
 
@@ -111,6 +155,7 @@ function addToUsersList (listNode) {
 	// console.log({node});
 }
 
+// *fix dates
 function fixZero (num) {
 	return num < 10? '0'+num: num;
 }

@@ -8,6 +8,8 @@ $pathname= filter_var($_GET['f'], FILTER_SANITIZE_STRING);
 $Arh= new Chat("../$pathname");
 $Arh->useStartIndex= false;
 
+// *Выводим в шаблон
+$template= $Arh->setTemplate();
 
 ?>
 <!DOCTYPE html>
@@ -17,7 +19,7 @@ $Arh->useStartIndex= false;
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Archive</title>
-	<link rel="stylesheet" href="style.css">
+	<?=$template['head']?>
 </head>
 <body>
 	<nav style="text-align:center;"><a href="/"><button class="button">В чат</button></a></nav>
@@ -29,7 +31,7 @@ $Arh->useStartIndex= false;
 	</div>
 
 	<script type="module">
-		import {on,speak} from './assets/helpers.js';
+		import {on,speak} from '../assets/helpers.js';
 
 		on(document.getElementById("msgsContent"),'click',e=>{
 			var t = e.target,
@@ -45,7 +47,7 @@ $Arh->useStartIndex= false;
 		});
 	</script>
 
-	<script src="./assets/helpers.js" type="module"></script>
+	<script src="../assets/helpers.js" type="module"></script>
 </body>
 </html>
 

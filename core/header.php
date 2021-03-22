@@ -1,5 +1,6 @@
 <div class="checkbox">
 	<label class="options first"><input id="playSound" type="checkbox" checked="checked"> звук</label>
+	<label class="options"><input id="notifications" type="checkbox" checked="checked"> уведомления</label>
 	<label class="options"><input id="autoHeight" type="checkbox" checked="checked"> авторазмер ввода</label>
 </div>
 
@@ -23,7 +24,8 @@ else{
 		<?php
 		// tolog('$Chat->templatePath= ' . $Chat->templatePath, null, [$Chat]);
 
-		foreach(new FilesystemIterator (dirname($Chat->templatePath)) as $tfi){
+		// foreach(new FilesystemIterator (dirname($Chat->templatePath)) as $tfi){
+		foreach(new FilesystemIterator (dirname($this->templatePath)) as $tfi){
 			if(!$tfi->isDir()) continue;
 
 			// tolog(__FILE__,null,[$tfi, Chat::fixSlashes($tfi->getPathname())]);

@@ -6,8 +6,7 @@ import * as State from './assets/State.js';
 import * as Img from './assets/Images/Images.js';
 export {Ajax, scrollIntoView, css, on, off, speak};
 
-// *Glob server vars
-console.log({Chat, LastMod, Out});
+console.log('Glob server vars', {Chat, LastMod, Out});
 
 const _w= window;
 
@@ -26,8 +25,10 @@ if(f){
 }
 
 
-var oSND = document.getElementById("playSound");
-var oAH = document.getElementById("autoHeight");
+// *Чекбоксы
+let oSND = document.getElementById("playSound"),
+	oNTF = document.getElementById("notifications"),
+	oAH = document.getElementById("autoHeight");
 
 
 function hideName(){
@@ -292,7 +293,7 @@ export function refresh(params, handler) {
 
 /**
  * *Коллбэк для refresh
- * @param {function} handler - callback after ajax
+ * @param {function} handler - !deprecated
  * @param {obj} XMLo - result of ajax
  */
 function refreshAfter (handler, XMLo) {
@@ -354,7 +355,7 @@ function refreshAfter (handler, XMLo) {
 function msgsModifed(html){
 	msgs.innerHTML = html;
 
-	State.findMyPosts(msgs);
+	State.handlePosts(msgs);
 
 	scrollBottom();
 
@@ -369,7 +370,7 @@ function msgsModifed(html){
 		});
 	}
 
-	if(document.hidden) sendNotification(`${location.host}${location.pathname}`, {
+	if(document.hidden && oNTF.checked) sendNotification(`${location.host}${location.pathname}`, {
 		body: 'Получено новое сообщение',
 		icon: './assets/imgs/mail.png',
 		dir: 'auto'
@@ -390,14 +391,7 @@ export var poll = (function () {
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
-		refresh(
-			data/* ,
-			function (success, status, txt) {
-				// msgsDialogWaiter.show(false);
-				inProgress = false;
-				poll(true);
-			} */
-		).then(()=>poll(true));
+		refresh( data ).then(()=>poll(true));
 	};
 
 	return function (rewait) {
@@ -464,11 +458,12 @@ function formSubmit (e) {
 		// *Очищаем
 		f.reset();
 		name.value= Chat.name;
+		f.appeals.value= '';
 
 		showAttaches();
 		countChars.call(f.text);
 
-		State.findMyPosts(msgs);
+		State.handlePosts(msgs);
 	});
 	return false;
 };
@@ -676,7 +671,15 @@ on(msgs,'click',e=>{
 		e.stopPropagation();
 		e.preventDefault();
 
-		return BB.insert(`[b]${name.textContent}`,'[/b], ',f.text);
+		let appeals= f.appeals.value.split(',');
+
+		if(!appeals.includes(msg.dataset.uid)){
+			appeals.push(msg.dataset.uid);
+		}
+
+		f.appeals.value= appeals.join(',');
+
+		return BB.insert(`[b]@${name.textContent}`,'[/b], ',f.text);
 	}
 
 	// *Переход с цитаты к посту
@@ -739,7 +742,7 @@ on(_w, 'load', e=>{
 
 	Img.init(msgs);
 
-	State.findMyPosts(msgs);
+	State.handlePosts(msgs);
 
 	// todo
 	State.setDB(Out.state)

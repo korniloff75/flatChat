@@ -359,6 +359,12 @@ a:hover {
 	transform: rotate(0deg) translate(-40px, -15px) skew(20deg);
 }
 
+.appeals {
+	/* max-height: 15em; */
+	overflow: auto !important;
+	padding: 0 1em;
+}
+
 .item-block{
 margin:50px 0;
 }
@@ -526,6 +532,24 @@ margin-bottom:5px;
 #settings {
 	clear:both;
 	padding: .3em .5em;
+}
+
+section.bottom{
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: stretch;
+}
+
+section.bottom > div {
+	flex: 1 1;
+	display: flex;
+	flex-direction: column;
+	/* height: 100%; */
+}
+
+section.bottom .box {
+	flex: 1 1 100%;
 }
 
 
