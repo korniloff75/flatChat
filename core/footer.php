@@ -14,7 +14,7 @@
 	<div>
 		<h3>Архивные посты</h3>
 		<div class="arhive box">
-			<?=$this->getArhive()?>
+			<?=$this->getArhives()?>
 		</div>
 	</div>
 

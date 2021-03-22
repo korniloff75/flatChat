@@ -31,20 +31,19 @@ export function defineUID (name,IP){
  * todo- add appeals, перенести в handlePosts
  * @param {Node} msgs
  */
-export function findMyPosts (msgs) {
+/* export function findMyPosts (msgs) {
 	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
 		var uid= msg.dataset.uid;
 
 		([Chat.myUID, Chat.UID].includes(uid)) && msg.classList.add('myPost');
 		// console.log(uid, [Chat.myUID, Chat.UID].includes(uid));
 	});
-}
+} */
 
 
 /**
  * *Обработка постов после отправки и появления новых
  *
- * todo- add appeals
  * @param {HTMLElement} msgs
  */
 export function handlePosts (msgs) {
