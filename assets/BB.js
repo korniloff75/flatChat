@@ -31,7 +31,7 @@ export function createPanel (ta){
 	</div>
 	`;
 
-	if(SpeechRecognition){
+	if(Out.is_https && SpeechRecognition){
 		panelHtml+= "<div class='recognition button' title='Голосовой ввод'>🎤</div>";
 	}
 

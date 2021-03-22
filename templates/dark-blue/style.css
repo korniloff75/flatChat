@@ -14,6 +14,10 @@ html, body {
 }
 
 
+hr {
+	color: #111922;
+}
+
 #selectedPanel{
 	color: #bcd;
 	background-color: #111922;
@@ -63,7 +67,7 @@ html, body {
 }
 
 #msgsContent .msg + .msg {
-	border: 1px dashed #e0e0e0;
+	border: 1px dashed #ccc;
 }
 
 #msgsContent .msg .info {
@@ -87,11 +91,15 @@ html, body {
 #msgsContent .msg .post {
 	padding: 1em;
 	margin-top: 1em;
-	background: #cde;
+	background: #abc;
 	font-size: 100%;
 	border-radius: 5px;
-	border: 1px solid #f2f2f2;
+	border: 1px solid #aaa;
 	color: #227;
+}
+
+#msgsContent .msg .cite_disp {
+	background: #cde;
 }
 
 
@@ -222,13 +230,13 @@ text-align:left;margin-top:20px;
 
 .button:active {
 	color: #555555;
-
 	text-shadow: #ffffff 0px 1px 0;
-
 	border-color: #9a9a9a;
-
 	background: #e6e6e6 none;
-
 	-webkit-box-shadow: inset 0 0 2px #d0d0d0;
 	box-shadow: inset 0 0 2px #d0d0d0;
+}
+
+#\$mw {
+	background: #111922 !important;
 }

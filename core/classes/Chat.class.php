@@ -21,7 +21,7 @@ class Chat
 		$dev= true,
 		$log,
 		// *Порядок данных
-		$indexes= ['IP','ts','name','text','files'];
+		$indexes= ['IP','ts','name','text','files','appeals'];
 
 	public
 		$dbPathname,
@@ -141,7 +141,7 @@ class Chat
 			}
 		}
 
-		$mode= &$this->uState['mode'];
+		$this->uState['mode']= @$_REQUEST["mode"];
 
 		$cook= json_encode([
 			'name'=> $this->name,
@@ -149,9 +149,6 @@ class Chat
 			'UID'=> $this->UID,
 		], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
-		$mode = @$_REQUEST["mode"];
-
-		// $this->uState['mode'] = $mode ?? null;
 
 		if ( $cook !== @$_COOKIE["chatUser"] ) setcookie( "chatUser", $cook, mktime( 0, 0, 0, 12, 31, 3000 ), \COOKIEPATH, '', false, true );
 	}
@@ -190,7 +187,7 @@ class Chat
 			$f= self::getPathFromRoot($f);
 		});
 
-		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($files,  JSON_UNESCAPED_SLASHES)];
+		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($files,  JSON_UNESCAPED_SLASHES),filter_var(@$_REQUEST['appeals'])];
 
 		// *Write
 		file_put_contents( $this->dbPathname, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
@@ -270,28 +267,34 @@ class Chat
 
 		$out['state']= $this->State->db->get();
 		$out['Chat']= $this->uState;
+		$out['is_https']= self::is('https');
 
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
 
 
 	private function _parse()
-	:string
+	:?string
 	{
+		if(!$chat= $this->_checkDB()->file) return null;
 		ob_start();
 
-		if($chat= $this->_checkDB()->file){
-			$render= is_adm()? '_renderAdmPost': '_renderPost';
+		$render= is_adm()? '_renderAdmPost': '_renderPost';
 
-			array_walk($chat, function(&$v,$n)use($render){
-				// *Разбираем построчно
-				$v= explode(self::DELIM, $v);
-				// *ts -> Date
-				$v[1]= date('Y-m-d H:i', $v[1]);
+		foreach($chat as $n=>&$v){
+			// *Разбираем построчно
+			$v= explode(self::DELIM, trim($v));
 
-				echo $this->{$render}(++$n,$v);
-			});
-		}
+			// *fix old posts
+			$indexes= array_slice(self::$indexes, 0, count($v));
+			// tolog(__METHOD__,null,['$indexes'=>$indexes,$v]);
+			$v= array_combine($indexes, $v);
+
+			// *ts -> Date
+			$v['ts']= date('Y-m-d H:i', $v['ts']);
+
+			echo $this->{$render}(++$n,$v);
+		};
 
 		// tolog(__METHOD__,null,['$chat'=>$chat,]);
 
@@ -434,12 +437,15 @@ class Chat
 
 	private function _renderPost($n,&$i)
 	{
-		// *Последовательность данных
-		list($IP,$ts,$name,$text,$files)= $i;
+		// tolog(__METHOD__,null,[$i]);
+		extract($i);
+
 		$UID= self::defineUID($name, $IP);
 		if($this->useStartIndex){
 			$n+= $this->State->db->startIndex;
 		}
+
+		if(!isset($appeals)) $appeals= '';
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -447,7 +453,7 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
+		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 

@@ -1,11 +1,26 @@
-<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
-<div class="users box">
-</div>
+<section class="bottom">
+	<div>
+		<h3>Обращения</h3>
+		<div class="appeals box">
+		</div>
+	</div>
 
-<h3>Архивные посты</h3>
-<div class="arhive box">
-	<?=$Chat->getArhive()?>
-</div>
+	<div>
+		<h3>Участники за последние <?=State::EXPIRES/3600?>ч.</h3>
+		<div class="users box">
+		</div>
+	</div>
+
+	<div>
+		<h3>Архивные посты</h3>
+		<div class="arhive box">
+			<?=$this->getArhive()?>
+		</div>
+	</div>
+
+</section>
+
+
 
 <footer class="right" style="font-size:.7em;background: #000; padding-top:1em;">
 	<a href="//github.com/korniloff75/flatChat" target="_blank" title="Репозиторий">
@@ -16,20 +31,20 @@
 
 <script type="text/javascript">
 	const REFRESHTIME= <?=\REFRESHTIME?>;
-	let Chat= <?=$Chat->getJsonUState()?>,
-		LastMod= <?=$Chat->lastMod?>,
-		Out= <?=$Chat->Out()?>;
+	let Chat= <?=$this->getJsonUState()?>,
+		LastMod= <?=$this->lastMod?>,
+		Out= <?=$this->Out()?>;
 </script>
 
 <script src="./script.js" type="module"></script>
 
-<script src="./assets/helpers.js" type="module"></script>
-<script src="./assets/BB.js" type="module"></script>
-<script src="./assets/State.js" type="module"></script>
-<script src="./assets/Images/Images.js" type="module"></script>
-<script src="./assets/Template/tpl.mod.js" type="module"></script>
+<script src="./assets/helpers.js" type="module" async></script>
+<script src="./assets/BB.js" type="module" async></script>
+<script src="./assets/State.js" type="module" async></script>
+<script src="./assets/Images/Images.js" type="module" async></script>
+<script src="./assets/Template/tpl.mod.js" type="module" async></script>
 <?php //todo ?>
-<script src="./assets/modal/modal.js" type="module"></script>
+<script src="./assets/modal/modal.js" type="module" async></script>
 <?php if(is_adm()): ?>
 <script src="./assets/Admin.js" type="module" defer></script>
 <?php endif?>
