@@ -7,15 +7,17 @@ DirectoryIndex index.php
 
 Options +FollowSymlinks
 
-RewriteEngine on
-RewriteBase /
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteBase /
 
-# Без HTTPS не работает голосовой ввод текста
-RewriteCond %{SERVER_PORT} !^443$
-RewriteCond %{HTTPS} off
-RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+	# Без HTTPS не работает голосовой ввод текста
+	RewriteCond %{SERVER_PORT} !^443$
+	RewriteCond %{HTTPS} off
+	RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
 
 
 <IfModule env_module>
-SetEnv TZ Europe/Moscow
+	SetEnv TZ Europe/Moscow
 </IfModule>
