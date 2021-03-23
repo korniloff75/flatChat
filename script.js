@@ -263,12 +263,15 @@ function formSubmit (e) {
 		e.preventDefault();
 	}
 
+	if(f.submit.disabled) return false;
+
 	if (!(name.value= name.value.trim())) {
 		tipUpper(name, "Пожалуйста, введите свое имя");
 		return false;
 	}
 
 	console.log("f['attach[]'].value= ", f['attach[]'].value);
+
 	if (!(text.value= text.value.trim()) && !f['attach[]'].value) {
 		tipUpper(text, "Пожалуйста, введите текст");
 		return false;
@@ -286,11 +289,11 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
-	f.text.disabled= true;
+	f.submit.disabled= true;
 
 	refresh( fd	)
 	.then(function () {
-		f.text.disabled= false;
+		f.submit.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
 		text.value = text.textContent = "";
 		ah(text);
@@ -305,7 +308,7 @@ function formSubmit (e) {
 
 		State.handlePosts(msgs);
 	}).catch(err=>{
-		f.text.disabled= false;
+		f.submit.disabled= false;
 		console.log('Ошибка при отправке: ', err.message);
 	});
 	return false;
