@@ -1,5 +1,5 @@
 'use strict';
-import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification} from './assets/helpers.js';
+import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification, tipUpper} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -93,172 +93,7 @@ catch (e) {
 }
 
 
-function fade(o, opts, dontStartNow) {
-	var ov, ob, oe, os, t;
 
-	function th() {
-		ov += os;
-		if ((os > 0 && ov >= oe) || (os < 0 && ov <= oe)) {
-			ov = oe;
-			clearInterval(t);
-			t = null;
-		}
-
-		o.style.opacity = ov;
-
-		if (!t && opts.hasOwnProperty("handler")) opts.handler(true, fs, o);
-	}
-
-	function init() {
-		os = opts.hasOwnProperty("os") ? Math.abs(opts.os) : 0.1;
-
-		if (!opts.hasOwnProperty("delay")) opts.delay = 30;
-
-		if (!opts.hasOwnProperty("ob")) {
-			ob = parseFloat(o.style.opacity);
-			if (isNaN(ob)) ob = 1;
-		}
-		else {
-			ob = opts.ob;
-			o.style.opacity = ob;
-		}
-		ov = ob;
-
-		if (!opts.hasOwnProperty("oe")) {
-			oe = parseFloat(o.style.opacity);
-			if (isNaN(oe)) oe = 1;
-		}
-		else oe = opts.oe;
-
-		if (ob > oe) os = -os;
-
-		if (ob != oe) t = setInterval(th, opts.delay);
-	}
-
-	var fs = {
-		get: function () {
-			return {
-				opts: opts,
-				ov: ov,
-				ob: ob,
-				oe: oe,
-				os: os
-			};
-		},
-
-		stop: function (end, dontNotify) {
-			if (!t) return;
-
-			clearInterval(t);
-			t = null;
-			if (end) o.style.opacity = oe;
-
-			if (dontNotify !== true && opts.hasOwnProperty("handler")) opts.handler(true, fs, o);
-		},
-
-		start: function (restart, newOpts, dontNotify) {
-			if (t) return;
-
-			if (newOpts) opts = newOpts;
-
-			if (restart) {
-				init();
-				if (dontNotify !== true && opts.hasOwnProperty("handler")) opts.handler(false, fs, o);
-			}
-			else t = setInterval(th, opts.delay);
-		}
-	};
-
-	if (dontStartNow !== true) fs.start(true);
-	return fs;
-}
-
-var tipUpper = (function () {
-	var lastTip = null;
-
-	return function (o, html, ax, ay) {
-		if (ax == undefined) ax = 0;
-		if (ay == undefined) ay = -5;
-
-		function getCords(elem) {
-			var box = elem.getBoundingClientRect();
-
-			var body = document.body;
-			var docEl = document.documentElement;
-
-			var scrollTop = _w.pageYOffset || docEl.scrollTop || body.scrollTop;
-			var scrollLeft = _w.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-			var clientTop = docEl.clientTop || body.clientTop || 0;
-			var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-			var top = box.top + scrollTop - clientTop;
-			var left = box.left + scrollLeft - clientLeft;
-
-			return { top: Math.round(top), left: Math.round(left) };
-		}
-
-		function attachEvents(tip, o) {
-			detachEvents(tip);
-			tip.eh = function () {
-				detachEvents(tip);
-				f.stop();
-				lastTip = null;
-				f.start(
-					true,
-					{
-						oe: 0,
-						os: 0.1,
-						handler: function (over, f) {
-							if (over) {
-								tip.style.display = "none";
-								tip.parentNode.removeChild(tip);
-							}
-						}
-					},
-					true
-				);
-			};
-			tip.o = o;
-
-			on(o, "change", tip.eh);
-			on(document, "mousedown", tip.eh);
-			on(document, "keydown", tip.eh);
-		}
-
-		function detachEvents(tip) {
-			if (!tip.eh) return;
-
-			off(tip.o, "change", tip.eh);
-			off(document, "mousedown", tip.eh);
-			off(document, "keydown", tip.eh);
-		}
-
-		if (lastTip) lastTip.eh();
-
-		var t = document.createElement("div");
-		t.className = "tipUpper";
-		t.innerHTML = '<div class="ugol"></div><div class="ugolI"></div><div class="msg">' + html + '</div>';
-		var c = getCords(o);
-		t.style.left = (c.left + ax) + "px";
-		t.style.top = (c.top + o.offsetHeight + ay) + "px";
-		var f = fade(
-			t,
-			{
-				ob: 0,
-				oe: 1,
-				os: 0.1
-			}
-		);
-
-		document.body.appendChild(t);
-
-		attachEvents(t, o);
-		o.focus();
-
-		lastTip = t;
-	};
-})();
 
 
 _w.scrollBottom= function scrollBottom() {
@@ -433,7 +268,8 @@ function formSubmit (e) {
 		return false;
 	}
 
-	if (!(text.value= text.value.trim())) {
+	console.log("f['attach[]'].value= ", f['attach[]'].value);
+	if (!(text.value= text.value.trim()) && !f['attach[]'].value) {
 		tipUpper(text, "Пожалуйста, введите текст");
 		return false;
 	}
@@ -450,8 +286,11 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
+	f.text.disabled= true;
+
 	refresh( fd	)
 	.then(function () {
+		f.text.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
 		text.value = text.textContent = "";
 		ah(text);
@@ -465,6 +304,9 @@ function formSubmit (e) {
 		countChars.call(f.text);
 
 		State.handlePosts(msgs);
+	}).catch(err=>{
+		f.text.disabled= false;
+		console.log('Ошибка при отправке: ', err.message);
 	});
 	return false;
 };

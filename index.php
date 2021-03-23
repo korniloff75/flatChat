@@ -71,16 +71,17 @@ $template= $Chat->setTemplate();
 					<div id="sendDialog" class="block2">
 						<input type="hidden" name="name" value="<?=$Chat->name?>" maxLength="<?=Chat::MAXUSERNAMELEN?>" placeholder="Имя" required />
 						<input type="hidden" name="appeals" value="" placeholder="Обращения" />
-						<textarea name="text" placeholder="Текст" maxLength="<?=Chat::MAXUSERTEXTLEN?>" required autofocus></textarea>
+						<textarea name="text" placeholder="Текст" maxLength="<?=Chat::MAXUSERTEXTLEN?>" autofocus></textarea>
 						<div class="submit">
 							<label class="input__file button" for="attach" title="jpg,png,gif">Добавить изображение
 								<input type="file" name="attach[]" id="attach" multiple hidden>
 							</label>
-							<input type="submit" value="отправить" class="button" title="ctrl + enter" id="submit"/>
+							<input type="submit" value="Отправить" class="button" title="ctrl + enter" id="submit"/>
+							<input type="reset" value="Сброс" class="button" title="Очистить"/>
 						</div>
 					</div>
 					<div class="attaches" hidden>
-						<h3>Прикрепления:</h3>
+						<h4 class="left">Прикрепления:</h4>
 						<p><button class="clear button">Очистить</button></p>
 						<div><!-- attach items --></div>
 					</div>

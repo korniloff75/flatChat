@@ -157,9 +157,9 @@ class Chat
 
 	private function _newPost()
 	{
-		if ( !$this->name || !$this->text ) {
+		if ( !$this->name || !$this->text && empty($_FILES) ) {
 			header( 'HTTP/1.1 400 Bad Request' );
-			exit( 0 );
+			die( "Полученные данные не прошли серверную валидацию." );
 		}
 
 		$this->uState['myUID']= self::defineUID($this->name, $this->IP);
@@ -216,7 +216,7 @@ class Chat
 
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
-		self::createDir(self::ARH_PATHNAME);
+		self::createDir(self::ARH_PATHNAME, 0776);
 
 		if(
 			!file_exists($this->dbPathname)

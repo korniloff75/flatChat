@@ -274,6 +274,24 @@ a:hover {
 	font-size: 1em;
 }
 
+label.input__file {
+	flex: 1 0 170px;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+label.input__file::before{
+	content: "📎";
+	font-size: 1.8em;
+}
+
+#sendDialog input[type="submit"], #sendDialog input[type="reset"] {
+	flex: 3 0;
+	height: 2.7em;
+}
+
 .waiterProgress {
 	background: url("data:image/gif;base64,R0lGODlhDAAMAPABAAICAgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCgABACwAAAAADAAMAAACFUR+hrmh+1iLrlVoKdB5duyBojQ6BQAh+QQJCgABACwAAAAADAAMAAACFYwNh6ncGtyREdYHKb1TW5+F4vSFBQAh+QQJCgABACwAAAAADAAMAAACF4wDZ6nYwE6Urzk1V92Ur5xdHeZpZFAAACH5BAkKAAEALAAAAAAMAAwAAAIWjGGJeRzL4JHP1WgpvSq7rWke9pVGAQAh+QQJCgABACwAAAAADAAMAAACF0xgiWmr3KB7DMwDcc33arqFYtNxElMAACH5BAUKAAEALAAAAAAMAAwAAAIWDIJ4qWz+2JJuJmswjhdqX4FUKH1MAQA7");
 }
@@ -359,10 +377,17 @@ a:hover {
 	transform: rotate(0deg) translate(-40px, -15px) skew(20deg);
 }
 
+#msgsContent .msg .post {
+	padding: 1em;
+	margin-top: 1em;
+	border-radius: 5px;
+	border: 1px solid #999;
+}
+
 .appeals {
-	/* max-height: 15em; */
 	overflow: auto !important;
 	padding: 0 1em;
+	max-height: 50vh;
 }
 
 .item-block{
@@ -450,6 +475,9 @@ margin-bottom:5px;
 .right{
 	text-align: right;
 }
+.left{
+	text-align: left;
+}
 
 .smile {
 	display: flex;
@@ -521,8 +549,9 @@ margin-bottom:5px;
 }
 
 .svg-toBottom {
-	left: 49%;
-	top: -1em;
+	width: 60px;
+	left: calc(50% - 30px);
+	/* top: -1em; */
 }
 
 .svg-toForm {

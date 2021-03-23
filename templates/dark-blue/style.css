@@ -82,20 +82,12 @@ hr {
 #msgsContent .msg .info .num {
 	color: #def;
 }
-/* #msgsContent .msg .info .name {
-	font-weight: bold;
-	padding-right: 0.5em;
-} */
 
 
 #msgsContent .msg .post {
-	padding: 1em;
-	margin-top: 1em;
-	background: #abc;
-	font-size: 100%;
-	border-radius: 5px;
-	border: 1px solid #aaa;
-	color: #227;
+	background: #bcd;
+	border: 1px solid #999;
+	color: #115;
 }
 
 #msgsContent .msg .cite_disp {

@@ -118,23 +118,12 @@ font-weight: 700;
 }
 
 label.input__file {
-	flex: 0 0 170px;
-	cursor: pointer;
 	color: #777;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
 }
 
 label.input__file::before{
 	content: "📎";
 	font-size: 1.8em;
-}
-
-#sendDialog input[type="submit"] {
-	flex: 2 0 55%;
-	height: 2.7em;
-	/* max-width: 50%; */
 }
 
 #sendDialog input[name="name"] {

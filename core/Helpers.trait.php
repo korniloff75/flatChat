@@ -40,14 +40,24 @@ trait Helpers
 	}
 
 
-	static function createDir($pathname)
+	static function createDir($pathname, ?int $chmod=0755)
 	{
 		if(
 			!is_dir($pathname)
-			&& !mkdir($pathname, 0755, true)
+			&& !mkdir($pathname, $chmod, true)
 		){
 			header('Content-Type: text/html; charset=utf-8');
 			throw new Exception("Невозможно создать директорию $pathname. Попробуйте создать её вручную");
+		}
+		// *Меняем права
+		elseif(
+			// *check UNIX
+			DIRECTORY_SEPARATOR === '/'
+			&& $perms= fileperms($pathname)
+			&& $perms !== $chmod
+		){
+			if(!chmod ($pathname, $chmod) || $perms !== $chmod)
+				tolog(__METHOD__.": Измените вручную права на папку $pathname на 0" . decoct($chmod),E_USER_WARNING,[$pathname=>$perms,fileperms($pathname)]);
 		}
 	}
 
