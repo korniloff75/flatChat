@@ -171,6 +171,16 @@ a:hover {
 	font-size: 70%;
 }
 
+.checkbox {
+	float: right;
+	text-align: left;
+	margin: 0;
+	z-index: 1;
+	padding: 1em;
+	overflow: hidden;
+	border-radius: 5px;
+}
+
 .checkbox .options {
 	display: inline-flex;
 	margin-top: 1em;
@@ -189,11 +199,37 @@ a:hover {
 	height: 1em;
 }
 
+
+
 #msgsContent {
 	width: 100%;
 	/* height: 30em; */
 	max-height: 85vh;
 	overflow-y: auto;
+}
+
+#msgsContent .msg {
+	width: 89%;
+	margin-bottom: 0.5em;
+	padding: 0.3em;
+	border-radius: .5em;
+	position: relative;
+	z-index: 1;
+	word-wrap: break-word;
+	background: #357;
+}
+
+#msgsContent .msg.myPost {
+	margin-left: 10%;
+}
+
+#msgsContent .msg .info {
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 0.2em;
+	color: #9be;
+	position: relative;
+	justify-content: space-between;
 }
 
 #msgsContent .msg .info .btn {
@@ -258,6 +294,22 @@ a:hover {
 	border-radius: 1em;
 }
 
+#msgsContent .msg .post {
+	padding: 1em;
+	margin-top: 1em;
+	border-radius: 5px;
+	border: 1px solid #999;
+}
+
+#msgsContent .msg .info .name {
+	font-weight: 500;
+	margin-right: 0.5em;
+	padding: .2em;
+	border-radius: .2em;
+	cursor: pointer;
+}
+
+
 #sendDialog textarea,
 #sendDialog input[type="text"],
 #sendDialog input[type="password"] {
@@ -275,7 +327,7 @@ a:hover {
 }
 
 label.input__file {
-	flex: 1 0 170px;
+	flex: 0 0 170px;
 	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
@@ -287,10 +339,36 @@ label.input__file::before{
 	font-size: 1.8em;
 }
 
-#sendDialog input[type="submit"], #sendDialog input[type="reset"] {
-	flex: 3 0;
+#sendDialog input {
 	height: 2.7em;
+	min-height: 1.6em;
+	padding: 0 .2em;
 }
+
+#sendDialog input[type="submit"] {
+	flex: 3 0 55%;
+	height: 2.7em;
+	/* max-width: 50%; */
+}
+
+#sendDialog input[name="name"] {
+	font-weight: bold;
+}
+
+#sendDialog .submit {
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 0.5em;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 1em;
+}
+
+#sendDialog textarea[name="text"] {
+	min-height: 10em;
+	resize: none;
+}
+
 
 .waiterProgress {
 	background: url("data:image/gif;base64,R0lGODlhDAAMAPABAAICAgAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJCgABACwAAAAADAAMAAACFUR+hrmh+1iLrlVoKdB5duyBojQ6BQAh+QQJCgABACwAAAAADAAMAAACFYwNh6ncGtyREdYHKb1TW5+F4vSFBQAh+QQJCgABACwAAAAADAAMAAACF4wDZ6nYwE6Urzk1V92Ur5xdHeZpZFAAACH5BAkKAAEALAAAAAAMAAwAAAIWjGGJeRzL4JHP1WgpvSq7rWke9pVGAQAh+QQJCgABACwAAAAADAAMAAACF0xgiWmr3KB7DMwDcc33arqFYtNxElMAACH5BAUKAAEALAAAAAAMAAwAAAIWDIJ4qWz+2JJuJmswjhdqX4FUKH1MAQA7");
@@ -377,18 +455,24 @@ label.input__file::before{
 	transform: rotate(0deg) translate(-40px, -15px) skew(20deg);
 }
 
-#msgsContent .msg .post {
-	padding: 1em;
-	margin-top: 1em;
-	border-radius: 5px;
-	border: 1px solid #999;
+
+.block2 {
+	position: relative;
+	display: block;
+	margin: 0;
+	z-index: 1;
+	max-width: 100%;
+	overflow: hidden;
 }
 
-.appeals {
-	overflow: auto !important;
-	padding: 0 1em;
-	max-height: 50vh;
+.block2 .bb{
+	color: grey;
 }
+
+.block2 .attach{
+	text-align:left;margin-top:20px;
+}
+
 
 .item-block{
 margin:50px 0;
@@ -500,13 +584,6 @@ margin-bottom:5px;
 	font-style: normal;
 }
 
-#msgsContent .msg .info .name {
-	font-weight: 500;
-	margin-right: 0.5em;
-	padding: .2em;
-	border-radius: .2em;
-	cursor: pointer;
-}
 
 .auth > *, .saveEdits, .adm > *{
 	cursor: pointer;
@@ -525,6 +602,39 @@ margin-bottom:5px;
 
 .edit:hover, .saveEdits:hover{
 	box-shadow: 0 0 2px #0000004d;
+}
+
+.button {
+	display: inline-block;
+	position: relative;
+	height: inherit;
+	padding: 0.2em 0.4em;
+	vertical-align: top;
+	cursor: pointer;
+	text-align: center;
+	text-decoration: none;
+	font: .9em Tahoma bold;
+	border-radius: 0.18em;
+	border: 1px solid #123;
+	border-radius: 0.18em;
+	color: #abcbcd;
+	-webkit-box-shadow: inset 0 0 1px #ffffff;
+	box-shadow: inset 0 0 1px #ffffff;
+	background: #e5e5e5 -webkit-linear-gradient(180deg, #ffffff, #dfdfdf);
+	background: #e5e5e5 -moz-linear-gradient(180deg, #ffffff, #dfdfdf);
+	background: #e5e5e5 -ms-linear-gradient(180deg, #ffffff, #dfdfdf);
+	background: #e5e5e5 linear-gradient(180deg, #123,#456);
+	outline: none;
+	z-index: 3;
+}
+
+.button:active {
+	color: #555555;
+	text-shadow: #ffffff 0px 1px 0;
+	border-color: #9a9a9a;
+	background: #e6e6e6 none;
+	-webkit-box-shadow: inset 0 0 2px #d0d0d0;
+	box-shadow: inset 0 0 2px #d0d0d0;
 }
 
 .del, .button.del{
@@ -563,11 +673,27 @@ margin-bottom:5px;
 	padding: .3em .5em;
 }
 
+.box {
+	position: relative;
+	text-align: left;
+	margin: 0;margin-bottom:20px;
+	z-index: 1;
+	padding: .5em;
+	max-width: 100%;
+	overflow: hidden;
+}
+
 section.bottom{
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
 	align-items: stretch;
+}
+
+.appeals {
+	overflow: auto !important;
+	padding: 0 1em;
+	max-height: 50vh;
 }
 
 section.bottom > div {
@@ -577,8 +703,19 @@ section.bottom > div {
 	/* height: 100%; */
 }
 
+/* .appeals {
+	overflow: auto !important;
+	padding: 0 1em;
+	max-height: 50vh;
+} */
+
 section.bottom .box {
 	flex: 1 1 100%;
+	overflow: auto !important;
+	padding: 0 1em;
+	max-height: 50vh;
+	align-items: flex-start;
+	align-content: flex-start;
 }
 
 
@@ -600,6 +737,11 @@ section.bottom .box {
 	.checkbox{
 		display: none;
 	}
+
+	#msgsContent {
+		max-height: 75vh;
+	}
+
 	#sendDialog textarea[name="text"] {
 		min-height: 4em;
 		resize: none;
@@ -611,5 +753,9 @@ section.bottom .box {
 
 	[class|=svg]{
 		width: 2.5em;
+	}
+
+	.svg-toBottom {
+		left: calc(50% - 1.25em);
 	}
 }

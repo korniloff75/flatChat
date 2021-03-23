@@ -20,7 +20,8 @@ define( "COOKIEPATH", "/" );
 define( "CHATTRIM", 50 * 1024 ); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
 // define( "CHATTRIM", 1000); //Максимальная длина пересылаемого куска чата, 0 - без ограничений
 
-
+// *dagam fix
+$_SERVER['DOCUMENT_ROOT']= str_replace('private_html','public_html',$_SERVER['DOCUMENT_ROOT']);
 // *Глобальный корень
 define( "GDR", $_SERVER['DOCUMENT_ROOT'] );
 // *Корень чата
@@ -46,6 +47,8 @@ function tolog()
 		return call_user_func_array([$log,'add'], func_get_args());
 	}
 }
+
+tolog(__FILE__,null,['DR'=>DR,'GDR'=>GDR]);
 
 session_start();
 

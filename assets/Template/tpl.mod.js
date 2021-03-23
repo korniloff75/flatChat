@@ -17,6 +17,4 @@ on(templateSel, 'change', e=>{
 
 console.log(Chat.template);
 
-if(Chat.template){
-	templateSel.value= Chat.template;
-}
+templateSel.value= Chat.template || '_default_';

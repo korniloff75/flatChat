@@ -39,12 +39,9 @@ export function modal(txt, opts){
 
 	return new Promise((resolve,reject)=>{
 		wrapper.onclick= clickHandler.bind(null,resolve,reject);
-		// not worked
-		wrapper.onkeydown= e=>{
-			console.log(e.key);
-		}
 	})
 }
+
 
 function clickHandler(resolve,reject,e){
 	e.stopPropagation();
@@ -57,7 +54,8 @@ function clickHandler(resolve,reject,e){
 	}
 	else if(t === close || t === wrapper ){
 		wrapper.classList.add('closed');
-		console.log('modal be closed', {t,ok});
-		return reject(close);
+		console.log('modal was closed', {t,ok});
+		// return reject(close);
+		return;
 	}
 }

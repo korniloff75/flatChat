@@ -42,7 +42,7 @@ export function defineUID (name,IP){
 
 
 /**
- * *Обработка постов после отправки и появления новых
+ * *Handle posts after update content
  *
  * @param {HTMLElement} msgs
  */
@@ -63,11 +63,12 @@ export function handlePosts (msgs) {
 			let post= msg.querySelector('.post').cloneNode(true),
 				name= msg.querySelector('span.name'),
 				num= msg.querySelector('.num');
+
 			post.insertAdjacentHTML('afterbegin', `<p><a href="#${msg.id}">${num.textContent}</a> from <b>${name.textContent}</b></p>`);
 			post.insertAdjacentHTML('beforeend', `<hr>`);
-			dfr.appendChild(post);
+			// dfr.appendChild(post);
+			dfr.insertBefore(post, dfr.firstElementChild);
 		}
-
 		// console.log(uid, [Chat.myUID, Chat.UID].includes(uid));
 	});
 
@@ -77,8 +78,8 @@ export function handlePosts (msgs) {
 
 
 /**
- * *Hilight online users and fill the user list
- * every update box content
+ * *Hilight online users and fill the users list
+ * every server response (with/without update content)
  * @param {HTMLElement} box
  * @param {HTMLElement} listNode
  */

@@ -19,6 +19,8 @@ js/db/*.*
 token*
 cfg.*
 
+.well-known
+
 /files/zip
 /files*/*.png
 /files*/*.jpg

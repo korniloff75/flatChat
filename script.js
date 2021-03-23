@@ -4,6 +4,7 @@ import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
 import * as Img from './assets/Images/Images.js';
+import { modal } from './assets/modal/modal.js';
 export {Ajax, scrollIntoView, css, on, off, speak};
 
 console.log('Glob server vars', {Chat, LastMod, Out});
@@ -206,8 +207,10 @@ function msgsModifed(html){
 		});
 	}
 
-	if(document.hidden && oNTF.checked) sendNotification(`${location.host}${location.pathname}`, {
-		body: 'Получено новое сообщение',
+	let lastMsg= msgs.lastElementChild;
+
+	if(document.hidden && oNTF.checked) sendNotification(`Новое сообщение с ${location.host}${location.pathname} от ${lastMsg.querySelector('.name').textContent}`, {
+		body: lastMsg.querySelector('.post').innerHTML,
 		icon: './assets/imgs/mail.png',
 		dir: 'auto'
 	});
@@ -317,6 +320,16 @@ function formSubmit (e) {
 
 on(f,'submit', formSubmit);
 
+on(f,'click',e=>{
+	let t= e.target;
+
+	if(t.closest('[type=\'reset\']')){
+		e.stopPropagation();
+		e.preventDefault();
+		modal('Очистить форму?').then(ok=>t.form.reset());
+	}
+});
+
 
 // *Scroll to posts/form
 let toReadSvg= document.querySelector('.svg-toRead'),
@@ -335,7 +348,7 @@ on(_w, 'scroll', e=>{
 	// console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
 })
 
-console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
+// console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
 
 // *Scroll to msgs
 on(toReadSvg, 'click', e=>{
