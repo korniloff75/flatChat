@@ -5,12 +5,16 @@ Options -Indexes
 # Начальный файл
 DirectoryIndex index.php
 
+Options +FollowSymlinks
+
+RewriteEngine on
+RewriteBase /
+
 # Без HTTPS не работает голосовой ввод текста
-RewriteEngine On
-RewriteCond %{HTTPS} =off [OR]
-# Универсальный редирект с www
-RewriteCond %{HTTP_HOST} ^www\.(.*) [NC]
-RewriteRule ^(www\.)?(.*) https://%{HTTP_HOST}%{REQUEST_URI} [QSA,R=301,L]
+RewriteCond %{SERVER_PORT} !^443$
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
 
 <IfModule env_module>
 SetEnv TZ Europe/Moscow
