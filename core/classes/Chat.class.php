@@ -11,6 +11,7 @@ class Chat
 		FILES_DIR= '/files_B',
 		DELIM= "<~>",
 		MAX_LINES= 200,
+		// MAX_LINES= 5,
 		DELTA_LINES= 100,
 		MAXUSERTEXTLEN= 1024,
 		MAXUSERNAMELEN= 20,
@@ -236,6 +237,7 @@ class Chat
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
 				$this->State->db->set(['startIndex'=>($this->State->db->get('startIndex') ?? 0) + ($count - self::MAX_LINES)]);
+				$file= $newFile;
 			}
 
 		}
@@ -509,10 +511,10 @@ class Chat
 
 	// todo
 	// *Архив
-	function getArhive()
+	function getArhives()
 	{
 		if(is_dir(self::ARH_PATHNAME)) foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
-			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a><br>";
+			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a> | ";
 		}
 	}
 

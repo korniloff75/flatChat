@@ -353,6 +353,7 @@ function refreshAfter (handler, XMLo) {
 
 // *new post
 function msgsModifed(html){
+	console.log('Content was modifed');
 	msgs.innerHTML = html;
 
 	State.handlePosts(msgs);
@@ -536,6 +537,7 @@ function addCite(msg,e){
 	text.value += "\n>" + href + '#' + msg.id + "[/cite]\n";
 
 	text.focus();
+	addAppeal(msg);
 }
 
 function goCite(link,e){
@@ -543,6 +545,16 @@ function goCite(link,e){
 	e.stopPropagation();
 	link.target= "_self";
 	return true;
+}
+
+function addAppeal(msg){
+	let appeals= f.appeals.value.split(',');
+
+	if(!appeals.includes(msg.dataset.uid)){
+		appeals.push(msg.dataset.uid);
+	}
+
+	f.appeals.value= appeals.join(',');
 }
 
 /* msgs.onscroll = function () {
@@ -671,13 +683,7 @@ on(msgs,'click',e=>{
 		e.stopPropagation();
 		e.preventDefault();
 
-		let appeals= f.appeals.value.split(',');
-
-		if(!appeals.includes(msg.dataset.uid)){
-			appeals.push(msg.dataset.uid);
-		}
-
-		f.appeals.value= appeals.join(',');
+		addAppeal(msg);
 
 		return BB.insert(`[b]@${name.textContent}`,'[/b], ',f.text);
 	}
