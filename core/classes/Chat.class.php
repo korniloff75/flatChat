@@ -55,9 +55,11 @@ class Chat
 
 		if($this->mode === 'post')
 			$this->_newPost();
-		if ( $this->mode === "set" ) {
+
+		if ( in_array($this->mode, ["set","remove"], true) ) {
 			$this->exit = true;
 		}
+
 		// *Update list
 		if ( $this->mode === "list" ) {
 			$this->exit = true;
@@ -133,7 +135,12 @@ class Chat
 		) ?? [];
 		tolog(__METHOD__,null,['$inp_data'=>$inp_data]);
 
-		foreach($_REQUEST= array_merge($_REQUEST, $inp_data) as $cmd=>&$val){
+		// *Собираем все входящие в $_REQUEST
+		$_REQUEST= array_merge($_REQUEST, $inp_data);
+
+		$this->uState['mode']= @$_REQUEST["mode"];
+
+		foreach($_REQUEST as $cmd=>&$val){
 
 			if(method_exists(__CLASS__, "c_$cmd")){
 				$val= filter_var($val, FILTER_SANITIZE_STRING);
@@ -141,8 +148,6 @@ class Chat
 				$this->{"c_$cmd"}($val);
 			}
 		}
-
-		$this->uState['mode']= @$_REQUEST["mode"];
 
 		$cook= json_encode([
 			'name'=> $this->name,
@@ -344,6 +349,25 @@ class Chat
 		$this->mode = "list";
 	}
 
+
+	/**
+	 * *Закрепление поста
+	 */
+	protected function c_pinPost($num)
+	{
+		if(!is_adm()) return;
+		if($this->mode === 'set'){
+			$this->State->db->set(['pinned'=>(int) $num]);
+			echo "Post $num pinned.";
+		}
+		elseif($this->mode === 'remove'){
+			$this->State->db->remove('pinned');
+			echo "Post $num unpinned.";
+		}
+
+	}
+
+
 	/**
 	 * !Удаление постов
 	 * @param {int|array} $nums
@@ -419,7 +443,7 @@ class Chat
 		$panel= $doc->createElement('div');
 		$panel->setAttribute('class', 'adm');
 
-		self::setDOMinnerHTML($panel,"<button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
+		self::setDOMinnerHTML($panel,"<button class='pin' title='Закрепить'>📌</button><button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
 
 		$xpath = new DOMXpath($doc);
 
@@ -449,13 +473,17 @@ class Chat
 
 		if(!isset($appeals)) $appeals= '';
 
+		$pinned= $this->State->db->pinned;
+
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
 
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		$t= "<div class=\"msg\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
+		$t= "<div class=\"msg "
+		. ($pinned === $n? 'pinned':'')
+		. "\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 

@@ -1,5 +1,5 @@
 'use strict';
-import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification, tipUpper} from './assets/helpers.js';
+import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification, tipUpper, autoHeight} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -44,41 +44,7 @@ function hideName(){
 
 hideName();
 
-// autoHeight
-function ah(el, maxH, state) {
-	if (arguments.length === 1) {
-		if (el._ah_) el._ah_();
-		return;
-	}
-
-	if (el._ah_) off(el, "input", el._ah_);
-	delete (el._ah_);
-	el.style.height = "auto";
-
-	if (state) {
-		el.style.boxSizing = "border-box";
-		var h = el.offsetHeight,
-			dh = h - el.clientHeight,
-			t;
-
-		el._ah_ = function () {
-			while (true) {
-				t = el.offsetHeight - 16;
-				el.style.height = t + "px";
-				if (t < h || el.scrollHeight > el.clientHeight) break;
-			}
-
-			//							el.style.height = "auto";
-			var nh = el.scrollHeight + dh;
-			if (maxH && nh > maxH) nh = maxH;
-			el.style.height = nh + "px";
-		};
-
-		on(el, "input", el._ah_);
-		el._ah_();
-	}
-}
-if (oAH && oAH.checked) ah(text, 500, true);
+if (oAH && oAH.checked) autoHeight(text, 500, true);
 
 // var msgsDialogWaiter = WAITER(msgsDialog);
 // var sendDialogWaiter = WAITER(sendDialog);
@@ -135,7 +101,7 @@ export function refresh(params, handler) {
 function refreshAfter (handler, XMLo) {
 	// console.log(arguments);
 
-	let success= XMLo.statusText === 'OK',
+	let success= XMLo.status === 200,
 		statusCode= XMLo.status,
 		response= XMLo.response;
 
@@ -210,7 +176,7 @@ function msgsModifed(html){
 	let lastMsg= msgs.lastElementChild;
 
 	if(document.hidden && oNTF.checked) sendNotification(`Новое сообщение с ${location.host}${location.pathname} от ${lastMsg.querySelector('.name').textContent}`, {
-		body: lastMsg.querySelector('.post').innerHTML,
+		body: lastMsg.querySelector('.post').textContent,
 		icon: './assets/imgs/mail.png',
 		dir: 'auto'
 	});
@@ -218,7 +184,7 @@ function msgsModifed(html){
 
 
 /**
- * Long Polling
+ * *Long Polling
  * @param {bool} rewait - Ожидание перед запросом
  */
 export var poll = (function () {
@@ -230,11 +196,15 @@ export var poll = (function () {
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
-		refresh( data ).then(()=>poll(true));
+		refresh( data ).then(()=>poll(true))
+		.catch(err=>{
+			console.log(err);
+			poll();
+		});
 	};
 
 	return function (rewait) {
-		if (rewait === true) {
+		if (rewait) {
 			if (t) clearTimeout(t);
 			t = setTimeout(rq, REFRESHTIME );
 		}
@@ -255,7 +225,7 @@ oSND && (oSND.onchange = function () {
 
 // *Вкл. autoHeight
 oAH && (oAH.onclick = function () {
-	ah(text, 500, oAH.checked);
+	autoHeight(text, 500, oAH.checked);
 });
 
 
@@ -299,7 +269,7 @@ function formSubmit (e) {
 		f.submit.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
 		text.value = text.textContent = "";
-		ah(text);
+		autoHeight(text);
 
 		// *Очищаем
 		f.reset();

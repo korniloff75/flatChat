@@ -86,9 +86,10 @@ textarea {
 	box-sizing: border-box;
 }
 
-form {
+/* form {
 	display: inline;
-}
+} */
+
 
 h1,h2,h3,h4,h5 {
 	font-size: 1.1em;
@@ -219,9 +220,25 @@ a:hover {
 	background: #357;
 }
 
+#msgsContent .msg + .msg {
+	border: 1px dashed;
+}
+
 #msgsContent .msg.myPost {
 	margin-left: 10%;
 }
+
+#msgsContent .msg.pinned {
+	position: fixed;
+	top: 0;
+	left: 0;
+	max-height: 25vh;
+	overflow: auto;
+	border: 2px solid;
+	padding-bottom: 1em;
+	z-index: 10;
+}
+
 
 #msgsContent .msg .info {
 	display: flex;
@@ -310,6 +327,10 @@ a:hover {
 }
 
 
+/* form#sendForm {
+	padding-bottom: 1em;
+}
+ */
 #sendDialog textarea,
 #sendDialog input[type="text"],
 #sendDialog input[type="password"] {
@@ -463,6 +484,7 @@ label.input__file::before{
 	z-index: 1;
 	max-width: 100%;
 	overflow: hidden;
+	padding-bottom: .5em;
 }
 
 .block2 .bb{
@@ -650,7 +672,7 @@ margin-bottom:5px;
 	width: 4em;
 	fill: #abc;
 	position: absolute;
-	z-index: 100;
+	z-index: 9;
 	cursor:pointer;
 }
 
@@ -702,12 +724,6 @@ section.bottom > div {
 	flex-direction: column;
 	/* height: 100%; */
 }
-
-/* .appeals {
-	overflow: auto !important;
-	padding: 0 1em;
-	max-height: 50vh;
-} */
 
 section.bottom .box {
 	flex: 1 1 100%;

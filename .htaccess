@@ -5,7 +5,7 @@ Options -Indexes
 # Начальный файл
 DirectoryIndex index.php
 
-Options +FollowSymlinks
+# Options +FollowSymlinks
 
 <IfModule mod_rewrite.c>
 	RewriteEngine on

@@ -41,7 +41,7 @@ hr {
 }
 
 #msgsContent .msg + .msg {
-	border: 1px dashed #ccc;
+	border-color: #ccc;
 }
 
 #msgsContent .msg .info {

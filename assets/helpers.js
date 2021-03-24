@@ -275,6 +275,46 @@ function fade(o, opts, dontStartNow) {
 
 
 /**
+ * Авторазмер элемента
+ * @param {HTMLElement} el - элемент, меняющий высоту от контента
+ * optional @param {int} maxH - макс. высота
+ * optional @param {bool} state
+ */
+ export function autoHeight(el, maxH, state) {
+	if (arguments.length === 1) {
+		if (el._ah_) el._ah_();
+		return;
+	}
+
+	if (el._ah_) off(el, "input paste", el._ah_);
+	delete (el._ah_);
+	el.style.height = "auto";
+
+	if (state) {
+		el.style.boxSizing = "border-box";
+		var h = el.offsetHeight,
+			dh = h - el.clientHeight,
+			t;
+
+		el._ah_ = function () {
+			while (true) {
+				t = el.offsetHeight - 16;
+				el.style.height = t + "px";
+				if (t < h || el.scrollHeight > el.clientHeight) break;
+			}
+
+			var nh = el.scrollHeight + dh;
+			if (maxH && nh > maxH) nh = maxH;
+			el.style.height = nh + "px";
+		};
+
+		on(el, "input paste", el._ah_);
+		el._ah_();
+	}
+}
+
+
+/**
  * Прокрутка к элементу
  * @param {Node|String} targetEl - целевой элемент
  * @param {obj} opts - параметры для scrollIntoView
@@ -387,8 +427,9 @@ function getNode(n, ctx){
 	return (n instanceof Object)? n: ctx.querySelector(n);
 }
 
+
 /**
- * Навешиваем обработчик(и)
+ * *Навешиваем обработчик(и)
  * @param {Node|string} obj - Node | selector
  * @param {Event.responseType} event
  * @param {function} handler
@@ -397,15 +438,8 @@ export function on(obj, event, handler) {
 	if(!obj){
 		return;
 	}
-	event= event.split(' ');
+	event= event.split(' ').filter(i=>i);
 	obj= getNode(obj);
-	/* try{
-		obj= (obj instanceof Object)? obj: document.querySelector(obj);
-	}
-	catch{
-		console.log({obj});
-	}
- */
 
 	event.forEach(e=>{
 		if (obj.addEventListener !== undefined) obj.addEventListener(e, handler, true);
@@ -413,10 +447,18 @@ export function on(obj, event, handler) {
 	});
 }
 
-// *Удаляем обработчик
+// *Удаляем обработчик(и)
 export function off(obj, event, handler) {
-	if (typeof (obj.removeEventListener) != 'undefined') obj.removeEventListener(event, handler, true);
-	else if (typeof (obj.detachEvent) != 'undefined') obj.detachEvent('on' + event, handler);
+	if(!obj){
+		return;
+	}
+	event= event.split(' ').filter(i=>i);
+	obj= getNode(obj);
+
+	event.forEach(e=>{
+		if (obj.removeEventListener !== undefined) obj.removeEventListener(e, handler, true);
+		else if (obj.detachEvent !== undefined) obj.detachEvent('on' + e, handler, true);
+	});
 }
 
 

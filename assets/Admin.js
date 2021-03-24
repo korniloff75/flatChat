@@ -13,16 +13,14 @@ console.log('Admin module included', {msgs});
 var logoutBtn= document.querySelector('.logout');
 
 logoutBtn && on(logoutBtn, 'click', e=>{
-	// if(!confirm("Вы точно хотите выйти\nиз своей учётной записи?")) return;
-
 	return modal("Вы точно хотите выйти\nиз своей учётной записи?")
-		.then(ok=>{
-			poll.stop=1;
-			fetch('', {
-				method: 'post',
-				body: JSON.stringify({logOut: true}),
-			}).then(_w.location.reload.bind(location));
-		}, err=>false)
+	.then(ok=>{
+		poll.stop=1;
+		fetch('', {
+			method: 'post',
+			body: JSON.stringify({logOut: true}),
+		}).then(_w.location.reload.bind(location));
+	}, err=>false)
 });
 
 
@@ -41,6 +39,29 @@ on(msgs,'click',e=>{
 		e.stopPropagation();
 		e.preventDefault();
 		console.log('click on the admin panel', msg);
+	}
+
+	// *Pin post
+	if((btn= t.closest('.pin'))){
+		let pinned= msg.classList.contains('pinned');
+		return fetch('', {
+			method:'post',
+			body: JSON.stringify({
+				mode: pinned? 'remove': 'set',
+				pinPost: num,
+			}),
+		}).then(ok=>{
+			if(pinned){
+				msg.classList.remove('pinned');
+			}
+			else{
+				let exists= msgs.querySelectorAll('.pinned');
+				exists && exists.forEach(p=>p.classList.remove('pinned'));
+				msg.classList.add('pinned');
+				msg.classList.remove('myPost');
+			}
+
+		});
 	}
 
 	// *Edit post
@@ -98,7 +119,7 @@ on(msgs,'click',e=>{
 }); // /Обработка элементов .msg
 
 
-// todo Обработка пакетного выбора
+//* Обработка пакетного выбора
 let selectedPanel= document.querySelector('#selectedPanel');
 	// selectedPosts= [];
 
