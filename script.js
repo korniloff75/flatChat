@@ -84,12 +84,16 @@ _w.scrollBottom= function scrollBottom() {
  * @param {function} handler
  */
 export function refresh(params, handler) {
+// function refresh(params, handler) {
 	params.lastMod = params.lastMod == 0? 0 : LastMod;
 
 	return Ajax.post(
 		_w.location.toString(),
 		params
-	).then(XMLo=>refreshAfter(handler,XMLo));
+	).then(
+		XMLo=>refreshAfter(handler,XMLo),
+		err=>{console.log('err',err);}
+	);
 };
 
 
@@ -109,6 +113,8 @@ function refreshAfter (handler, XMLo) {
 		tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
 		response = undefined;
 	}
+
+	if(!response) return;
 
 	if (response !== undefined) {
 		var html= (response instanceof Object)
@@ -196,10 +202,12 @@ export var poll = (function () {
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
-		refresh( data ).then(()=>poll(true))
+		refresh( data ).then(()=>{
+			rq(true);
+		})
 		.catch(err=>{
 			console.log(err);
-			poll();
+			// rq();
 		});
 	};
 

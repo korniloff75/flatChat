@@ -53,8 +53,12 @@ class Chat
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
-		if($this->mode === 'post')
+		if($this->mode === 'post'){
 			$this->_newPost();
+			echo $this->Out( "OK", true );
+			$this->exit = true;
+			die;
+		}
 
 		if ( in_array($this->mode, ["set","remove"], true) ) {
 			$this->exit = true;
@@ -62,12 +66,16 @@ class Chat
 
 		// *Update list
 		if ( $this->mode === "list" ) {
+			// die;
 			$this->exit = true;
 
 			$rlm = (int)filter_var($_REQUEST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
 
-			if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
-			else echo $this->Out( "OK", true );
+			/* if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
+			else echo $this->Out( "OK", true ); */
+
+			// echo 123;
+			$this->_pollingServer($rlm);
 		}
 
 		tolog(__METHOD__,null,['$this->mode'=>$this->mode]);
@@ -181,7 +189,7 @@ class Chat
 		// *Write
 		$this->_save($upload->loaded);
 
-		$this->mode = "list";
+		// $this->mode = "list";
 
 		$this->lastMod = filemtime( $this->dbPathname );
 	}
@@ -473,7 +481,7 @@ class Chat
 
 		if(!isset($appeals)) $appeals= '';
 
-		$pinned= $this->State->db->pinned;
+		$pinned= empty($this->State->db->pinned) ? -1: $this->State->db->pinned;
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -600,5 +608,40 @@ class Chat
 		if($template= self::fixSlashes($template)){
 			$this->State->db->set(['users'=>[$this->UID=>['template'=>$template]]]);
 		}
+	}
+
+
+	private function _pollingServer($rlm)
+	{
+		// set_time_limit(ini_get('max_execution_time') /2);
+		set_time_limit(25);
+
+		tolog(__METHOD__,null,[$rlm, $this->lastMod]);
+
+		// main loop
+		while (1) {
+			// if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
+			$t= "$rlm === {$this->lastMod}\n";
+			if ( $rlm !== $this->lastMod ) {
+
+				echo $this->Out( "OK", true );
+
+				file_put_contents('test',$t, FILE_APPEND);
+
+				// leave this loop step
+				break;
+
+			} else {
+				// wait for 1 sec (not very sexy as this blocks the PHP/Apache process, but that's how it goes)
+				sleep( 1 );
+				clearstatcache();
+				$this->lastMod = filemtime( $this->dbPathname );
+				continue;
+			}
+
+		}
+
+		die;
+
 	}
 } // Chat
