@@ -7,26 +7,31 @@ if(
 	&& !empty($_POST)
 	|| is_adm()
 ){
+	$user= 'nobody';
+
 	$base= new DbJSON(\DR.'/assets/adm.json');
 	if(!$base->count()){
-		$base->set(['pwd'=>hash('sha256',$pwd)]);
+		$base->set(['Adm'=>hash('sha256',$pwd)]);
 	}
 	elseif(
-		hash('sha256',$pwd) === $base->pwd
+		hash('sha256',$pwd) === $base->Adm
 		|| is_adm()
 	){
 		// session_start();
 		$_SESSION['adm']= true;
-		echo "<h2>You are admin!</h2>
-		<a href='../'><button class='button'>to chat</button></a><pre>";
-		// var_dump($_SERVER);
+		$user= 'Admin';
 
-		// header('Location: '.$_SERVER['HTTP_ORIGIN']);
-		die;
+		// var_dump($_SERVER);
 	}
 	else{
-		die("<p>Ты ошибся. Перезагрузи страницу и попробуй ещё раз.</p>");
+		$_SESSION['user']= ['name'=>$pwd];
+		$user= $pwd;
 	}
+
+	echo "<h2>You are $user!</h2>
+	<a href='../'><button class='button'>to chat</button></a><pre>";
+
+	die;
 }
 
 

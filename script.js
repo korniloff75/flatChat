@@ -1,5 +1,5 @@
 'use strict';
-import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification, tipUpper, autoHeight} from './assets/helpers.js';
+import {Ajax, scrollIntoView, css, on, off, speak, elemInViewport, sendNotification, tipUpper, autoHeight, logTrace} from './assets/helpers.js';
 import * as Adm from './assets/Admin.js';
 import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
@@ -81,9 +81,9 @@ _w.scrollBottom= function scrollBottom() {
 /**
  * *Обновление страницы
  * @param {obj} params
- * @param {function} handler
+ * @returns {Promise}
  */
-export function refresh(params, handler) {
+export function refresh(params) {
 // function refresh(params, handler) {
 	params.lastMod = params.lastMod == 0? 0 : LastMod;
 
@@ -91,19 +91,18 @@ export function refresh(params, handler) {
 		_w.location.toString(),
 		params
 	).then(
-		XMLo=>refreshAfter(handler,XMLo),
-		err=>{console.log('err',err);}
+		XMLo=>refreshAfter(XMLo)
+		, err=>{logTrace('refresh Error',err);}
 	);
 };
 
 
 /**
  * *Коллбэк для refresh
- * @param {function} handler - !deprecated
  * @param {obj} XMLo - result of ajax
  */
-function refreshAfter (handler, XMLo) {
-	// console.log(arguments);
+function refreshAfter (XMLo) {
+	// logTrace(arguments);
 
 	let success= XMLo.status === 200,
 		statusCode= XMLo.status,
@@ -113,10 +112,11 @@ function refreshAfter (handler, XMLo) {
 		tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
 		response = undefined;
 	}
+	else if(!response) {
+		console.log('Response is empty!');
+	};
 
-	if(!response) return;
-
-	if (response !== undefined) {
+	if (response && response !== undefined) {
 		var html= (response instanceof Object)
 			? response.html
 			: response;
@@ -155,7 +155,6 @@ function refreshAfter (handler, XMLo) {
 
 	}
 
-	if (handler) handler(success, statusCode, html);
 } //refreshAfter
 
 
@@ -206,7 +205,7 @@ export var poll = (function () {
 			rq(true);
 		})
 		.catch(err=>{
-			console.log(err);
+			console.log('error in poll',err);
 			// rq();
 		});
 	};
@@ -251,7 +250,7 @@ function formSubmit (e) {
 		return false;
 	}
 
-	console.log("f['attach[]'].value= ", f['attach[]'].value);
+	// console.log("f['attach[]'].value= ", f['attach[]'].value);
 
 	if (!(text.value= text.value.trim()) && !f['attach[]'].value) {
 		tipUpper(text, "Пожалуйста, введите текст");
@@ -272,7 +271,8 @@ function formSubmit (e) {
 
 	f.submit.disabled= true;
 
-	refresh( fd	)
+	// refresh( fd	)
+	Ajax.post( '', fd	)
 	.then(function () {
 		f.submit.disabled= false;
 		scrollIntoView(msgs,{block:'start'});

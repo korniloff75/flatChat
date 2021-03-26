@@ -39,6 +39,7 @@ class Chat
 	protected
 		$uState=[], // *Данные пользователя
 		$State, // *Общие данные
+		$successPolling, //* Flag
 		$renderMods=[]; //*Элементы шаблона
 
 
@@ -107,6 +108,9 @@ class Chat
 
 	private function _setUState()
 	{
+		// *fix 4 polling
+		$_SESSION = $_SESSION ?? [];
+
 		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
 			$this->uState= array_merge($this->uState, $chatUser);
 		}
@@ -114,10 +118,10 @@ class Chat
 			$this->uState['IP']= self::realIP();
 		}
 
-		$this->uState['name'] = $this->name? $this->name: self::cleanName(@$_REQUEST["name"]) ?? null;
+		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
-		// tolog(__METHOD__,null,['$chatUser'=>$chatUser, $this->name, $this->IP, self::defineUID($this->name, $this->IP)]);
+		tolog(__METHOD__,null,['$uState'=>$this->uState, '$_SESSION'=>$_SESSION, ]);
 
 		$this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
 
@@ -283,6 +287,8 @@ class Chat
 		$out['state']= $this->State->db->get();
 		$out['Chat']= $this->uState;
 		$out['is_https']= self::is('https');
+
+		$this->successPolling = true;
 
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
@@ -611,28 +617,38 @@ class Chat
 	}
 
 
+	/**
+	 * Демон
+	 */
 	private function _pollingServer($rlm)
 	{
+		$exec_time = 0; //sec
 		// set_time_limit(ini_get('max_execution_time') /2);
-		set_time_limit(25);
+		set_time_limit($exec_time);
+		// $start_time= time();
 
 		tolog(__METHOD__,null,[$rlm, $this->lastMod]);
 
 		// main loop
 		while (1) {
+			$this->State->db->set(['users'=>[$this->UID=>['ts'=>time()]]]);
 			// if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
-			$t= "$rlm === {$this->lastMod}\n";
+			// $t= "$rlm === {$this->lastMod}\n";
 			if ( $rlm !== $this->lastMod ) {
 
 				echo $this->Out( "OK", true );
 
-				file_put_contents('test',$t, FILE_APPEND);
+				// file_put_contents('test',$t, FILE_APPEND);
 
 				// leave this loop step
 				break;
 
 			} else {
-				// wait for 1 sec (not very sexy as this blocks the PHP/Apache process, but that's how it goes)
+				/* if((time() - $start_time) > $exec_time){
+					echo $this->Out( "NONMODIFIED" );
+					break;
+				} */
+
 				sleep( 1 );
 				clearstatcache();
 				$this->lastMod = filemtime( $this->dbPathname );
@@ -643,5 +659,13 @@ class Chat
 
 		die;
 
+	}
+
+
+	function __destruct()
+	{
+		if(!$this->successPolling){
+			echo $this->Out( "NONMODIFIED" );
+		}
 	}
 } // Chat

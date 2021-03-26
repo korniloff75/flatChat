@@ -77,24 +77,24 @@ export const Ajax={
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		XMLo.setRequestHeader("Accept", "*\/*");
 
-		return ajaxHandler(XMLo, reqParams, callback);
+		return ajaxHandler(XMLo, reqParams);
 
 		// return (XMLo !== null);
 	}
 }
 
-function ajaxHandler(XMLo, reqParams, callback){
+function ajaxHandler(XMLo, reqParams){
 	return new Promise((res,rej)=>{
 		console.log({reqParams});
 		XMLo.onreadystatechange = function () {
-			console.log('XMLo.readyState', XMLo.readyState);
+			// console.log('XMLo.readyState', XMLo.readyState);
 			if (XMLo.readyState !== 4) return;
 			// if (XMLo.readyState !== 4) return ajaxHandler.call(this,arguments);
 
 			// if (XMLo.status == 200 || XMLo.status == 0) {
 			else if (XMLo.status === 200) {
 				console.log('Ajax success',{XMLo});
-				callback&&callback(true, XMLo.status, XMLo.response);
+
 				return res(XMLo);
 			}
 			else{
@@ -102,6 +102,10 @@ function ajaxHandler(XMLo, reqParams, callback){
 				return rej(XMLo);
 			}
 		};
+
+		/* XMLo.onprogress = e=>{
+			console.log('progress',e);
+		} */
 
 		XMLo.send(reqParams);
 	});
@@ -583,4 +587,12 @@ export function addStyle(href){
 	style.rel= 'stylesheet';
 	document.head.appendChild(style);
 	console.log({style});
+}
+
+export function logTrace(msg) {
+	let err = new Error(),
+		args= Array.from(arguments);
+	args.push(err.stack);
+	// console.log(args, Array.from(arguments));
+	console.log.apply(console, args );
 }
