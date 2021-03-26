@@ -36,13 +36,14 @@ function _autoloader($class)
 
 spl_autoload_register('_autoloader');
 
-// *Логгируем загрузку страницы
+//! *Логгируем загрузку страницы
 function tolog()
 {
+	// return;
 	global $log;
 
 	// *Отсекаем поллинги
-	if(@$_REQUEST["mode"] !== 'list'){
+	if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] !== 'list'){
 		$log = $log ?? new Logger('my.log', \DR);
 		return call_user_func_array([$log,'add'], func_get_args());
 	}
@@ -50,7 +51,8 @@ function tolog()
 
 tolog(__FILE__,null,['DR'=>DR,'GDR'=>GDR]);
 
-session_start();
+if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] !== 'list')
+	session_start();
 
 // *Admin
 function is_adm()

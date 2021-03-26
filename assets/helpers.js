@@ -26,6 +26,13 @@ export const Ajax={
 		return Ajax.request.apply(null, arguments);
 	},
 
+	/**
+	 *
+	 * @param {str} url
+	 * optional @param {obj} reqParams
+	 * optional @param {function} callback - deprecated
+	 * @returns {Promise}
+	 */
 	request: function (url, reqParams, callback) {
 		var XMLo;
 
@@ -78,26 +85,26 @@ export const Ajax={
 
 function ajaxHandler(XMLo, reqParams, callback){
 	return new Promise((res,rej)=>{
+		console.log({reqParams});
 		XMLo.onreadystatechange = function () {
+			console.log('XMLo.readyState', XMLo.readyState);
 			if (XMLo.readyState !== 4) return;
+			// if (XMLo.readyState !== 4) return ajaxHandler.call(this,arguments);
 
 			// if (XMLo.status == 200 || XMLo.status == 0) {
-			if (XMLo.status === 200) {
-				console.log({XMLo});
+			else if (XMLo.status === 200) {
+				console.log('Ajax success',{XMLo});
+				callback&&callback(true, XMLo.status, XMLo.response);
 				return res(XMLo);
 			}
 			else{
+				console.log('Ajax fail',{XMLo});
 				return rej(XMLo);
 			}
-
-			XMLo = null;
 		};
 
 		XMLo.send(reqParams);
-	}).then(XMLo=>{
-		callback&&callback(true, XMLo.status, XMLo.response);
-		return XMLo;
-	})
+	});
 }
 
 
