@@ -53,8 +53,7 @@ trait Helpers
 		elseif(
 			// *check UNIX
 			DIRECTORY_SEPARATOR === '/'
-			&& $perms= fileperms($pathname)
-			&& $perms !== $chmod
+			&& ($perms= fileperms($pathname)) !== $chmod
 		){
 			if(!chmod ($pathname, $chmod) || $perms !== $chmod)
 				tolog(__METHOD__.": Измените вручную права на папку $pathname на 0" . decoct($chmod),E_USER_WARNING,[$pathname=>$perms,fileperms($pathname)]);

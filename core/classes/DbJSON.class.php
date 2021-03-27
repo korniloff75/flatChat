@@ -357,7 +357,7 @@ class DbJSON implements Iterator, Countable
 	{
 		global $log;
 
-		$this->saved= 1;
+		$this->changed= 0;
 
 		if($this->reversed){
 			$this->reverse(1);
@@ -370,7 +370,7 @@ class DbJSON implements Iterator, Countable
 				$this->path,
 				self::toJSON($this->db), LOCK_EX
 			);
-			$this->changed= 0;
+
 			return true;
 		}
 	}
@@ -389,8 +389,7 @@ class DbJSON implements Iterator, Countable
 
 		// *check changes
 		if(
-			!empty($this->saved)
-			|| !$this->changed
+			!$this->changed
 		) return;
 
 		$this->save();

@@ -36,7 +36,7 @@
 		Out= <?=$this->Out()?>;
 </script>
 
-<script src="./script.js" type="module"></script>
+<script src="./script.js" type="module" defer></script>
 
 <script src="./assets/helpers.js" type="module" async></script>
 <script src="./assets/BB.js" type="module" async></script>

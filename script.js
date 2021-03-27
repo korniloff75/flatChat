@@ -9,7 +9,7 @@ export {Ajax, scrollIntoView, css, on, off, speak};
 
 console.log('Glob server vars', {Chat, LastMod, Out});
 
-const _w= window;
+export const _w= window;
 
 const msgsDialog = document.getElementById("msgsDialog");
 const sendDialog = document.getElementById("sendDialog");
@@ -193,11 +193,13 @@ function msgsModifed(html){
  * @param {bool} rewait - Ожидание перед запросом
  */
 export var poll = (function () {
-	var t,
-		data= { mode: "list", responseType:'json' };
+	var t;
 
 	var rq = function () {
-		console.log({Chat});
+		Chat.on= document.hidden? false: true;
+
+		var data= { chatUser: JSON.stringify(Chat), mode: "list", responseType:'json' };
+			console.log({Chat});
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
@@ -205,7 +207,7 @@ export var poll = (function () {
 			rq(true);
 		})
 		.catch(err=>{
-			console.log('error in poll',err);
+			logTrace('error in poll',err);
 			// rq();
 		});
 	};
@@ -266,14 +268,16 @@ function formSubmit (e) {
 	fd.append('mode','post');
 	fd.append('lastMod',0);
 	fd.append('ts', parseInt(Date.now()/1000));
+	Chat.on= true;
+	fd.append('chatUser', JSON.stringify(Chat));
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
 	f.submit.disabled= true;
 
 	// refresh( fd	)
-	Ajax.post( '', fd	)
-	.then(function () {
+	Ajax.post( location.href, fd	)
+	.then(function (XMLo) {
 		f.submit.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
 		text.value = text.textContent = "";
@@ -288,6 +292,7 @@ function formSubmit (e) {
 		countChars.call(f.text);
 
 		State.handlePosts(msgs);
+		refreshAfter(XMLo);
 	}).catch(err=>{
 		f.submit.disabled= false;
 		console.log('Ошибка при отправке: ', err.message);

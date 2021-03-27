@@ -7,20 +7,40 @@ class State /* extends Chat */
 		// EXPIRES= 1*3600,
 		BASE_PATHNAME= \DR.'/state.json';
 
-	public $db;
+	private $db;
+
+	function __get($n)
+	{
+		if(method_exists($this->db, $n)){
+			return $this->db->$n;
+		}
+		return $this->db->get($n);
+	}
+
+	function __set($n,$v)
+	{
+		return $this->db->set([$n=>$v]);
+	}
+
+	function get(?string $n=null)
+	{
+		return $this->__get($n);
+	}
 
 	public function __construct(array $uState)
 	{
 		// *Последнее обращение к серверу
-		$uState['ts']= time();
+		// $uState['ts']= time();
+
 		$UID= $uState['UID'];
 		// unset($uState['UID']);
 
 		$this->db= new DbJSON(self::BASE_PATHNAME);
 
 		$this->db->set(['users'=>[$UID=>$uState]]);
+			// ->(['users'=>[$UID=>$uState]]);
 
-		if(!$this->db->startIndex) $this->db->set(['startIndex'=>0]);
+		if(!isset($this->db->startIndex)) $this->db->set(['startIndex'=>0]);
 	}
 
 

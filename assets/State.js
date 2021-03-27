@@ -1,4 +1,8 @@
 'use strict';
+
+import { on } from "../script.js";
+import { Ajax,getUTC } from "./helpers.js";
+
 // native
 
 /**
@@ -6,6 +10,7 @@
  */
 
 var db={},
+	_w= window,
 	users,
 	appeals= document.querySelector('.appeals');
 
@@ -126,22 +131,25 @@ function addToUsersList (listNode) {
 
 			if(!uData.name) return;
 
-			var absence = now - users[uid].ts;
-
-			// *Online
-			users[uid].on= absence < REFRESHTIME/1000 * 2;
+			// deprecated
+			/* if(users[uid].on === undefined){
+				let absence = now - users[uid].ts;
+				users[uid].on= absence < REFRESHTIME/1000 * 2;
+			} */
 
 			var p= document.createElement('p'),
 				d= new Date(uData.ts*1000);
 
 			p.textContent= uData.name;
 
+			console.log({uData});
+
 			if(uData.on){
 				p.classList.add('on');
 			}
 			else{
 				p.classList.remove('on');
-				p.innerHTML+= ` <span class="date">(${d.getFullYear()}-${fixZero(d.getMonth()+1)}-${fixZero(d.getDate())} ${fixZero(d.getHours())}:${fixZero(d.getMinutes())})</span>`;
+				p.innerHTML+= ` <span class="date">(${getUTC(d)})</span>`;
 			}
 			dfr.appendChild(p);
 		});
@@ -152,7 +160,17 @@ function addToUsersList (listNode) {
 	// console.log({node});
 }
 
-// *fix dates
-function fixZero (num) {
-	return num < 10? '0'+num: num;
-}
+
+// *Выход по закрытию вкладки
+on(_w, 'unload', e=>{
+	Chat.on= false;
+
+
+	Ajax.post('',{
+		// mode: 'status',
+		mode: 'post',
+		name: Chat.name,
+		text: `Пользователь [b]${Chat.name}[/b] покинул чат.`,
+		chatUser: JSON.stringify(Chat),
+	}).then(oXML=>console.log(oXML));
+});

@@ -28,6 +28,10 @@ define( "GDR", $_SERVER['DOCUMENT_ROOT'] );
 $_SERVER['DOCUMENT_ROOT']= dirname(__DIR__);
 define( "DR", $_SERVER['DOCUMENT_ROOT'] );
 
+// var_dump($_REQUEST);
+
+define( "POLLING", isset($_REQUEST["mode"]) && $_REQUEST["mode"] === 'list' );
+
 
 function _autoloader($class)
 {
@@ -43,15 +47,15 @@ function tolog()
 	global $log;
 
 	// *Отсекаем поллинги
-	if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] !== 'list'){
+	if( isset($_REQUEST["dev"]) || !POLLING ){
 		$log = $log ?? new Logger('my.log', \DR);
 		return call_user_func_array([$log,'add'], func_get_args());
 	}
 }
 
-tolog(__FILE__,null,['DR'=>DR,'GDR'=>GDR]);
+tolog(__FILE__,null,['DR'=>DR,'GDR'=>GDR, 'POLLING'=>POLLING]);
 
-if(empty($_REQUEST["mode"]) || $_REQUEST["mode"] !== 'list')
+if( !POLLING )
 	session_start();
 
 // *Admin

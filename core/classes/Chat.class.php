@@ -54,6 +54,14 @@ class Chat
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
+		if($this->mode === 'status'){
+			// $this->uState['on'] = false;
+			// $this->State->users= [$this->UID=>$this->uState];
+			// echo $this->Out( "OK", true );
+			// $this->exit = true;
+			die;
+		}
+
 		if($this->mode === 'post'){
 			$this->_newPost();
 			echo $this->Out( "OK", true );
@@ -111,36 +119,6 @@ class Chat
 		// *fix 4 polling
 		$_SESSION = $_SESSION ?? [];
 
-		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
-			$this->uState= array_merge($this->uState, $chatUser);
-		}
-		else{
-			$this->uState['IP']= self::realIP();
-		}
-
-		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
-		$this->uState['UID']= self::defineUID($this->name, $this->IP);
-
-		tolog(__METHOD__,null,['$uState'=>$this->uState, '$_SESSION'=>$_SESSION, ]);
-
-		$this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
-
-		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
-
-		// *Записали и обновили $this->uState
-		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
-		$this->State= new State($this->uState);
-
-		$this->uState= $this->State->db->users[$this->UID];
-		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
-
-
-		return $this;
-	}
-
-
-	protected function _controller()
-	{
 		// *Получаем данные из fetch
 		$inp_data= json_decode(
 			file_get_contents('php://input'),1
@@ -150,6 +128,49 @@ class Chat
 		// *Собираем все входящие в $_REQUEST
 		$_REQUEST= array_merge($_REQUEST, $inp_data);
 
+
+		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
+			$this->uState= array_merge($this->uState, $chatUser);
+		}
+		else{
+			$this->uState['IP']= self::realIP();
+		}
+
+		tolog(__METHOD__,null,['$_SESSION'=>$_SESSION, ]);
+
+		// $this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
+
+		$this->uState['on'] = true;
+
+		if(isset($_REQUEST['chatUser'])){
+			$this->uState= array_replace($this->uState, json_decode($_REQUEST['chatUser'],1));
+			tolog(__METHOD__,null,['chatUser'=>$_REQUEST['chatUser'] ]);
+			// $this->uState['on'] = $_REQUEST['chatUser']['on'];
+		}
+
+		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
+		$this->uState['UID']= self::defineUID($this->name, $this->IP);
+
+		$this->uState['ts'] = time();
+
+		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
+
+
+		// *Записали и обновили $this->uState
+		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
+		$this->State= new State($this->uState);
+
+		$this->uState= $this->State->users[$this->UID];
+		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
+
+		// if(POLLING) file_put_contents('test1', __METHOD__. json_encode($this->uState, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+
+		return $this;
+	}
+
+
+	protected function _controller()
+	{
 		$this->uState['mode']= @$_REQUEST["mode"];
 
 		foreach($_REQUEST as $cmd=>&$val){
@@ -172,6 +193,9 @@ class Chat
 	}
 
 
+	/**
+	 * 
+	 */
 	private function _newPost()
 	{
 		if ( !$this->name || !$this->text && empty($_FILES) ) {
@@ -253,7 +277,7 @@ class Chat
 				// *Добавляем в архив
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
-				$this->State->db->set(['startIndex'=>($this->State->db->get('startIndex') ?? 0) + ($count - self::MAX_LINES)]);
+				$this->State->startIndex= ($this->State->startIndex ?? 0) + ($count - self::MAX_LINES);
 				$file= $newFile;
 			}
 
@@ -284,7 +308,7 @@ class Chat
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
-		$out['state']= $this->State->db->get();
+		$out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
 		$out['is_https']= self::is('https');
 
@@ -332,7 +356,7 @@ class Chat
 	 */
 	public function c_getPost($num)
 	{
-		$num-= $this->State->db->startIndex + 1;
+		$num-= $this->State->startIndex + 1;
 
 		$post= array_combine(self::$indexes, explode(self::DELIM, $this->_checkDB()->file[$num]));
 		echo json_encode($post, JSON_UNESCAPED_UNICODE);
@@ -348,7 +372,7 @@ class Chat
 		if(!is_adm()) return;
 		$file= &$this->_checkDB()->file;
 		$num= filter_var($_REQUEST['num'], FILTER_SANITIZE_NUMBER_INT);
-		$num-= $this->State->db->startIndex + 1;
+		$num-= $this->State->startIndex + 1;
 
 		$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
 
@@ -371,11 +395,11 @@ class Chat
 	{
 		if(!is_adm()) return;
 		if($this->mode === 'set'){
-			$this->State->db->set(['pinned'=>(int) $num]);
+			$this->State->set(['pinned'=>(int) $num]);
 			echo "Post $num pinned.";
 		}
 		elseif($this->mode === 'remove'){
-			$this->State->db->remove('pinned');
+			$this->State->remove('pinned');
 			echo "Post $num unpinned.";
 		}
 
@@ -398,7 +422,7 @@ class Chat
 		$file= &$this->_checkDB()->file;
 
 		foreach($nums as $num){
-			$num-= $this->State->db->startIndex + 1;
+			$num-= $this->State->startIndex + 1;
 
 			$data= array_combine(self::$indexes, explode(self::DELIM, $file[$num]));
 
@@ -482,12 +506,12 @@ class Chat
 
 		$UID= self::defineUID($name, $IP);
 		if($this->useStartIndex){
-			$n+= $this->State->db->startIndex;
+			$n+= $this->State->startIndex;
 		}
 
 		if(!isset($appeals)) $appeals= '';
 
-		$pinned= empty($this->State->db->pinned) ? -1: $this->State->db->pinned;
+		$pinned= empty($this->State->pinned) ? -1: $this->State->pinned;
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -612,7 +636,7 @@ class Chat
 		// tolog(__METHOD__,null,['$this->uState'=>$this->uState, '$this->UID'=>$this->UID]);
 
 		if($template= self::fixSlashes($template)){
-			$this->State->db->set(['users'=>[$this->UID=>['template'=>$template]]]);
+			$this->State->users= [$this->UID=>['template'=>$template]];
 		}
 	}
 
@@ -624,19 +648,43 @@ class Chat
 	{
 		$exec_time = 0; //sec
 		// set_time_limit(ini_get('max_execution_time') /2);
+		// ignore_user_abort(true);
 		set_time_limit($exec_time);
 		// $start_time= time();
 
-		tolog(__METHOD__,null,[$rlm, $this->lastMod]);
+		tolog(__METHOD__,null,['$rlm'=>$rlm, '$this->lastMod'=>$this->lastMod, 'connection_status()'=>connection_status()]);
+
+		// if(POLLING) file_put_contents('test1', __METHOD__. json_encode($this->uState, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
+
+		// $this->State->set(['users'=>[$this->UID=>['test'=>true]]]);
+
+		if(POLLING) file_put_contents('test1', __METHOD__.' - State - '. json_encode($this->State->get(), JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
 
 		// main loop
 		while (1) {
-			$this->State->db->set(['users'=>[$this->UID=>['ts'=>time()]]]);
+			$this->uState['ts'] = time();
+			$this->uState['on'] = true;
+			$this->State->users= [$this->UID=>$this->uState];
+			// $this->State->save();
 			// if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
 			// $t= "$rlm === {$this->lastMod}\n";
+
+
+			// *Обновление
 			if ( $rlm !== $this->lastMod ) {
 
 				echo $this->Out( "OK", true );
+
+				if(!ob_end_flush()) flush();
+
+				/* // *При обрыве соединения
+				if(connection_status() != CONNECTION_NORMAL){
+					$this->uState['on'] = false;
+					$this->State->users= [$this->UID=>$this->uState];
+
+					file_put_contents('test', __METHOD__.' - uState - '. json_encode($this->State->get(), JSON_UNESCAPED_UNICODE));
+					// break;
+				} */
 
 				// file_put_contents('test',$t, FILE_APPEND);
 
@@ -664,8 +712,11 @@ class Chat
 
 	function __destruct()
 	{
+		// if(POLLING) file_put_contents('test', __METHOD__.' - State - '. json_encode($this->State->db->get(), JSON_UNESCAPED_UNICODE));
+
 		if(!$this->successPolling){
 			echo $this->Out( "NONMODIFIED" );
 		}
+		// $this->State->users = [$this->UID=>['on'=>false]];
 	}
 } // Chat

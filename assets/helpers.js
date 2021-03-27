@@ -34,6 +34,7 @@ export const Ajax={
 	 * @returns {Promise}
 	 */
 	request: function (url, reqParams, callback) {
+		url= url || location.href;
 		var XMLo;
 
 		reqParams= reqParams || {responseType:'json'};
@@ -68,10 +69,13 @@ export const Ajax={
 				var prm = "";
 				for (var i in reqParams) prm += "&" + i + "=" + encodeURIComponent(reqParams[i]);
 				reqParams = prm;
+
 			}
 			else {
 				reqParams = " ";
 			}
+
+			// reqParams = JSON.stringify(reqParams || {});
 		}
 
 		XMLo.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -587,6 +591,16 @@ export function addStyle(href){
 	style.rel= 'stylesheet';
 	document.head.appendChild(style);
 	console.log({style});
+}
+
+export function getUTC(d){
+	if(!(d instanceof Date)) new Error('Аргумент должен быть экземляром Date');
+	return `${d.getFullYear()}-${fixZero(d.getMonth()+1)}-${fixZero(d.getDate())} ${fixZero(d.getHours())}:${fixZero(d.getMinutes())}`;
+}
+
+// *fix dates
+function fixZero (num) {
+	return num < 10? '0'+num: num;
 }
 
 export function logTrace(msg) {
