@@ -10,11 +10,11 @@ class Chat
 		ARH_PATHNAME= \DR.'/db',
 		FILES_DIR= '/files_B',
 		DELIM= "<~>",
-		MAX_LINES= 200,
+		MAX_LINES= 300,
 		// MAX_LINES= 5,
-		DELTA_LINES= 100,
+		DELTA_LINES= 200,
 		MAXUSERTEXTLEN= 1024,
-		MAXUSERNAMELEN= 20,
+		MAXUSERNAMELEN= 25,
 		TEMPLATE_DEFAULT= '_default_';
 
 	static
@@ -55,7 +55,6 @@ class Chat
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'status'){
-			// $this->uState['on'] = false;
 			// $this->State->users= [$this->UID=>$this->uState];
 			// echo $this->Out( "OK", true );
 			// $this->exit = true;
@@ -140,12 +139,9 @@ class Chat
 
 		// $this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
 
-		$this->uState['on'] = true;
-
 		if(isset($_REQUEST['chatUser'])){
 			$this->uState= array_replace($this->uState, json_decode($_REQUEST['chatUser'],1));
 			tolog(__METHOD__,null,['chatUser'=>$_REQUEST['chatUser'] ]);
-			// $this->uState['on'] = $_REQUEST['chatUser']['on'];
 		}
 
 		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
@@ -194,7 +190,7 @@ class Chat
 
 
 	/**
-	 * 
+	 *
 	 */
 	private function _newPost()
 	{
@@ -203,7 +199,7 @@ class Chat
 			die( "Полученные данные не прошли серверную валидацию." );
 		}
 
-		$this->uState['myUID']= self::defineUID($this->name, $this->IP);
+		// $this->uState['myUID']= self::defineUID($this->name, $this->IP);
 
 		$this->exit = true;
 
@@ -258,6 +254,7 @@ class Chat
 		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
 
 		self::createDir(self::ARH_PATHNAME, 0776);
+		self::createDir(self::ARH_PATHNAME.'/imgs', 0776);
 
 		if(
 			!file_exists($this->dbPathname)
@@ -269,16 +266,39 @@ class Chat
 		}
 		// *Файл превышает допустимый размер
 		else{
+			// *Обрезаем базу
 			$newFile= array_splice($file, -self::MAX_LINES);
 
+			// *remove imgs
+			foreach($file as &$str){
+				$str_arr= explode(self::DELIM, $str);
+				// *fix old posts
+				$indexes= array_slice(self::$indexes, 0, count($str_arr));
+
+				extract($data= array_combine($indexes, $str_arr));
+				// *Перемещаем прикрепления
+				if(!empty($files= json_decode($files))) foreach($files as &$f){
+					tolog(__METHOD__,null,['$f'=>\DR.'/'. $f]);
+					$im_pathname= self::ARH_PATHNAME.'/imgs/' .basename($f);
+					rename(\DR.'/'. $f, $im_pathname);
+					$f= self::getPathFromRoot($im_pathname);
+				}
+
+				foreach($indexes as $p=>$ind){
+					$str_arr[$p]= $$ind;
+				}
+
+				$str= implode(self::DELIM, $str_arr);
+			}
+
 			if(
-				// *Обрезаем базу
 				file_put_contents( $this->dbPathname, $newFile, LOCK_EX )
 				// *Добавляем в архив
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
-				$this->State->startIndex= ($this->State->startIndex ?? 0) + ($count - self::MAX_LINES);
-				$file= $newFile;
+				$this->State->startIndex= $this->State->startIndex + ($count - self::MAX_LINES);
+
+				$file = $newFile;
 			}
 
 		}
@@ -308,11 +328,12 @@ class Chat
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
+		if($this->successPolling)
+			$this->State= new State($this->uState);
+
 		$out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
 		$out['is_https']= self::is('https');
-
-		$this->successPolling = true;
 
 		return json_encode($out, JSON_UNESCAPED_UNICODE);
 	}
@@ -325,6 +346,8 @@ class Chat
 		ob_start();
 
 		$render= is_adm()? '_renderAdmPost': '_renderPost';
+
+		tolog(__METHOD__,null,['is_adm()'=>is_adm(), '$render'=>$render]);
 
 		foreach($chat as $n=>&$v){
 			// *Разбираем построчно
@@ -342,6 +365,8 @@ class Chat
 		};
 
 		// tolog(__METHOD__,null,['$chat'=>$chat,]);
+
+		tolog(__METHOD__,null,['is_adm()'=>is_adm(), 'buf'=>ob_get_contents()]);
 
 		return ob_get_clean();
 	}
@@ -493,7 +518,12 @@ class Chat
 
 		$doc->normalize();
 
-		return html_entity_decode($doc->saveHTML(), ENT_COMPAT);
+		$body= $xpath->query('//body')->item(0);
+
+		// $t= html_entity_decode(self::getDOMinnerHTML($body), ENT_COMPAT);
+		$t= self::getDOMinnerHTML($body);
+
+		return $t;
 	}
 
 	// * /ADMIN
@@ -580,6 +610,8 @@ class Chat
 	function getArhives()
 	{
 		if(is_dir(self::ARH_PATHNAME)) foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
+			if($fi->isDir()) continue;
+
 			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a> | ";
 		}
 	}
@@ -637,7 +669,11 @@ class Chat
 
 		if($template= self::fixSlashes($template)){
 			$this->State->users= [$this->UID=>['template'=>$template]];
+			$this->State->save();
+			echo $this->Out( "NONMODIFIED" );
+			flush();
 		}
+		die;
 	}
 
 
@@ -647,6 +683,9 @@ class Chat
 	private function _pollingServer($rlm)
 	{
 		$exec_time = 0; //sec
+		$counter = 0;
+		$loop_time = 2; //sec
+
 		// set_time_limit(ini_get('max_execution_time') /2);
 		// ignore_user_abort(true);
 		set_time_limit($exec_time);
@@ -656,22 +695,21 @@ class Chat
 
 		// if(POLLING) file_put_contents('test1', __METHOD__. json_encode($this->uState, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
 
-		// $this->State->set(['users'=>[$this->UID=>['test'=>true]]]);
-
-		if(POLLING) file_put_contents('test1', __METHOD__.' - State - '. json_encode($this->State->get(), JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
-
 		// main loop
 		while (1) {
-			$this->uState['ts'] = time();
-			$this->uState['on'] = true;
-			$this->State->users= [$this->UID=>$this->uState];
-			// $this->State->save();
-			// if no timestamp delivered via ajax or data.txt has been changed SINCE last ajax timestamp
-			// $t= "$rlm === {$this->lastMod}\n";
+			++$counter;
 
+			if($counter%($loop_time*5) === 0){
+				// $this->State->users= [$this->UID=>['ts'=>time()]];
+				// $this->State->save();
+			}
 
 			// *Обновление
 			if ( $rlm !== $this->lastMod ) {
+				$this->State->users= [$this->UID=>['ts'=>time()]];
+				$this->successPolling = true;
+
+				$this->State->save();
 
 				echo $this->Out( "OK", true );
 
@@ -697,7 +735,7 @@ class Chat
 					break;
 				} */
 
-				sleep( 1 );
+				sleep( $loop_time );
 				clearstatcache();
 				$this->lastMod = filemtime( $this->dbPathname );
 				continue;
@@ -714,9 +752,9 @@ class Chat
 	{
 		// if(POLLING) file_put_contents('test', __METHOD__.' - State - '. json_encode($this->State->db->get(), JSON_UNESCAPED_UNICODE));
 
-		if(!$this->successPolling){
-			echo $this->Out( "NONMODIFIED" );
+		if($this->successPolling){
+			// echo $this->Out( "NONMODIFIED" );
+			// $this->State->users = [$this->UID=>['on'=>false]];
 		}
-		// $this->State->users = [$this->UID=>['on'=>false]];
 	}
 } // Chat

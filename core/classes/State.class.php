@@ -35,12 +35,26 @@ class State /* extends Chat */
 		$UID= $uState['UID'];
 		// unset($uState['UID']);
 
+
 		$this->db= new DbJSON(self::BASE_PATHNAME);
 
 		$this->db->set(['users'=>[$UID=>$uState]]);
 			// ->(['users'=>[$UID=>$uState]]);
 
+		// *reset onlines
+		/* foreach($this->db->users as $uid=>$uState){
+			$this->db->set(['users'=>[$uid=>['on'=>false]]]);
+			// $this->db->users[$uid]['on'] = false;
+		} */
+
+		tolog(__METHOD__,null,[$this->db->users]);
+
 		if(!isset($this->db->startIndex)) $this->db->set(['startIndex'=>0]);
+	}
+
+
+	function save(){
+		return $this->db->save();
 	}
 
 

@@ -12,7 +12,7 @@ date_default_timezone_set ('Europe/Moscow');
 // setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
 
 // define( "DBFILE", realpath( str_replace( '\\', '/', __DIR__ ) ) . "/chat.db" ); //Путь и имя файла с чатом
-define( "REFRESHTIME", 10 * 1000 ); //Клиентская задержка опроса сервера
+define( "REFRESHTIME", 30 ); //Клиентская задержка опроса сервера
 define( "HEADER", "Chat" ); //Заголовок
 
 define( "COOKIEPATH", "/" );

@@ -113,7 +113,7 @@ function refreshAfter (XMLo) {
 		response = undefined;
 	}
 	else if(!response) {
-		console.log('Response is empty!');
+		console.log('Response after refresh is empty!',{response});
 	};
 
 	if (response && response !== undefined) {
@@ -123,26 +123,27 @@ function refreshAfter (XMLo) {
 
 		Object.assign(Chat, response.Chat);
 
-		// console.log({response}, (response instanceof String));
+		console.log('Response after refresh', {response}, 'Updated Chat', {Chat});
 
 		hideName();
 
-		var p = html.indexOf("\n");
+		let p = html.indexOf("\n");
 
 		if (p > 0) {
-			var s = html.substring(0, p).split(':'), lm;
+			var h = html.substring(0, p).split(':'), lm;
 
-			if (s) {
-				lm = +s[1];
-				console.log({s,lm});
-				s = s[0];
+			if (h) {
+				lm = +h[1];
+				h = h[0];
 
 				html = html.substring(p + 1);
 
-				if (s === "NONMODIFIED") html = undefined;
-				if (s === "OK") LastMod = lm;
+				if (h === "NONMODIFIED") html = undefined;
+				if (h === "OK") LastMod = lm;
 			}
 		}
+
+		console.log('test',{h,lm,html});
 
 		// *if Modifed
 		if (html !== undefined) {
@@ -199,7 +200,7 @@ export var poll = (function () {
 		Chat.on= document.hidden? false: true;
 
 		var data= { chatUser: JSON.stringify(Chat), mode: "list", responseType:'json' };
-			console.log({Chat});
+			// console.log({Chat});
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
@@ -215,7 +216,7 @@ export var poll = (function () {
 	return function (rewait) {
 		if (rewait) {
 			if (t) clearTimeout(t);
-			t = setTimeout(rq, REFRESHTIME );
+			t = setTimeout(rq, REFRESHTIME*1000 );
 		}
 		else rq();
 	};
@@ -266,7 +267,7 @@ function formSubmit (e) {
 
 	var fd= new FormData(f);
 	fd.append('mode','post');
-	fd.append('lastMod',0);
+	fd.append('lastMod',LastMod);
 	fd.append('ts', parseInt(Date.now()/1000));
 	Chat.on= true;
 	fd.append('chatUser', JSON.stringify(Chat));
@@ -275,8 +276,8 @@ function formSubmit (e) {
 
 	f.submit.disabled= true;
 
-	// refresh( fd	)
-	Ajax.post( location.href, fd	)
+	refresh( fd	)
+	// Ajax.post( location.href, fd	)
 	.then(function (XMLo) {
 		f.submit.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
@@ -292,7 +293,7 @@ function formSubmit (e) {
 		countChars.call(f.text);
 
 		State.handlePosts(msgs);
-		refreshAfter(XMLo);
+		// refreshAfter(XMLo);
 	}).catch(err=>{
 		f.submit.disabled= false;
 		console.log('Ошибка при отправке: ', err.message);
@@ -489,7 +490,13 @@ on(selectedPanel, 'click', e=>{
 
 		[].forEach.call(tmp.querySelectorAll('.cite_disp'), i=>i.remove());
 
-		speak(tmp.textContent.replace(/\p{S}/iug,''));
+		try {
+			tmp.textContent= tmp.textContent.replace(/\p{S}/iug,'');
+		} catch (err) {
+
+		}
+
+		speak(tmp.textContent);
 
 		return tmp.remove();
 	}

@@ -10,8 +10,10 @@ if(
 	$user= 'nobody';
 
 	$base= new DbJSON(\DR.'/assets/adm.json');
-	if(!$base->count()){
+	if(!$base->Adm){
 		$base->set(['Adm'=>hash('sha256',$pwd)]);
+		$_SESSION['adm']= true;
+		$user= 'Admin';
 	}
 	elseif(
 		hash('sha256',$pwd) === $base->Adm

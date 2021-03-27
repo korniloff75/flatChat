@@ -366,12 +366,10 @@ class DbJSON implements Iterator, Countable
 		if(empty($this->path))
 			is_object($log) && $log->add(__METHOD__.': Не указан путь записи базы',$log::BACKTRACE,['$this->path'=>$this->path]);
 		else {
-			file_put_contents(
+			return file_put_contents(
 				$this->path,
 				self::toJSON($this->db), LOCK_EX
 			);
-
-			return true;
 		}
 	}
 

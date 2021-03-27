@@ -1,6 +1,6 @@
 'use strict';
 
-import { on } from "../script.js";
+// import { on } from "../script.js";
 import { Ajax,getUTC } from "./helpers.js";
 
 // native
@@ -9,16 +9,14 @@ import { Ajax,getUTC } from "./helpers.js";
  * REFRESHTIME, Chat - defined in index.php
  */
 
-var db={},
-	_w= window,
+var _w= window,
 	users,
 	appeals= document.querySelector('.appeals');
 
-// console.log({Chat});
+console.log({Out});
 
 export function setDB (state){
-	db= state;
-	users= db.users;
+	users= state.users;
 	return this;
 }
 
@@ -105,6 +103,7 @@ export function hilightUsers (box, listNode){
 		if(!users[uid]) return;
 
 		if(users[uid].on){
+		// if(users[uid].ts > (Date.now() - REFRESHTIME*2)){
 			stateElement && stateElement.classList.add('on');
 			name.classList.add('on');
 		}
@@ -131,18 +130,15 @@ function addToUsersList (listNode) {
 
 			if(!uData.name) return;
 
-			// deprecated
-			/* if(users[uid].on === undefined){
-				let absence = now - users[uid].ts;
-				users[uid].on= absence < REFRESHTIME/1000 * 2;
-			} */
+			uData.on= (now - REFRESHTIME) < uData.ts;
+			uData.check= {now, delta: (now - REFRESHTIME - uData.ts),};
 
 			var p= document.createElement('p'),
 				d= new Date(uData.ts*1000);
 
 			p.textContent= uData.name;
 
-			console.log({uData});
+			// console.log({uData});
 
 			if(uData.on){
 				p.classList.add('on');
@@ -154,6 +150,8 @@ function addToUsersList (listNode) {
 			dfr.appendChild(p);
 		});
 
+		console.log('addToUsersList',{users});
+
 		listNode.innerHTML='';
 		listNode.appendChild(dfr);
 
@@ -162,15 +160,15 @@ function addToUsersList (listNode) {
 
 
 // *Выход по закрытию вкладки
-on(_w, 'unload', e=>{
+/* on(_w, 'beforeunload', e=>{
 	Chat.on= false;
 
 
 	Ajax.post('',{
-		// mode: 'status',
-		mode: 'post',
-		name: Chat.name,
+		mode: 'status',
+		// mode: 'post',
+		// name: Chat.name,
 		text: `Пользователь [b]${Chat.name}[/b] покинул чат.`,
 		chatUser: JSON.stringify(Chat),
 	}).then(oXML=>console.log(oXML));
-});
+}); */
