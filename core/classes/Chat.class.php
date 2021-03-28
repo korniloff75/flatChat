@@ -37,8 +37,8 @@ class Chat
 		$exit= false;
 
 	protected
-		$uState=[], // *Данные пользователя
 		$State, // *Общие данные
+		$uState=[], // *Данные пользователя
 		$successPolling, //* Flag
 		$renderMods=[]; //*Элементы шаблона
 
@@ -54,17 +54,10 @@ class Chat
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
-		if($this->mode === 'status'){
-			// $this->State->users= [$this->UID=>$this->uState];
-			// echo $this->Out( "OK", true );
-			// $this->exit = true;
-			die;
-		}
-
 		if($this->mode === 'post'){
 			$this->_newPost();
 			echo $this->Out( "OK", true );
-			$this->exit = true;
+			// $this->exit = true;
 			die;
 		}
 
@@ -82,7 +75,6 @@ class Chat
 			/* if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true ); */
 
-			// echo 123;
 			$this->_pollingServer($rlm);
 		}
 
@@ -152,12 +144,7 @@ class Chat
 		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 
-		// *Записали и обновили $this->uState
-		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
-		$this->State= new State($this->uState);
-
-		$this->uState= $this->State->users[$this->UID];
-		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
+		$this->_updateState();
 
 		// if(POLLING) file_put_contents('test1', __METHOD__. json_encode($this->uState, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
 
@@ -189,6 +176,18 @@ class Chat
 	}
 
 
+	// *Обновили $this->State
+	protected function _updateState()
+	{
+		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
+
+		$this->State= new State($this->uState);
+
+		$this->uState= $this->State->users[$this->UID];
+		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
+	}
+
+
 	/**
 	 *
 	 */
@@ -213,8 +212,9 @@ class Chat
 		// *Write
 		$this->_save($upload->loaded);
 
-		// $this->mode = "list";
+		$this->mode = "list";
 
+		clearstatcache();
 		$this->lastMod = filemtime( $this->dbPathname );
 	}
 
@@ -328,8 +328,8 @@ class Chat
 		tolog(__METHOD__,null,['$out'=>$out]);
 		// var_dump($out);
 
-		if($this->successPolling)
-			$this->State= new State($this->uState);
+		// if($this->successPolling)
+			$this->_updateState();
 
 		$out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
@@ -699,17 +699,23 @@ class Chat
 		while (1) {
 			++$counter;
 
-			if($counter%($loop_time*5) === 0){
+			$this->uState['ts']= time();
+
+			if($counter%($loop_time*2) === 0){
+				// $this->_updateState();
 				// $this->State->users= [$this->UID=>['ts'=>time()]];
-				// $this->State->save();
+				$this->State->save();
 			}
 
 			// *Обновление
-			if ( $rlm !== $this->lastMod ) {
-				$this->State->users= [$this->UID=>['ts'=>time()]];
-				$this->successPolling = true;
+			if (
+				$rlm !== $this->lastMod
+				&& 'post' !== $this->mode
+			) {
+				// $this->State->users= [$this->UID=>['ts'=>time()]];
+				// $this->successPolling = true;
 
-				$this->State->save();
+				// $this->State->save();
 
 				echo $this->Out( "OK", true );
 

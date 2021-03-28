@@ -15,6 +15,5 @@ on(templateSel, 'change', e=>{
 	}).then(()=>location.reload());
 });
 
-console.log(Chat.template);
-
 templateSel.value= Chat.template || '_default_';
+console.log(Chat.template);

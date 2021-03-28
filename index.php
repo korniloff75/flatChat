@@ -76,7 +76,7 @@ $template= $Chat->setTemplate();
 							<label class="input__file button" for="attach" title="jpg,png,gif">Добавить изображение
 								<input type="file" name="attach[]" id="attach" multiple hidden>
 							</label>
-							<input type="submit" value="Отправить" class="button" title="ctrl + enter" id="submit"/>
+							<input type="submit" value="Отправить" class="button" title="ctrl + enter" />
 							<input type="reset" value="Сброс" class="button" title="Очистить"/>
 						</div>
 					</div>
