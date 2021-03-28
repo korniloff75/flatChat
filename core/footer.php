@@ -39,8 +39,8 @@
 <script src="./script.js" type="module" defer></script>
 
 <script src="./assets/helpers.js" type="module" async></script>
-<script src="./assets/BB.js" type="module" async></script>
 <script src="./assets/State.js" type="module" async></script>
+<script src="./assets/BB.js" type="module" async></script>
 <script src="./assets/Images/Images.js" type="module" async></script>
 <script src="./assets/Template/tpl.mod.js" type="module" async></script>
 <?php //todo ?>

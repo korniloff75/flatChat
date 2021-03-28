@@ -112,49 +112,55 @@ function refreshAfter (XMLo) {
 		tipUpper(msgsDialog, "Ошибка сервера: " + statusCode);
 		response = undefined;
 	}
-	else if(!response) {
-		console.log('Response after refresh is empty!',{response});
+
+	if(!response) {
+		// console.log();
+		return Promise.reject({note:'Response after refresh is empty!',data:{response}});
 	};
 
-	if (response && response !== undefined) {
-		var html= (response instanceof Object)
-			? response.html
-			: response;
+	var html= (response instanceof Object)
+		? response.html
+		: response;
 
-		Object.assign(Chat, response.Chat);
+	Object.assign(Chat, response.Chat);
 
-		console.log('Response after refresh', {response}, 'Updated Chat', {Chat});
+	console.log('Response after refresh', {response}, 'Updated Chat', {Chat});
 
-		hideName();
+	hideName();
 
-		let p = html.indexOf("\n");
+	let p = html.indexOf("\n");
 
-		if (p > 0) {
-			var h = html.substring(0, p).split(':'), lm;
+	if (p > 0) {
+		var h = html.substring(0, p).split(':'), lm;
 
-			if (h) {
-				lm = +h[1];
-				h = h[0];
+		if(h.length !== 2) return Promise.reject({note:'h unenspected', data:{h}})
 
-				html = html.substring(p + 1);
+		lm = +h[1];
+		h = h[0];
 
-				if (h === "NONMODIFIED") html = undefined;
-				if (h === "OK") LastMod = lm;
-			}
+		html = html.substring(p + 1);
+
+		if (h === "NONMODIFIED") html = undefined;
+		else if (LastMod === lm) {
+			html = undefined;
+			// State.handlePosts(msgs);
 		}
-
-		console.log('test',{h,lm,html});
-
-		// *if Modifed
-		if (html !== undefined) {
-			msgsModifed(html);
-		}
-
-		// *Every
-		State.setDB(response.state)
-		.hilightUsers(msgs, usersList);
+		else if (h === "OK") LastMod = lm;
 
 	}
+
+	logTrace('refresh Success',{h,lm,html});
+
+	// *if Modifed
+	if (html !== undefined) {
+		msgsModifed(html);
+	}
+
+	// *Every
+	State.setDB(response.state)
+	.hilightUsers(msgs, usersList);
+
+	return Promise.resolve({note: 'in refreshAfter content ' + html !== undefined? 'been modifed': 'NOT been modifed', data:{h,lm,html}});
 
 } //refreshAfter
 
@@ -193,27 +199,35 @@ function msgsModifed(html){
  * *Long Polling
  * @param {bool} rewait - Ожидание перед запросом
  */
-export var poll = (function () {
+var poll = (function () {
 	var t;
 
 	var rq = function () {
 		Chat.on= document.hidden? false: true;
 
-		var data= { chatUser: JSON.stringify(Chat), mode: "list", responseType:'json' };
+		var data= { chatUser: JSON.stringify(Chat), mode: "list", responseType:'json', lastMod:LastMod };
 			// console.log({Chat});
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
-		refresh( data ).then(()=>{
+		console.log('refresh after POLL will be now');
+
+		refresh( data ).then(ra=>{
+			console.log(ra.note);
 			rq(true);
+			return ra;
+		}, ra=>{
+			logTrace('refresh has been REJECTED in poll',ra);
+			// rq();
 		})
-		.catch(err=>{
-			logTrace('error in poll',err);
+		.catch(ra=>{
+			logTrace('ERROR in poll',ra);
 			// rq();
 		});
 	};
 
 	return function (rewait) {
+		console.log('NEW POLL');
 		if (rewait) {
 			if (t) clearTimeout(t);
 			t = setTimeout(rq, REFRESHTIME*1000 );
@@ -246,7 +260,7 @@ function formSubmit (e) {
 		e.preventDefault();
 	}
 
-	if(f.submit.disabled) return false;
+	if(f.disabled) return false;
 
 	if (!(name.value= name.value.trim())) {
 		tipUpper(name, "Пожалуйста, введите свое имя");
@@ -274,12 +288,19 @@ function formSubmit (e) {
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
 
-	f.submit.disabled= true;
+	poll.stop=1;
+
+	f.disabled= true;
 
 	refresh( fd	)
 	// Ajax.post( location.href, fd	)
-	.then(function (XMLo) {
-		f.submit.disabled= false;
+	.then(function (ra) {
+		const {h,lm,html}= ra.data;
+		console.log('refresh after Submit', ra.note);
+
+		LastMod= lm;
+
+		f.disabled= false;
 		scrollIntoView(msgs,{block:'start'});
 		text.value = text.textContent = "";
 		autoHeight(text);
@@ -293,10 +314,12 @@ function formSubmit (e) {
 		countChars.call(f.text);
 
 		State.handlePosts(msgs);
+		poll.stop=0;
 		// refreshAfter(XMLo);
+
 	}).catch(err=>{
-		f.submit.disabled= false;
-		console.log('Ошибка при отправке: ', err.message);
+		f.disabled= false;
+		console.log('Ошибка при отправке: ', err);
 	});
 	return false;
 };
@@ -406,7 +429,8 @@ function addAppeal(msg){
 name.onkeydown = text.onkeydown = function (e) {
 	// if (sendDialogWaiter.isShow()) return;
 	if (!e) e = _w.event;
-	if (e.keyCode === 13 && e.ctrlKey) formSubmit();
+	// console.log(this.form, this.form.submit);
+	if (e.keyCode === 13 && e.ctrlKey) formSubmit(e);
 };
 
 
@@ -578,9 +602,12 @@ export function collectSelected(){
 
 
 // *DOM ready
-// on(_w, _w.onpageshow? 'pageshow': 'load', e=>{
-on(_w, 'load', e=>{
-	poll(true);
+on(_w, ('onpageshow' in _w)? 'pageshow': 'load', e=>{
+// on(_w, 'load', e=>{
+	console.log('Page loaded');
+	// poll(true);
+	poll();
+
 	scrollIntoView(msgs, {block:'start'});
 
 	scrollBottom();

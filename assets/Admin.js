@@ -1,7 +1,7 @@
 'use strict';
 // native
 
-import {on,refresh,poll, selectedPosts} from '../script.js';
+import {on,refresh/* ,poll */, selectedPosts} from '../script.js';
 import {modal} from './modal/modal.js';
 
 var _w= window,
@@ -15,9 +15,9 @@ var logoutBtn= document.querySelector('.logout');
 logoutBtn && on(logoutBtn, 'click', e=>{
 	return modal("Вы точно хотите выйти\nиз своей учётной записи?")
 	.then(ok=>{
-		poll.stop=1;
+		// poll.stop=1;
 		fetch('', {
-			method: 'post',
+			method: 'set',
 			body: JSON.stringify({logOut: true}),
 		}).then(_w.location.reload.bind(location));
 	}, err=>false)

@@ -5,6 +5,7 @@ import { modal } from "./modal/modal.js";
 const _w= window;
 
 // *noConsole
+console.clear();
 if(
 	/\.ru/i.test(location.host)
 	&& !location.search.includes('dev')
@@ -30,10 +31,9 @@ export const Ajax={
 	 *
 	 * @param {str} url
 	 * optional @param {obj} reqParams
-	 * optional @param {function} callback - deprecated
 	 * @returns {Promise}
 	 */
-	request: function (url, reqParams, callback) {
+	request: function (url, reqParams) {
 		url= url || location.href;
 		var XMLo;
 
@@ -88,21 +88,23 @@ export const Ajax={
 }
 
 function ajaxHandler(XMLo, reqParams){
-	return new Promise((res,rej)=>{
+	console.log('Ajax will be sended');
+	// XMLo.send(reqParams);
+	let Pr= new Promise((res,rej)=>{
 		console.log({reqParams});
-		XMLo.onreadystatechange = function () {
-			// console.log('XMLo.readyState', XMLo.readyState);
+		XMLo.onreadystatechange = function (e) {
 			if (XMLo.readyState !== 4) return;
+			console.log('Ajax readyState=' + XMLo.readyState, {e});
 			// if (XMLo.readyState !== 4) return ajaxHandler.call(this,arguments);
 
 			// if (XMLo.status == 200 || XMLo.status == 0) {
-			else if (XMLo.status === 200) {
+			if (XMLo.status === 200) {
 				console.log('Ajax success',{XMLo});
 
 				return res(XMLo);
 			}
 			else{
-				console.log('Ajax fail',{XMLo});
+				logTrace('Ajax fail',{XMLo});
 				return rej(XMLo);
 			}
 		};
@@ -111,8 +113,12 @@ function ajaxHandler(XMLo, reqParams){
 			console.log('progress',e);
 		} */
 
-		XMLo.send(reqParams);
+		// XMLo.send(reqParams);
 	});
+
+	XMLo.send(reqParams);
+
+	return Pr;
 }
 
 

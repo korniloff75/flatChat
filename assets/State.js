@@ -115,7 +115,7 @@ export function hilightUsers (box, listNode){
 		// debugger;
 	});
 
-	console.log({users});
+	// console.log({users});
 	return this;
 }
 
@@ -157,18 +157,3 @@ function addToUsersList (listNode) {
 
 	// console.log({node});
 }
-
-
-// *Выход по закрытию вкладки
-/* on(_w, 'beforeunload', e=>{
-	Chat.on= false;
-
-
-	Ajax.post('',{
-		mode: 'status',
-		// mode: 'post',
-		// name: Chat.name,
-		text: `Пользователь [b]${Chat.name}[/b] покинул чат.`,
-		chatUser: JSON.stringify(Chat),
-	}).then(oXML=>console.log(oXML));
-}); */
