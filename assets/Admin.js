@@ -2,6 +2,7 @@
 // native
 
 import {on,refresh/* ,poll */, selectedPosts} from '../script.js';
+import { css } from './helpers.js';
 import {modal} from './modal/modal.js';
 
 var _w= window,
@@ -52,9 +53,11 @@ on(msgs,'click',e=>{
 			}),
 		}).then(ok=>{
 			if(pinned){
+				btn.title= 'Закрепить';
 				msg.classList.remove('pinned');
 			}
 			else{
+				btn.title= 'Открепить';
 				let exists= msgs.querySelectorAll('.pinned');
 				exists && exists.forEach(p=>p.classList.remove('pinned'));
 				msg.classList.add('pinned');

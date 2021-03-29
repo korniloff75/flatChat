@@ -1,8 +1,8 @@
 <?php
-if(!defined('DR'))
+/* if(!defined('DR'))
 {
 	define('DR', $_SERVER['DOCUMENT_ROOT']);
-}
+} */
 
 
 interface BasicClassInterface
@@ -69,6 +69,7 @@ trait Helpers
 		$path = str_replace("\\", '/', $path);
 		return preg_replace("#(?!https?|^)//+#", '/', $path);
 	}
+
 
 	// *Путь относительно DR
 	public static function getPathFromRoot(string $absPath)

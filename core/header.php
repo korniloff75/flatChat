@@ -29,7 +29,7 @@ else{
 			if(!$tfi->isDir()) continue;
 
 			// tolog(__FILE__,null,[$tfi, Chat::fixSlashes($tfi->getPathname())]);
-			echo "<option data-dir='{$tfi->isDir()}' value='". Chat::fixSlashes($tfi->getPathname()) ."'>{$tfi->getFilename()}</option>";
+			echo "<option data-dir='{$tfi->isDir()}' value='{$tfi->getFilename()}'>{$tfi->getFilename()}</option>";
 		}
 		?>
 	</select>

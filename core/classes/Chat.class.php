@@ -1,5 +1,5 @@
 <?php
-require_once \DR . "/core/Helpers.trait.php";
+require_once __DIR__."/../Helpers.trait.php";
 
 class Chat
 {
@@ -327,7 +327,8 @@ class Chat
 		// var_dump($out);
 
 		// if($this->successPolling)
-			$this->_updateState();
+		$this->_updateState();
+		$this->State->save();
 
 		$out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
@@ -418,14 +419,15 @@ class Chat
 	{
 		if(!is_adm()) return;
 		if($this->mode === 'set'){
-			$this->State->set(['pinned'=>(int) $num]);
+			$this->State->pinned = (int) $num;
 			echo "Post $num pinned.";
 		}
 		elseif($this->mode === 'remove'){
-			$this->State->remove('pinned');
+			$this->State->pinned= -1;
 			echo "Post $num unpinned.";
 		}
 
+		$this->State->save();
 	}
 
 
@@ -504,7 +506,7 @@ class Chat
 		$panel= $doc->createElement('div');
 		$panel->setAttribute('class', 'adm');
 
-		self::setDOMinnerHTML($panel,"<button class='pin' title='Закрепить'>📌</button><button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
+		self::setDOMinnerHTML($panel,"<button class='pin' title='" . ($this->State->pinned === $n? 'Открепить': 'Закрепить') . "'>📌</button><button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
 
 		$xpath = new DOMXpath($doc);
 
@@ -539,7 +541,7 @@ class Chat
 
 		if(!isset($appeals)) $appeals= '';
 
-		$pinned= empty($this->State->pinned) ? -1: $this->State->pinned;
+		$pinned= $this->State->pinned === $n;
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -547,8 +549,10 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		$t= "<div class=\"msg "
-		. ($pinned === $n? 'pinned':'')
+		// var_dump($n, $this->State->pinned, $pinned, empty($this->State->pinned), ($pinned === $n));
+
+		$t = "<div class=\"msg "
+		. ($pinned? 'pinned':'')
 		. "\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
@@ -651,10 +655,10 @@ class Chat
 
 		tolog(__METHOD__,null,['$template'=>$template, '$this->uState'=>$this->uState]);
 
-		$this->templatePath= $template ?? \DR.'/templates/' . self::TEMPLATE_DEFAULT;
+		$this->templatePath= \DR.'/templates/' . ($template ?? self::TEMPLATE_DEFAULT);
 		$this->templateDir= '/'. self::getPathFromRoot($this->templatePath);
 
-		// tolog(__METHOD__,null,['$this->templatePath'=>$this->templatePath]);
+		tolog(__METHOD__,null,['$this->templatePath'=>$this->templatePath]);
 		// trigger_error($this->templatePath);
 
 		return $this->_scanModsContent();
@@ -665,9 +669,9 @@ class Chat
 	{
 		// tolog(__METHOD__,null,['$this->uState'=>$this->uState, '$this->UID'=>$this->UID]);
 
-		if($template= self::fixSlashes($template)){
-			$this->State->users= [$this->UID=>['template'=>$template]];
-			$this->State->save();
+		if($template){
+			$this->uState['template'] = $template;
+			// $this->State->save();
 			echo $this->Out( "NONMODIFIED" );
 			flush();
 		}
@@ -699,7 +703,7 @@ class Chat
 
 			$this->uState['ts']= time();
 
-			if($counter%($loop_time*2) === 0){
+			if($counter%($loop_time*3) === 0){
 				$this->_updateState();
 				// $this->State->users= [$this->UID=>['ts'=>time()]];
 				$this->State->save();

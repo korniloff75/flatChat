@@ -423,7 +423,7 @@ export function elemInViewport(el,kt) {
 
 /**
  * @param {Node|NodeList} els
- * @param {obj} cssObj - CSS rules
+ * @param {Object} cssObj - CSS rules
  */
 export function css (els, cssObj) {
 	if(!els.length) els=[els];

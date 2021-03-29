@@ -237,6 +237,11 @@ a:hover {
 	border: 2px solid;
 	padding-bottom: 1em;
 	z-index: 10;
+	background: indigo;
+}
+
+.msg.pinned .pin{
+	transform: rotate(5deg);
 }
 
 

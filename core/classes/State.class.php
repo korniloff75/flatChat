@@ -57,6 +57,10 @@ class State /* extends Chat */
 		return $this->db->save();
 	}
 
+	function remove($ind){
+		return $this->db->remove($ind);
+	}
+
 
 	function __destruct()
 	{
