@@ -75,10 +75,7 @@ class Chat
 			/* if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
 			else echo $this->Out( "OK", true ); */
 
-			if(empty($this->uState['pollingStarted'])){
-
-				$this->_pollingServer($rlm);
-			}
+			$this->_pollingServer($rlm);
 		}
 
 		tolog(__METHOD__,null,['$this->mode'=>$this->mode]);
@@ -674,7 +671,6 @@ class Chat
 
 		if($template){
 			$this->uState['template'] = $template;
-			tolog(__METHOD__,null,['$this->uState'=>$this->uState, "\$this->State->users[$this->UID]"=>$this->State->users[$this->UID], array_diff($this->uState, $this->State->users[$this->UID])]);
 			// $this->State->save();
 			echo $this->Out( "NONMODIFIED" );
 			flush();
@@ -690,8 +686,7 @@ class Chat
 	{
 		$exec_time = 0; //sec
 		$counter = 0;
-		$loop_time = 5; //sec
-		$this->uState['pollingStarted']= 1;
+		$loop_time = 2; //sec
 
 		// set_time_limit(ini_get('max_execution_time') /2);
 		// ignore_user_abort(true);
@@ -708,24 +703,16 @@ class Chat
 
 			$this->uState['ts']= time();
 
-			// if($counter%($loop_time*3) === 0){
-				$tt=  __METHOD__.' - diff0 - '. json_encode(array_diff($this->uState, $this->State->users[$this->UID]), JSON_UNESCAPED_UNICODE). "\n";
-				$tt.= ' - diff_key0 - '. json_encode(array_diff_key($this->uState, $this->State->users[$this->UID]), JSON_UNESCAPED_UNICODE). "\n";
-
+			if($counter%($loop_time*3) === 0){
 				$this->_updateState();
-
-				$tt.= ' - diff1 - '. (bool) count(array_diff($this->uState, $this->State->users[$this->UID])). "\n";
 				// $this->State->users= [$this->UID=>['ts'=>time()]];
 				$this->State->save();
-			// }
-			$tt.= ' - diff2 - '. (bool) count(array_diff($this->uState, $this->State->users[$this->UID]));
-			file_put_contents('test', $tt);
+			}
 
 			// *Обновление
 			if (
 				$rlm !== $this->lastMod
-				// && 'post' !== $this->mode
-				|| count(array_diff($this->uState, $this->State->users[$this->UID]))
+				&& 'post' !== $this->mode
 			) {
 				// $this->State->users= [$this->UID=>['ts'=>time()]];
 				// $this->successPolling = true;
@@ -742,14 +729,12 @@ class Chat
 					$this->State->users= [$this->UID=>$this->uState];
 
 					file_put_contents('test', __METHOD__.' - uState - '. json_encode($this->State->get(), JSON_UNESCAPED_UNICODE));
-
 					// break;
 				} */
 
 				// file_put_contents('test',$t, FILE_APPEND);
 
 				// leave this loop step
-				$this->uState['pollingStarted']= 0;
 				break;
 
 			} else {
