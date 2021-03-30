@@ -1,0 +1,129 @@
+@import '../mainStyle.css';
+
+html, body {
+	margin: 0;
+	padding: 0;
+	outline: 0;
+	font-size: 100%;
+	font-family: inherit;
+	background-color: #fefefe;
+	font-family: Tahoma;
+	color: #000000;
+	line-height: 1em;
+	height: 100%;
+}
+
+#selectedPanel{
+	color: inherit;
+	background-color: #fefefe;
+}
+
+.box {
+	background: #fafafa;
+	box-shadow:0 0 5px rgba(0,0,0,.2);
+}
+
+.checkbox {
+	background: #eee;
+	border:1px solid #ddd;
+}
+
+#msgsContent .msg {
+	background: #eee;
+}
+
+#msgsContent .msg:hover{
+	background: #fefefe;
+}
+
+#msgsContent .msg.myPost {
+	background: #cde;
+}
+
+#msgsContent .msg + .msg {
+	border-color: #e0e0e0;
+}
+
+#msgsContent .msg .info {
+	color: #0056c6;
+}
+
+#msgsContent .msg .info .num {
+	color: #123;
+}
+#msgsContent .msg .info .name {
+	font-weight: bold;
+	padding-right: 0.5em;
+	color: #CB1E1E;
+}
+#msgsContent .info span.name.on,
+.on {
+color: LightCyan;
+background-color: DarkGreen;
+padding: .1em .3em;
+font-weight: 700;
+}
+
+
+#msgsContent .msg .post {
+
+	background: #fff;
+	border:1px solid #f2f2f2;
+}
+
+#sendDialog input, label.input__file {
+	color: #777;
+}
+
+
+.waiter {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	z-index: 10000;
+	opacity: 0.3;
+}
+
+
+.block {
+	-webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
+	box-shadow:0 0 5px rgba(0,0,0,.2);
+	background: #fafafa;
+}
+
+
+.block2 {
+	background: #eee;
+	border:2px solid #fefefe;
+	overflow: hidden;box-shadow:0 0 5px rgba(0,0,0,.2);
+}
+
+
+.block2 input[type='text'],
+.block2 textarea{
+	background: #f6f6f6;padding:.5em!important;
+}
+
+.block2 input[type='text']:focus,
+.block2 textarea:focus{
+	background: #fdfdfd;
+}
+
+
+.button {
+	border: 1px solid #c2c2c2;
+
+	background: #e5e5e5 linear-gradient(180deg, #ffffff, #dfdfdf);
+
+	text-shadow: #ffffff 0px 1px 0;
+
+}
+
+.button:hover {
+	border-color: #9a9a9a;
+
+	-webkit-box-shadow: 0px 0px 2px #a0a0a0;
+	box-shadow: 0px 0px 2px #a0a0a0;
+}

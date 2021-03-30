@@ -1,0 +1,35 @@
+#allEntries.test img{width:200px;}
+
+#\$mw{
+/*   visibility: hidden; */
+  width: 0;
+  position:fixed;
+  left:0; top:0;
+  display:flex;
+  transition: width .5s ease-in;
+  text-align:center;
+  z-index:1000;
+  background:#f0f5f9;
+}
+
+#\$mw img{
+  max-width: 100%;
+}
+#\$mw.mod-show img{
+  visibility: visible;
+}
+#\$mw.mod-show{
+  width: 100%;
+}
+
+#\$mw .close{
+  position: absolute;
+	right: 0; top: 0;
+	color: #fff;
+	background: #f33;
+	padding: .3em .5em;
+	cursor: pointer;
+	border-radius: 100%;
+	border: 2px solid;
+	font: bold 1em sans-serif;
+}

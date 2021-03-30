@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /*/*
+Allow: /files_B
+Allow: /db
