@@ -13,7 +13,6 @@ var _w= window,
 	users,
 	appeals= document.querySelector('.appeals');
 
-console.log({Out});
 
 export function setDB (state){
 	users= state.users;

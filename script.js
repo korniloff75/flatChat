@@ -210,7 +210,7 @@ var poll = (function () {
 		if ( poll.stop || !Chat.name ) return;
 
 		// msgsDialogWaiter.show(true, false);
-		console.log('refresh after POLL will be now');
+		console.log('NEW POLL');
 
 		refresh( data ).then(ra=>{
 			console.log(ra.note);
@@ -218,7 +218,7 @@ var poll = (function () {
 			return ra;
 		}, ra=>{
 			logTrace('refresh has been REJECTED in poll',ra);
-			// rq();
+			poll(true);
 		})
 		.catch(ra=>{
 			logTrace('ERROR in poll',ra);
@@ -227,7 +227,6 @@ var poll = (function () {
 	};
 
 	return function (rewait) {
-		console.log('NEW POLL');
 		if (rewait) {
 			if (t) clearTimeout(t);
 			t = setTimeout(rq, REFRESHTIME*1000 );

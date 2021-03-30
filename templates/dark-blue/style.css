@@ -93,6 +93,9 @@ hr {
 	box-shadow: 0 0 5px rgba(0,0,0,.2);
 }
 
+#sendDialog input[name="name"] {
+	background: #abc;
+}
 
 .block2 input[type='text'],
 .block2 textarea{
@@ -110,7 +113,7 @@ hr {
 	border: 1px solid #123;
 
 	background: #e5e5e5 linear-gradient(180deg, #123,#456);
-	
+
 }
 .button:hover {
 	border-color: #cde;

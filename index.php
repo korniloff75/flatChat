@@ -3,6 +3,8 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1); */
 
+$START_PROFILE = microtime(true);
+
 require_once __DIR__.'/core/define.php';
 
 
@@ -94,6 +96,8 @@ $template= $Chat->setTemplate();
 		<?=$template['header']?>
 
 		<?=$template['footer']?>
+
+		<?= Chat::profile()?>
 
 	</body>
 </html>

@@ -2,10 +2,10 @@
 require_once 'define.php';
 
 // *
-$pathname= filter_var($_GET['f'], FILTER_SANITIZE_STRING);
-// echo $pathname;
+$archname= filter_var($_GET['f'], FILTER_SANITIZE_STRING);
+// echo $archname;
 
-$Arh= new Chat("../$pathname");
+$Arh= new Chat(Chat::ARH_PATHNAME . "/$archname");
 $Arh->useStartIndex= false;
 
 // *Выводим в шаблон
@@ -47,7 +47,7 @@ $template= $Arh->setTemplate();
 		});
 	</script>
 
-	<script src="../assets/helpers.js" type="module"></script>
+	<script src="../assets/helpers.js" type="module" async></script>
 </body>
 </html>
 

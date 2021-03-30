@@ -39,7 +39,7 @@ class Chat
 	protected
 		$State, // *Общие данные
 		$uState=[], // *Данные пользователя
-		$successPolling, //* Flag
+		$successPolling, //? Flag
 		$renderMods=[]; //*Элементы шаблона
 
 
@@ -249,7 +249,12 @@ class Chat
 	{
 		if($file= &$this->file) return $this;
 
-		$count= count($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES));
+		if($file= file($this->dbPathname, FILE_SKIP_EMPTY_LINES)){
+			$count= count($file);
+		}
+		else tolog(__METHOD__,E_USER_ERROR,['$this->dbPathname'=>$this->dbPathname]);
+
+
 
 		self::createDir(self::ARH_PATHNAME, 0776);
 		self::createDir(self::ARH_PATHNAME.'/imgs', 0776);
@@ -332,9 +337,11 @@ class Chat
 
 		$out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
+		$out['UID']= $this->UID;
+		$out['lastMod']= $this->lastMod;
 		$out['is_https']= self::is('https');
 
-		return json_encode($out, JSON_UNESCAPED_UNICODE);
+		return json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -614,7 +621,7 @@ class Chat
 		if(is_dir(self::ARH_PATHNAME)) foreach(new FilesystemIterator(self::ARH_PATHNAME) as $fi){
 			if($fi->isDir()) continue;
 
-			echo "<a href='./core/Archive.php?f=". self::getPathFromRoot($fi->getPathname()) ."'>". date("Y-m-d", $fi->getFilename()) ."</a> | ";
+			echo "<a href='./core/Archive.php?f={$fi->getFilename()}'>". date("Y-m-d", $fi->getFilename()) ."</a> | ";
 		}
 	}
 
@@ -686,7 +693,7 @@ class Chat
 	{
 		$exec_time = 0; //sec
 		$counter = 0;
-		$loop_time = 2; //sec
+		$loop_time = 3; //sec
 
 		// set_time_limit(ini_get('max_execution_time') /2);
 		// ignore_user_abort(true);
@@ -703,21 +710,17 @@ class Chat
 
 			$this->uState['ts']= time();
 
-			if($counter%($loop_time*3) === 0){
+			// if($counter%($loop_time*3) === 0){
 				$this->_updateState();
 				// $this->State->users= [$this->UID=>['ts'=>time()]];
 				$this->State->save();
-			}
+			// }
 
 			// *Обновление
 			if (
 				$rlm !== $this->lastMod
 				&& 'post' !== $this->mode
 			) {
-				// $this->State->users= [$this->UID=>['ts'=>time()]];
-				// $this->successPolling = true;
-
-				// $this->State->save();
 
 				echo $this->Out( "OK", true );
 
@@ -732,12 +735,16 @@ class Chat
 					// break;
 				} */
 
-				// file_put_contents('test',$t, FILE_APPEND);
-
 				// leave this loop step
 				break;
 
-			} else {
+			}
+			// *Ограничиваем количество итераций
+			elseif($counter >= 100){
+				echo $this->Out( "NONMODIFIED" );
+				break;
+			}
+			else {
 				/* if((time() - $start_time) > $exec_time){
 					echo $this->Out( "NONMODIFIED" );
 					break;

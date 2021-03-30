@@ -71,11 +71,15 @@ trait Helpers
 	}
 
 
-	// *Путь относительно DR
-	public static function getPathFromRoot(string $absPath)
+	// 
+	/**
+	 * *Путь относительно DR
+	 * @param {bool} $fromRootFolder === true ? Root folder : DR
+	 */
+	public static function getPathFromRoot(string $absPath, $fromRootFolder=false)
 	:string
 	{
-		$Root= defined('GDR')? \GDR: $_SERVER['DOCUMENT_ROOT'];
+		$Root= defined('GDR') && !$fromRootFolder? \GDR: $_SERVER['DOCUMENT_ROOT'];
 		return str_replace(self::fixSlashes($Root) . '/', '', self::fixSlashes($absPath));
 	}
 
