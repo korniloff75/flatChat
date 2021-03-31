@@ -133,10 +133,20 @@ class Chat
 
 		if(isset($_REQUEST['chatUser'])){
 			$this->uState= array_replace($this->uState, json_decode($_REQUEST['chatUser'],1));
-			tolog(__METHOD__,null,['chatUser'=>$_REQUEST['chatUser'] ]);
+			tolog(__METHOD__,null,['isset chatUser'=>$_REQUEST['chatUser'] ]);
 		}
 
 		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
+
+		if( empty($this->uState['name']) ){
+			if( self::is('ajax') ) throw new Exception("Пользователь без имени");
+
+			$this->out['html']= "<div>Чтобы получать обновления чата напишите свой первый пост!</div>";
+			return $this;
+		}
+
+		// if( empty($this->uState['name']) && self::is('ajax') ) throw new Exception("Пользователь без имени");
+
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
 		$this->uState['ts'] = time();
@@ -172,6 +182,7 @@ class Chat
 			'name'=> $this->name,
 			'IP'=> $this->IP,
 			'UID'=> $this->UID,
+			'ban'=> $this->ban ?? false,
 		], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 
 
@@ -320,7 +331,8 @@ class Chat
 		}
 
 		$out= &$this->out;
-		$out['html']= !is_null($status)? "{$status}:{$this->lastMod}\n": '';
+		$out['html']= $out['html'] ?? '';
+		$out['html'].= !is_null($status)? "{$status}:{$this->lastMod}\n": '';
 
 		if ( $is_modified ) {
 			$out['html'].= $this->_parse();
@@ -335,11 +347,19 @@ class Chat
 		$this->_updateState();
 		$this->State->save();
 
-		$out['state']= $this->State->get();
+		$out= array_merge($out, [
+			'state'=> $this->State->get(),
+			'Chat'=> $this->uState,
+			'UID'=> $this->UID,
+			'lastMod'=> $this->lastMod,
+			'is_https'=> self::is('https'),
+		]);
+
+		/* $out['state']= $this->State->get();
 		$out['Chat']= $this->uState;
 		$out['UID']= $this->UID;
 		$out['lastMod']= $this->lastMod;
-		$out['is_https']= self::is('https');
+		$out['is_https']= self::is('https'); */
 
 		return json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
@@ -476,6 +496,29 @@ class Chat
 	}
 
 
+	/**
+	 * *Блокировка (БАН)
+	 */
+	protected function c_banUser($uid)
+	{
+		// tolog(__METHOD__,null,['$_SESSION'=>$_SESSION]);
+
+		if(!is_adm()) return;
+
+		$bool= filter_var($_REQUEST['bool'], FILTER_VALIDATE_BOOLEAN);
+
+		$this->State->set(['users'=> [$uid=>['ts'=>0, 'ban'=>$bool?true:false]]]);
+		$this->State->save();
+
+		tolog(__METHOD__,null,['$this->State->users'=>$this->State->users]);
+
+		echo $this->Out( "OK", true );
+
+		die;
+
+	}
+
+
 	protected function c_logOut($a)
 	{
 		tolog(__METHOD__,null,['$_SESSION'=>$_SESSION]);
@@ -513,7 +556,18 @@ class Chat
 		$panel= $doc->createElement('div');
 		$panel->setAttribute('class', 'adm');
 
-		self::setDOMinnerHTML($panel,"<button class='pin' title='" . ($this->State->pinned === $n? 'Открепить': 'Закрепить') . "'>📌</button><button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>");
+		$adm= "<button class='pin' title='" . ($this->State->pinned === $n? 'Открепить': 'Закрепить') . "'>📌</button><button class='edit' title='Редактировать'>✎</button><button class='del' title='Удалить'>❌</button>";
+
+		// var_dump($i, self::defineUID($i['name'], $i['IP']));
+
+		$uid= self::defineUID($i['name'], $i['IP']);
+		$banned= $this->State->users[$uid]['ban'] ?? 0;
+
+		if($uid !== $this->UID){
+			$adm.= "<button class='ban'>". ($banned? 'UnBan':'Ban') ."</button>";
+		}
+
+		self::setDOMinnerHTML($panel,$adm);
 
 		$xpath = new DOMXpath($doc);
 
@@ -549,6 +603,7 @@ class Chat
 		if(!isset($appeals)) $appeals= '';
 
 		$pinned= $this->State->pinned === $n;
+		$banned= $this->State->users[$UID]['ban'] ?? 0;
 
 		// *Ссылки
 		$text= preg_replace_callback( "\x07((?:[a-z]+://(?:www\\.)?)[_.+!*'(),/:@~=?&$%a-z0-9\\-\\#]+)\x07iu", [__CLASS__,"makeURL"], $text );
@@ -559,7 +614,8 @@ class Chat
 		// var_dump($n, $this->State->pinned, $pinned, empty($this->State->pinned), ($pinned === $n));
 
 		$t = "<div class=\"msg "
-		. ($pinned? 'pinned':'')
+		. ($pinned? 'pinned ':'')
+		. ($banned? 'banned ':'')
 		. "\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
 		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";

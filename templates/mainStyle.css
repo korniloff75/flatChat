@@ -244,6 +244,19 @@ a:hover {
 	transform: rotate(5deg);
 }
 
+#msgsContent .msg.banned {
+	background: gray;
+	opacity: .7;
+}
+
+#msgsContent .msg.banned:hover {
+	background: gray;
+}
+
+#msgsContent .msg.banned::before {
+	content: 'BANNED';
+}
+
 
 #msgsContent .msg .info {
 	display: flex;

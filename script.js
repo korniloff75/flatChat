@@ -11,8 +11,8 @@ console.log('Glob server vars', {Chat, LastMod, Out});
 
 export const _w= window;
 
-const msgsDialog = document.getElementById("msgsDialog");
-const sendDialog = document.getElementById("sendDialog");
+const msgsDialog = document.getElementById("msgsDialog"),
+	sendDialog = document.getElementById("sendDialog");
 
 const msgs = document.getElementById("msgsContent");
 const f = document.getElementById("sendForm");
@@ -23,6 +23,13 @@ if(f){
 	usersList = document.querySelector('.users'),
 	attach= f['attach[]'],
 	attachNode= f.querySelector('.attaches>div');
+
+	name.onkeydown = text.onkeydown = function (e) {
+		// if (sendDialogWaiter.isShow()) return;
+		if (!e) e = _w.event;
+		// console.log(this.form, this.form.submit);
+		if (e.keyCode === 13 && e.ctrlKey) formSubmit(e);
+	};
 }
 
 
@@ -209,11 +216,14 @@ var poll = (function () {
 			// console.log({Chat});
 		if ( poll.stop || !Chat.name ) return;
 
+		poll.stop = 1;
+
 		// msgsDialogWaiter.show(true, false);
 		console.log('NEW POLL');
 
 		refresh( data ).then(ra=>{
 			console.log(ra.note);
+			poll.stop = 0;
 			rq(true);
 			return ra;
 		}, ra=>{
@@ -222,7 +232,7 @@ var poll = (function () {
 		})
 		.catch(ra=>{
 			logTrace('ERROR in poll',ra);
-			// rq();
+			poll(true);
 		});
 	};
 
@@ -425,13 +435,6 @@ function addAppeal(msg){
 	// oAS.checked = false;
 }; */
 
-name.onkeydown = text.onkeydown = function (e) {
-	// if (sendDialogWaiter.isShow()) return;
-	if (!e) e = _w.event;
-	// console.log(this.form, this.form.submit);
-	if (e.keyCode === 13 && e.ctrlKey) formSubmit(e);
-};
-
 
 // *Считаем символы
 function countChars(e) {
@@ -472,18 +475,19 @@ if(f){
 	on(f, 'change', function(e){
 		showAttaches();
 	});
+
+	// *remove attaches
+	on(attachNode.parentNode, 'click', function(e) {
+		var t= e.target;
+		e.preventDefault();
+
+		if(t.closest('.clear')){
+			attach.value='';
+			showAttaches();
+		}
+	});
+
 }
-
-// *remove attaches
-on(attachNode.parentNode, 'click', function(e) {
-	var t= e.target;
-	e.preventDefault();
-
-	if(t.closest('.clear')){
-		attach.value='';
-		showAttaches();
-	}
-});
 
 
 

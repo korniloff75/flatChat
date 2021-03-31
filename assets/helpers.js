@@ -301,7 +301,11 @@ function fade(o, opts, dontStartNow) {
  * optional @param {int} maxH - макс. высота
  * optional @param {bool} state
  */
- export function autoHeight(el, maxH, state) {
+export function autoHeight(el, maxH, state) {
+	if(!(el instanceof HTMLElement)){
+		console.info ("First argument -- HTMLElement expected");
+		return;
+	}
 	if (arguments.length === 1) {
 		if (el._ah_) el._ah_();
 		return;

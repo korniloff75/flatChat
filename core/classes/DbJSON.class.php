@@ -8,9 +8,11 @@ class DbJSON implements Iterator, Countable
 		$convertPath = false,
 		$defaultDB;
 
+	protected
+		$changed = 0;
+
 	private
 		$position = 0,
-		$changed = 0,
 		$reversed = false,
 		$keys,
 		$values,
@@ -74,10 +76,10 @@ class DbJSON implements Iterator, Countable
 	 */
 	public function __get($key) {
 		// trigger_error('$key= '. $key . " {$this->db[$key]}");
-		if(is_null($v= $this->db[$key]) && self::$defaultDB){
+		if(!array_key_exists($key,$this->db) && self::$defaultDB){
 			return self::$defaultDB[$key];
 		}
-		return $v;
+		return $this->db[$key] ?? null;
 	}
 
 	public function rewind() {
@@ -380,7 +382,8 @@ class DbJSON implements Iterator, Countable
 		// note test
 		// $this->changed= 1;
 		if(!empty($this->db['test']) || $this->test){
-			$log->add(__METHOD__.': База перед записью',E_USER_WARNING,[$this->db]);
+			is_object($log) && $log->add(__METHOD__.': База перед записью',E_USER_WARNING,[$this->db]);
+			trigger_error("\$this->changed= {$this->changed}");
 			// *Deprecated
 			unset($this->db['test']);
 		}

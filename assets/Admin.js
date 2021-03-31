@@ -2,7 +2,7 @@
 // native
 
 import {on,refresh/* ,poll */, selectedPosts} from '../script.js';
-import { css } from './helpers.js';
+// import { css } from './helpers.js';
 import {modal} from './modal/modal.js';
 
 var _w= window,
@@ -25,22 +25,24 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 });
 
 
-// *Обработка элементов .msg
+// *Обработка кликов по админ-панели
 on(msgs,'click',e=>{
-	var t= e.target,
-		msg= t.closest('.msg');
-
-		if(!msg) return;
-
-		var num= msg.querySelector('.num').textContent,
-		adm= t.closest('.adm'),
-		btn;
+	const t= e.target,
+		adm= t.closest('.adm');
 
 	if(adm){
 		e.stopPropagation();
 		e.preventDefault();
-		console.log('click on the admin panel', msg);
+		console.log('click on the admin panel', adm);
 	}
+	else return;
+
+	const msg= t.closest('.msg'),
+		num= msg.querySelector('.num').textContent,
+		name=  msg.querySelector('.name').textContent,
+		UID= msg.dataset.uid;
+
+	let btn;
 
 	// *Pin post
 	if((btn= t.closest('.pin'))){
@@ -109,7 +111,7 @@ on(msgs,'click',e=>{
 	if((btn= t.closest('.del'))){
 		// if(!confirm("Удалить пост "+num+"?")) return;
 
-	return modal("Удалить пост "+num+"?")
+		return modal("Удалить пост "+num+"?")
 		.then(ok=>{
 			refresh({
 				responseType:'json',
@@ -119,7 +121,25 @@ on(msgs,'click',e=>{
 			return new Error(`Пост №${num} не был удалён`);
 		})
 	}
-}); // /Обработка элементов .msg
+
+	//todo *BAN
+	if((btn= t.closest('.ban'))){
+		let banned= msg.classList.contains('banned');
+
+		return modal(`${banned?'Разблокировать':'Заблокировать'} пользователя ${name}?`)
+		.then(ok=>{
+			refresh({
+				responseType:'json',
+				mode:'set',
+				bool: banned? 0:1,
+				banUser: UID,
+			})
+		}, err=>{
+			return new Error(`Ошибка бана пользователя ${name}`);
+		})
+	}
+}); // Админ-панель
+
 
 
 //* Обработка пакетного выбора

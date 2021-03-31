@@ -69,6 +69,9 @@ $template= $Chat->setTemplate();
 			<div class="item-block">
 				<p class="right">Вы можете ввести <strong id="maxLen"><?=Chat::MAXUSERTEXTLEN?></strong> символов</p>
 
+				<?php //var_dump($Chat->ban, empty($Chat->ban));
+				if(!isset($Chat->ban) || !$Chat->ban):?>
+
 				<form action="./core/bot.php" method="post" id="sendForm">
 					<div id="sendDialog" class="block2">
 						<input type="hidden" name="name" value="<?=$Chat->name?>" maxLength="<?=Chat::MAXUSERNAMELEN?>" placeholder="Имя" required />
@@ -88,6 +91,8 @@ $template= $Chat->setTemplate();
 						<div><!-- attach items --></div>
 					</div>
 				</form>
+
+				<?php endif?>
 
 			</div><!-- .item-block -->
 
