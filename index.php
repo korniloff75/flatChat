@@ -39,7 +39,7 @@ $template= $Chat->setTemplate();
 	<body>
 		<main id="wrapper">
 
-			<div id="msgsDialog" class="block">
+			<div id="msgsDialog">
 				<div id="msgsContent">
 					<?=$Chat->getHTMLContent()?>
 					<?#die?>
@@ -69,8 +69,8 @@ $template= $Chat->setTemplate();
 			<div class="item-block">
 				<p class="right">Вы можете ввести <strong id="maxLen"><?=Chat::MAXUSERTEXTLEN?></strong> символов</p>
 
-				<?php //var_dump($Chat->ban, empty($Chat->ban));
-				if(!isset($Chat->ban) || !$Chat->ban):?>
+				<?php //var_dump($Chat->ban, empty($Chat->ban), isset($Chat->ban), (!isset($Chat->ban) || !$Chat->ban));
+				if(!$Chat->ban):?>
 
 				<form action="./core/bot.php" method="post" id="sendForm">
 					<div id="sendDialog" class="block2">
@@ -92,6 +92,13 @@ $template= $Chat->setTemplate();
 					</div>
 				</form>
 
+				<?php else:?>
+				<h2>You was BANNED!</h2>
+				<div>
+					<p>Ваша учётная запись была заблокирована администрацией чата.</p>
+					<p>Если вы считаете это досадным недоразумением, свяжитесь с администрацией через <?=Chat::ADM['feedback']?> для выяснения причин. Постарайтесь быть вежливым и аккуратным в формулировках, чтобы не оказаться забаненым и там.</p>
+					<p></p>
+				</div>
 				<?php endif?>
 
 			</div><!-- .item-block -->

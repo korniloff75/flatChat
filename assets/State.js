@@ -121,38 +121,48 @@ export function hilightUsers (box, listNode){
 
 // *Текущие пользователи
 function addToUsersList (listNode) {
-		var dfr= document.createDocumentFragment(),
-			now= Date.now()/1000; //sec;
+	if(!listNode){
+		console.log('listNode is empty');
+		return;
+	}
 
-		Object.keys(users).forEach(uid=>{
-			var uData= users[uid];
+	var dfr= document.createDocumentFragment(),
+		now= Date.now()/1000; //sec;
 
-			if(!uData.name) return;
+	Object.keys(users).forEach(uid=>{
+		var uData= users[uid];
 
-			uData.on= (now - REFRESHTIME) < uData.ts;
-			uData.check= {now, delta: (now - REFRESHTIME - uData.ts),};
+		if(!uData.name) return;
 
-			var p= document.createElement('p'),
-				d= new Date(uData.ts*1000);
+		uData.on= (now - REFRESHTIME) < uData.ts;
+		uData.check= {now, delta: (now - REFRESHTIME - uData.ts),};
 
-			p.textContent= uData.name;
+		var p= document.createElement('p'),
+			d= new Date(uData.ts*1000);
 
-			// console.log({uData});
+		p.textContent= uData.name;
 
-			if(uData.on){
-				p.classList.add('on');
-			}
-			else{
-				p.classList.remove('on');
-				p.innerHTML+= ` <span class="date">(${getUTC(d)})</span>`;
-			}
-			dfr.appendChild(p);
-		});
+		// console.log({uData});
 
-		console.log('addToUsersList',{users});
+		if(uData.on){
+			p.classList.add('on');
+		}
+		else{
+			p.classList.remove('on');
+			p.innerHTML+= ` <span class="date">(${getUTC(d)})</span>`;
+		}
 
-		listNode.innerHTML='';
-		listNode.appendChild(dfr);
+		if(uData.ban){
+			p.classList.add('banned');
+		}
 
-	// console.log({node});
+		dfr.appendChild(p);
+	});
+
+	console.log('addToUsersList',{users});
+
+	listNode.innerHTML='';
+	listNode.appendChild(dfr);
+
+// console.log({node});
 }

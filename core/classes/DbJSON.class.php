@@ -383,7 +383,7 @@ class DbJSON implements Iterator, Countable
 		// $this->changed= 1;
 		if(!empty($this->db['test']) || $this->test){
 			is_object($log) && $log->add(__METHOD__.': База перед записью',E_USER_WARNING,[$this->db]);
-			trigger_error("\$this->changed= {$this->changed}");
+			// trigger_error("\$this->changed= {$this->changed}");
 			// *Deprecated
 			unset($this->db['test']);
 		}

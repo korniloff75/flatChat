@@ -9,6 +9,9 @@ class Chat
 		DBPATHNAME= \DR."/chat.db",
 		ARH_PATHNAME= \DR.'/db',
 		FILES_DIR= '/files_B',
+		ADM= [
+			'feedback'=>"<a href='//t.me/js_master_bot'>Telegram</a>",
+		],
 		DELIM= "<~>",
 		MAX_LINES= 300,
 		// MAX_LINES= 5,
@@ -55,6 +58,10 @@ class Chat
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'post'){
+			if($this->uState['ban']){
+				header('Location: /' . self::getPathFromRoot(\DR));
+				die;
+			}
 			$this->_newPost();
 			echo $this->Out( "OK", true );
 			// $this->exit = true;
@@ -71,9 +78,6 @@ class Chat
 			$this->exit = true;
 
 			$rlm = (int)filter_var($_REQUEST["lastMod"], FILTER_SANITIZE_NUMBER_INT) ?? 0;
-
-			/* if ( $rlm === $this->lastMod ) echo $this->Out( "NONMODIFIED" );
-			else echo $this->Out( "OK", true ); */
 
 			$this->_pollingServer($rlm);
 		}
@@ -167,7 +171,7 @@ class Chat
 
 	protected function _controller()
 	{
-		$this->uState['mode']= @$_REQUEST["mode"];
+		$this->uState['mode']= $_REQUEST["mode"] ?? null;
 
 		foreach($_REQUEST as $cmd=>&$val){
 
@@ -507,10 +511,10 @@ class Chat
 
 		$bool= filter_var($_REQUEST['bool'], FILTER_VALIDATE_BOOLEAN);
 
-		$this->State->set(['users'=> [$uid=>['ts'=>0, 'ban'=>$bool?true:false]]]);
+		$this->State->set(['users'=> [$uid=>['ban'=>$bool?true:false]]]);
 		$this->State->save();
 
-		tolog(__METHOD__,null,['$this->State->users'=>$this->State->users]);
+		tolog(__METHOD__,null,['banned user state'=>$this->State->users[$uid]]);
 
 		echo $this->Out( "OK", true );
 
@@ -747,9 +751,16 @@ class Chat
 	 */
 	private function _pollingServer($rlm)
 	{
+		if($this->uState['ban']) return;
+
 		$exec_time = 0; //sec
 		$counter = 0;
 		$loop_time = 3; //sec
+
+		/** Включает скрытое очищение вывода так, что мы видим данные
+		* как только они появляются.
+		*/
+		ob_implicit_flush();
 
 		// set_time_limit(ini_get('max_execution_time') /2);
 		// ignore_user_abort(true);
@@ -780,7 +791,7 @@ class Chat
 
 				echo $this->Out( "OK", true );
 
-				if(!ob_end_flush()) flush();
+				// if(!ob_end_flush()) flush();
 
 				/* // *При обрыве соединения
 				if(connection_status() != CONNECTION_NORMAL){

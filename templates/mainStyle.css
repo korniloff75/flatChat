@@ -244,12 +244,12 @@ a:hover {
 	transform: rotate(5deg);
 }
 
-#msgsContent .msg.banned {
+.banned, #msgsContent .msg.banned {
 	background: gray;
 	opacity: .7;
 }
 
-#msgsContent .msg.banned:hover {
+.banned:hover, #msgsContent .msg.banned:hover {
 	background: gray;
 }
 

@@ -7,7 +7,7 @@ const _w= window;
 // *noConsole
 console.clear();
 if(
-	/\.ru/i.test(location.host)
+	!/localhost|\.lc/i.test(location.host)
 	&& !location.search.includes('dev')
 ){
 	_w.console= {
@@ -414,6 +414,11 @@ const smoothScrollTo = (function (_w) {
  * @returns {bool} true - когда элемент находится во вьюпорте
  */
 export function elemInViewport(el,kt) {
+	if(!(el instanceof HTMLElement)){
+		console.info('First argument -- HTMLElement expected');
+		return;
+	}
+
 	let
 		{top,left,bottom,right}= el.getBoundingClientRect(),
 		width = document.documentElement.clientWidth,

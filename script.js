@@ -150,6 +150,7 @@ function refreshAfter (XMLo) {
 		if (h === "NONMODIFIED") html = undefined;
 		else if (LastMod === lm) {
 			html = undefined;
+			console.log('LastMod === lm',{html});
 			// State.handlePosts(msgs);
 		}
 		else if (h === "OK") LastMod = lm;
@@ -210,11 +211,11 @@ var poll = (function () {
 	var t;
 
 	var rq = function () {
-		Chat.on= document.hidden? false: true;
+		// Chat.on= document.hidden? false: true;
 
 		var data= { chatUser: JSON.stringify(Chat), mode: "list", responseType:'json', lastMod:LastMod };
 			// console.log({Chat});
-		if ( poll.stop || !Chat.name ) return;
+		if ( poll.stop || !Chat.name || Chat.ban ) return;
 
 		poll.stop = 1;
 
@@ -269,7 +270,7 @@ function formSubmit (e) {
 		e.preventDefault();
 	}
 
-	if(f.disabled) return false;
+	if(f.disabled || Chat.ban) return false;
 
 	if (!(name.value= name.value.trim())) {
 		tipUpper(name, "Пожалуйста, введите свое имя");
@@ -292,7 +293,7 @@ function formSubmit (e) {
 	fd.append('mode','post');
 	fd.append('lastMod',LastMod);
 	fd.append('ts', parseInt(Date.now()/1000));
-	Chat.on= true;
+	// Chat.on= true;
 	fd.append('chatUser', JSON.stringify(Chat));
 	fd.responseType= 'json';
 	// fd.responseType= 'text/html';
@@ -454,6 +455,8 @@ function countChars(e) {
 };
 
 function showAttaches(){
+	if(!attach) return;
+
 	if (!attach.files.length){
 		attachNode.parentNode.hidden= 1;
 		return;
@@ -468,6 +471,7 @@ function showAttaches(){
 		attachNode.appendChild(p);
 	}
 }
+
 
 if(f){
 	on(f.text, 'input change', countChars);

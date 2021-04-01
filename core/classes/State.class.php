@@ -27,10 +27,22 @@ class State extends DbJSON
 
 		parent::__construct(self::BASE_PATHNAME);
 
-		$this->set(['users'=>[$UID=>$uState]]);
+		// *Save orig state before mutations
+		$orig_uState= $this->users[$UID];
+
+		// $this->set(['users'=>[$UID=>$uState]]);
 			// ->(['users'=>[$UID=>$uState]]);
 
-		tolog(__METHOD__,null,[$this->users]);
+		// *Restore main state fields
+		$freezed = [
+			'ban'=> $orig_uState['ban'] ?? false,
+		];
+
+		$uState = array_replace($uState, $freezed);
+
+		$this->set(['users'=>[$UID=>$uState]]);
+
+		tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
 
 		if(!isset($this->startIndex)) $this->set(['startIndex'=>0]);
 	}
@@ -44,11 +56,17 @@ class State extends DbJSON
 		$change=0;
 		foreach(($users= $this->get('users')) as $uid=>$user){
 			if(
-				!empty($uid)
+				empty($user['ban'])
+				|| !empty($uid)
 				&& !empty($user['name'])
 				&& ($now - $user['ts']) < self::EXPIRES
 				// && $user['name']
-			) continue;
+			) {
+				tolog(__METHOD__,null,['exist $user'=>$user, '$uid'=>$uid]);
+				continue;
+			}
+
+			tolog(__METHOD__,null,['remove $user'=>$user, '$uid'=>$uid]);
 
 			unset($users[$uid]);
 			$change=1;
@@ -59,7 +77,7 @@ class State extends DbJSON
 				->set(['users'=>array_filter($users)]);
 		}
 
-		tolog(__METHOD__,null,[$this->users]);
+		tolog(__METHOD__,null,['$this->users'=>$this->users]);
 
 		// *check changes
 		if(
