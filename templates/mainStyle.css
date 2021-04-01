@@ -245,7 +245,8 @@ a:hover {
 }
 
 .banned, #msgsContent .msg.banned {
-	background: gray;
+	background: gray !important;
+	color: #333;
 	opacity: .7;
 }
 
@@ -255,6 +256,11 @@ a:hover {
 
 #msgsContent .msg.banned::before {
 	content: 'BANNED';
+	font-size: .7em;
+	color: #e55;
+	padding: .1em;
+	border-radius: .2em;
+	background: #111;
 }
 
 

@@ -119,20 +119,26 @@ export function hilightUsers (box, listNode){
 }
 
 
-// *Текущие пользователи
+// *Текущие пользователи за timeRange сек.
 function addToUsersList (listNode) {
 	if(!listNode){
 		console.log('listNode is empty');
 		return;
 	}
 
-	var dfr= document.createDocumentFragment(),
+	// *
+	const timeRange = 24*3600;
+
+	const dfr= document.createDocumentFragment(),
 		now= Date.now()/1000; //sec;
 
 	Object.keys(users).forEach(uid=>{
 		var uData= users[uid];
 
-		if(!uData.name) return;
+		if(
+			!uData.name
+			|| (now - uData.ts) > timeRange
+		) return;
 
 		uData.on= (now - REFRESHTIME) < uData.ts;
 		uData.check= {now, delta: (now - REFRESHTIME - uData.ts),};
@@ -147,7 +153,7 @@ function addToUsersList (listNode) {
 		if(uData.on){
 			p.classList.add('on');
 		}
-		else{
+		else {
 			p.classList.remove('on');
 			p.innerHTML+= ` <span class="date">(${getUTC(d)})</span>`;
 		}

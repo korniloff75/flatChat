@@ -619,7 +619,7 @@ function fixZero (num) {
 }
 
 export function logTrace(msg) {
-	let err = new Error(),
+	let err = new Error('logTrace'),
 		args= Array.from(arguments);
 	args.push(err.stack);
 	// console.log(args, Array.from(arguments));

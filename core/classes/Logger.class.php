@@ -1,4 +1,18 @@
 <?php
+/*
+ *example
+	if( isset($_REQUEST["dev"]) || !POLLING ){
+		global $log;
+		$log = new Logger('my.log', \DR);
+ */
+function tolog()
+{
+	// return $this->add(func_get_args());
+	global $log;
+
+	$log = $log ?? new Logger();
+	return call_user_func_array([$log,'add'], func_get_args());
+}
 
 /**
  * $log = new Logger('sample.log'[, 'path/to'[, bool $rewriteLog]]);
@@ -26,6 +40,8 @@ class Logger
 		$log = [];
 
 	static
+		$pathdir = '.',
+		$filename = 'my.log',
 		$printed = false,
 		$notWrite;
 
@@ -34,7 +50,7 @@ class Logger
 	 * optional @dir - realpath to the directory
 	 * optional bool @rewriteLog - If == true (default) then log file should rewriting
 	 */
-	public function __construct($name, $dir='.', $rewriteLog=true)
+	public function __construct(?string $filename=null, ?string $dir='.', $rewriteLog=true)
 	{
 		//* Включение протоколирования ошибок
 		error_reporting(-1);
@@ -43,8 +59,12 @@ class Logger
 		# Обрабатываем фаталы
 		register_shutdown_function([&$this, 'handleFatals']);
 
-		$this->file = $dir . "/$name";
+		$dir= $dir ?? self::$pathdir;
+		$filename= $filename ?? self::$filename;
+
+		$this->file = $dir . "/$filename";
 		$this->rewriteLog = (bool) $rewriteLog;
+
 	}
 
 
@@ -55,12 +75,26 @@ class Logger
 	 */
 	public function add(string $message, $level=null, $dump=[])
 	{
+		// ini_set('display_errors', 1);
+		// ini_set('display_startup_errors', 1);
+
 		$bt = debug_backtrace();
-		$caller = array_shift($bt);
+		// $caller = array_shift($bt);
 		// $fileName = basename($caller['file']);
-		$fileName = $this->_getFileName($caller['file']);
+
 
 		if(!is_array($dump)) $dump = [$dump];
+
+		// *
+		do {
+			$caller = array_shift($bt);
+			// $dump['$caller']= $caller;
+		}
+		while (!empty($caller['file']) && basename($caller['file']) === basename(__FILE__));
+
+		// if(!array_key_exists('file',$caller)) return;
+
+		$fileName = $this->_getFileName($caller['file']);
 
 		if($level === self::BACKTRACE){
 			$dump[self::BACKTRACE]= array_shift($bt);;
@@ -316,9 +350,9 @@ class Logger
 class Log extends Logger
 {
 	use Singleton;
-	public function __construct($name, $dir='.', $rewriteLog=true)
+	public function __construct($filename, $dir='.', $rewriteLog=true)
 	{
-		parent::__construct($name, $dir, $rewriteLog);
+		parent::__construct($filename, $dir, $rewriteLog);
 	}
 }
  */

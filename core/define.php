@@ -8,10 +8,7 @@ ob_start( "mb_output_handler" );
 
 date_default_timezone_set ('Europe/Moscow');
 
-// setlocale( LC_ALL, array( 'ru_RU.UTF-8', 'ru_RU.UTF8', 'ru_RU.65001' ), array( 'rus_RUS.UTF-8', 'rus_RUS.UTF8', 'rus_RUS.65001' ), array( 'Russian_Russia.UTF-8', 'Russian_Russia.UTF8', 'Russian_Russia.65001' ) );
-// setlocale( LC_NUMERIC, 'C' ); //in float number deilmiter = "."
 
-// define( "DBFILE", realpath( str_replace( '\\', '/', __DIR__ ) ) . "/chat.db" ); //Путь и имя файла с чатом
 define( "REFRESHTIME", 10 ); //Клиентская задержка опроса сервера
 define( "HEADER", "Chat" ); //Заголовок
 
@@ -43,17 +40,14 @@ function _autoloader($class)
 spl_autoload_register('_autoloader');
 
 
-//! *Логгируем загрузку страницы
-function tolog()
-{
-	// return;
+// *Логгируем загрузку страницы
+// *Отсекаем поллинги
+if( isset($_REQUEST["dev"]) || !POLLING ){
 	global $log;
-
-	// *Отсекаем поллинги
-	if( isset($_REQUEST["dev"]) || !POLLING ){
-		$log = $log ?? new Logger('my.log', \DR);
-		return call_user_func_array([$log,'add'], func_get_args());
-	}
+	$log = new Logger('my.log', \DR);
+}
+elseif(!function_exists('tolog')) {
+	function tolog(){}
 }
 
 tolog(__FILE__,null,['DR'=>DR,'GDR'=>GDR, 'POLLING'=>POLLING]);

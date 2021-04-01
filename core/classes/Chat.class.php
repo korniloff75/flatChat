@@ -53,7 +53,7 @@ class Chat
 		$this->_setUState()
 			->_controller();
 
-		tolog(__METHOD__,null,['uState'=>$this->uState]);
+		tolog(__METHOD__,null,['$this->mode'=>$this->mode, 'uState'=>$this->uState, 'self::getPathFromRoot(\DR)'=>self::getPathFromRoot(\DR)]);
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
@@ -82,7 +82,6 @@ class Chat
 			$this->_pollingServer($rlm);
 		}
 
-		tolog(__METHOD__,null,['$this->mode'=>$this->mode]);
 
 		if ( $this->exit ) exit( 0 );
 
@@ -124,8 +123,8 @@ class Chat
 		$_REQUEST= array_merge($_REQUEST, $inp_data);
 
 
-		if($chatUser = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
-			$this->uState= array_merge($this->uState, $chatUser);
+		if($chatUserCook = json_decode(@$_COOKIE["chatUser"] ?? null, 1)){
+			$this->uState= array_merge($this->uState, $chatUserCook);
 		}
 		else{
 			$this->uState['IP']= self::realIP();
@@ -135,10 +134,13 @@ class Chat
 
 		// $this->uState['ts'] = filter_var(@$_REQUEST["ts"]);
 
-		if(isset($_REQUEST['chatUser'])){
-			$this->uState= array_replace($this->uState, json_decode($_REQUEST['chatUser'],1));
-			tolog(__METHOD__,null,['isset chatUser'=>$_REQUEST['chatUser'] ]);
+		if(
+			$chatUser = json_decode(@$_REQUEST['chatUser'] ?? null,1)
+		){
+			$this->uState= array_replace($this->uState, $chatUser);
 		}
+
+		tolog(__METHOD__,null,['$chatUserCook'=>$chatUserCook, '$chatUser'=>$chatUser]);
 
 		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
 
@@ -251,6 +253,11 @@ class Chat
 	public function getHTMLContent()
 	:string
 	{
+		if(self::$dev){
+			header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+			header('Pragma: no-cache'); // HTTP 1.0.
+			header('Expires: 0'); // Proxies.
+		}
 		$this->Out(null, true);
 		return $this->out['html'];
 	}
@@ -325,16 +332,20 @@ class Chat
 	}
 
 
+	/**
+	 *
+	 */
 	public function Out( $status = null, $is_modified = false )
 	:string
 	{
-		if(self::$dev){
-			header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
-			header('Pragma: no-cache'); // HTTP 1.0.
-			header('Expires: 0'); // Proxies.
+		$out= &$this->out;
+
+		// *$out already exist
+		if(!empty($out['html'])){
+			tolog(__METHOD__,Logger::BACKTRACE,['$out'=>$out]);
+			return json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 		}
 
-		$out= &$this->out;
 		$out['html']= $out['html'] ?? '';
 		$out['html'].= !is_null($status)? "{$status}:{$this->lastMod}\n": '';
 
@@ -342,9 +353,7 @@ class Chat
 			$out['html'].= $this->_parse();
 		} //$is_modified
 
-		// tolog(__METHOD__,null,['$chat2'=>$chat]);
-
-		tolog(__METHOD__,null,['$out'=>$out]);
+		// tolog(__METHOD__,Logger::BACKTRACE,['$out'=>$out]);
 		// var_dump($out);
 
 		// if($this->successPolling)
@@ -720,12 +729,10 @@ class Chat
 	{
 		$template= $this->uState['template'];
 
-		tolog(__METHOD__,null,['$template'=>$template, '$this->uState'=>$this->uState]);
-
 		$this->templatePath= \DR.'/templates/' . ($template ?? self::TEMPLATE_DEFAULT);
 		$this->templateDir= '/'. self::getPathFromRoot($this->templatePath);
 
-		tolog(__METHOD__,null,['$this->templatePath'=>$this->templatePath]);
+		tolog(__METHOD__,null,['$template'=>$template, '$this->templatePath'=>$this->templatePath, '$this->templateDir'=>$this->templateDir]);
 		// trigger_error($this->templatePath);
 
 		return $this->_scanModsContent();
@@ -757,9 +764,7 @@ class Chat
 		$counter = 0;
 		$loop_time = 3; //sec
 
-		/** Включает скрытое очищение вывода так, что мы видим данные
-		* как только они появляются.
-		*/
+		// *Включает скрытое очищение вывода так, что мы видим данные как только они появляются.
 		ob_implicit_flush();
 
 		// set_time_limit(ini_get('max_execution_time') /2);

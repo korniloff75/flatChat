@@ -8,8 +8,7 @@ $START_PROFILE = microtime(true);
 require_once __DIR__.'/core/define.php';
 
 
-tolog(__LINE__,null,['$_REQUEST'=>$_REQUEST, '$_REQUEST["mode"]'=>@$_REQUEST["mode"],'$_FILES'=>$_FILES]);
-// tolog(__LINE__,null,['$_FILES'=>$_FILES]);
+tolog(__FILE__,null,[]);
 
 
 $Chat= new Chat;
