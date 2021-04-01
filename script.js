@@ -624,7 +624,7 @@ on(_w, ('onpageshow' in _w)? 'pageshow': 'load', e=>{
 	if(f){
 		countChars.call(f.text);
 
-		var panel= BB.createPanel(f.text);
+		let panel= BB.createPanel(f.text);
 		sendDialog.insertBefore(panel, f.text);
 	}
 
