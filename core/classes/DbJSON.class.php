@@ -4,7 +4,6 @@ class DbJSON implements Iterator, Countable
 	public $test;
 
 	static
-		$log,
 		$convertPath = false,
 		$defaultDB;
 
@@ -24,10 +23,6 @@ class DbJSON implements Iterator, Countable
 
 	public function __construct(?string $path=null)
 	{
-		global $log;
-
-		self::$log= &$log;
-
 		// *Legacy
 		if(self::$convertPath)
 		{
@@ -56,12 +51,7 @@ class DbJSON implements Iterator, Countable
 			$this->db = json_decode($json, true) ?? [];
 
 			if(empty($this->db)){
-				if(is_object($log)){
-					$log->add(__METHOD__.": DB is EMPTY!", $log::BACKTRACE);
-				}
-				else{
-					trigger_error(__METHOD__.": DB is empty from {$this->path}", E_USER_WARNING);
-				}
+					tolog(__METHOD__.": DB is EMPTY!", Logger::BACKTRACE);
 			}
 			else{
 				$this->rewind();
@@ -98,7 +88,7 @@ class DbJSON implements Iterator, Countable
 		if(empty($cur= &$this->db[$this->position])){
 			$cur= &$this->getValues()[$this->position];
 		}
-		// self::$log->add(__METHOD__,null,['position'=>$this->position, 'cur'=>$cur,]);
+		// self::tolog(__METHOD__,null,['position'=>$this->position, 'cur'=>$cur,]);
 		return $cur;
 	}
 
@@ -108,11 +98,11 @@ class DbJSON implements Iterator, Countable
 
 	public function next() {
 		++$this->position;
-		// self::$log->add(__METHOD__,null,[ '$this->position'=>$this->position]);
+		// self::tolog(__METHOD__,null,[ '$this->position'=>$this->position]);
 	}
 
 	public function valid() {
-		/* self::$log->add(__METHOD__,null,['bool'=>(
+		/* self::tolog(__METHOD__,null,['bool'=>(
 			isset($this->db[$this->position]) || isset($this->getValues()[$this->position])
 		), '$this->db[$this->position]'=>$this->db[$this->position], '$this->position'=>$this->position]); */
 		return
@@ -244,7 +234,7 @@ class DbJSON implements Iterator, Countable
 		$ind= $this->getInd($key,$val,$strict);
 
 		if(empty($this->db[$ind])){
-			self::$log->add(__METHOD__.": empty(\$this->db[$ind])",\Logger::BACKTRACE,['$this->db'=>$this->db, '$key'=>$key, '$val'=>$val]);
+			self::tolog(__METHOD__.": empty(\$this->db[$ind])",\Logger::BACKTRACE,['$this->db'=>$this->db, '$key'=>$key, '$val'=>$val]);
 			return null;
 		}
 		else return $this->db[$ind];
@@ -357,8 +347,6 @@ class DbJSON implements Iterator, Countable
 
 	public function save()
 	{
-		global $log;
-
 		$this->changed= 0;
 
 		if($this->reversed){
@@ -366,7 +354,7 @@ class DbJSON implements Iterator, Countable
 		}
 
 		if(empty($this->path))
-			is_object($log) && $log->add(__METHOD__.': Не указан путь записи базы',$log::BACKTRACE,['$this->path'=>$this->path]);
+			tolog(__METHOD__.': Не указан путь записи базы',Logger::BACKTRACE,['$this->path'=>$this->path]);
 		else {
 			return file_put_contents(
 				$this->path,
@@ -378,11 +366,10 @@ class DbJSON implements Iterator, Countable
 
 	public function __destruct()
 	{
-		global $log;
 		// note test
 		// $this->changed= 1;
 		if(!empty($this->db['test']) || $this->test){
-			is_object($log) && $log->add(__METHOD__.': База перед записью',E_USER_WARNING,[$this->db]);
+			tolog(__METHOD__.': База перед записью',E_USER_WARNING,[$this->db]);
 			// trigger_error("\$this->changed= {$this->changed}");
 			// *Deprecated
 			unset($this->db['test']);

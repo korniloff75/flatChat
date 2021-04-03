@@ -23,9 +23,9 @@ class Chat
 	static
 		// *Отладка
 		$dev= true,
-		$log,
 		// *Порядок данных
-		$indexes= ['IP','ts','name','text','files','appeals'];
+		$indexes= ['IP','ts','name','text','files','appeals'],
+		$templateModules= ['head','header','footer','scrollNav'];
 
 	public
 		$dbPathname,
@@ -702,26 +702,37 @@ class Chat
 	// *Собираем шаблон
 	private function _scanModsContent()
 	{
-		$def_dir= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
+		$defTpl_path= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
 
 		// *Перебираем элементы страницы
-		foreach(['head','header','footer'] as $mod){
-			$modPathname= "{$this->templatePath}/$mod.php";
-			if(!file_exists($modPathname) && $this->templatePath !== $def_dir)
-				$modPathname= "$def_dir/$mod.php";
+		foreach(self::$templateModules as $modName){
+			$modPathname= "{$this->templatePath}/$modName.php";
+			if(!file_exists($modPathname) && $this->templatePath !== $defTpl_path)
+				$modPathname= "$defTpl_path/$modName.php";
 
 			ob_start();
-			include_once $modPathname;
+			if(file_exists($modPathname)) include_once $modPathname;
 
 			// *Подключаем базовые модули шаблона к пользовательским
-			if(file_exists($coreMod= \DR."/core/$mod.php")){
+			if(file_exists($coreMod= \DR."/core/$modName.php")){
 				require_once $coreMod;
 			}
 
-			$this->renderMods[$mod]= ob_get_clean();
+			$this->renderMods[$modName]= ob_get_clean();
 		}
 
+		tolog(__METHOD__,null,['$this->renderMods'=>$this->renderMods]);
+
 		return $this->renderMods;
+	}
+
+
+	public function getTemplateModule(string $modName)
+	{
+		if(empty($this->renderMods)){
+			$this->setTemplate();
+		}
+		return $this->renderMods[$modName] ?? '';
 	}
 
 
@@ -749,7 +760,7 @@ class Chat
 
 		if($template){
 			$this->uState['template'] = $template;
-			// $this->State->save();
+			$this->State->save();
 			echo $this->Out( "NONMODIFIED" );
 			flush();
 		}

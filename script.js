@@ -5,7 +5,7 @@ import * as BB from './assets/BB.js';
 import * as State from './assets/State.js';
 import * as Img from './assets/Images/Images.js';
 import { modal } from './assets/modal/modal.js';
-export {Ajax, scrollIntoView, css, on, off, speak};
+export {Ajax, css, on, off, speak, elemInViewport, scrollIntoView};
 
 console.log('Glob server vars', {Chat, LastMod, Out});
 
@@ -14,7 +14,7 @@ export const _w= window;
 const msgsDialog = document.getElementById("msgsDialog"),
 	sendDialog = document.getElementById("sendDialog");
 
-const msgs = document.getElementById("msgsContent");
+export const msgs = document.getElementById("msgsContent");
 const f = document.getElementById("sendForm");
 
 if(f){
@@ -43,8 +43,10 @@ function hideName(){
 	if(!f) return;
 
 	f.name.value= f.name.value || Chat.name || null;
-
 	f.name.type= f.name.value? 'hidden': 'text';
+
+	f.UIN.value= f.UIN.value || Chat.UIN || null;
+	f.UIN.type= f.UIN.value? 'hidden': 'text';
 
 	console.log(f.name.value);
 }
@@ -150,10 +152,10 @@ function refreshAfter (XMLo) {
 		if (h === "NONMODIFIED") html = undefined;
 		else if (LastMod === lm) {
 			html = undefined;
-			console.log('LastMod === lm',{html});
+			console.log('LastMod === lm',{LastMod,lm,html});
 			// State.handlePosts(msgs);
 		}
-		else if (h === "OK") LastMod = lm;
+		// else if (h === "OK") LastMod = lm;
 
 	}
 
@@ -161,7 +163,7 @@ function refreshAfter (XMLo) {
 
 	// *if Modifed
 	if (html !== undefined) {
-		msgsModifed(html);
+		msgsModifed(html,lm);
 	}
 
 	// *Every
@@ -174,9 +176,11 @@ function refreshAfter (XMLo) {
 
 
 // *new post
-function msgsModifed(html){
+function msgsModifed(html,lm){
 	console.log('Content was modifed');
 	msgs.innerHTML = html;
+
+	if(lm) LastMod = lm;
 
 	State.handlePosts(msgs);
 
@@ -350,45 +354,6 @@ on(f,'click',e=>{
 });
 
 
-// *Scroll to posts/form
-let toReadSvg= document.querySelector('.svg-toRead'),
-	toBottomSvg= document.querySelector('.svg-toBottom'),
-	toFormSvg= document.querySelector('.svg-toForm');
-
-on(_w, 'scroll', e=>{
-	if(elemInViewport(msgs, .9)){
-		toReadSvg.style.display='none';
-		toFormSvg.style.display='';
-	}
-	else if(elemInViewport(sendDialog, .9)){
-		toReadSvg.style.display='';
-		toFormSvg.style.display='none';
-	}
-	// console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
-})
-
-// console.log('sendDialog elemInViewport', elemInViewport(sendDialog, true));
-
-// *Scroll to msgs
-on(toReadSvg, 'click', e=>{
-	e.stopPropagation();
-	scrollIntoView(msgs,{block:'start'}, e);
-});
-
-// *Scroll to bottom post
-on(toBottomSvg, 'click', e=>{
-	e.stopPropagation();
-	scrollIntoView(msgs.lastElementChild,{block:'start'}, e);
-});
-
-// *Scroll to form
-on(toFormSvg, 'click', e=>{
-	e.stopPropagation();
-	scrollIntoView(sendDialog.closest('.item-block'),{block:'end'}, e);
-	// f.text.focus();
-});
-
-
 // *Цитата
 function addCite(msg,e){
 	// e.preventDefault();
@@ -516,9 +481,9 @@ on(selectedPanel, 'click', e=>{
 		selectedPosts.forEach(p=>{
 			let txt= p.querySelector('.post'),
 				name= p.querySelector('.name').textContent,
-				num= p.querySelector('.num');
+				num= p.querySelector('.num').textContent;
 
-			tmp.innerHTML += `Пост ${num.textContent}. ${name}. ${txt.innerHTML}...`;
+			tmp.innerHTML += `Пост ${num}. ${name}. ${txt.innerHTML}...`;
 		});
 
 		[].forEach.call(tmp.querySelectorAll('.cite_disp'), i=>i.remove());
