@@ -22,5 +22,3 @@
 Рекомендуется организовывать доступ к чату по протоколу **_https_**, поскольку иначе не будут работать такие фичи, как голосовой ввод текста и показ уведомлений о новых сообщениях.
 
 Прототип до начала разработки -- https://protocoder.ru/minichat
-
-<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Лицензия Creative Commons" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />Это произведение доступно по <a rel="license" target="_blank" href="http://creativecommons.org/licenses/by-sa/4.0/">лицензии Creative Commons «Attribution-ShareAlike» («Атрибуция-СохранениеУсловий») 4.0 Всемирная</a>.

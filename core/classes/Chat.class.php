@@ -25,7 +25,7 @@ class Chat
 		$dev= true,
 		// *Порядок данных
 		$indexes= ['IP','ts','name','text','files','appeals'],
-		$templateModules= ['head','header','footer','scrollNav'];
+		$templateModules= ['head','header','sendForm','footer','scrollNav'];
 
 	public
 		$dbPathname,
@@ -84,6 +84,9 @@ class Chat
 
 
 		if ( $this->exit ) exit( 0 );
+
+		// *Выводим в шаблон
+		$this->setTemplate();
 
 	}//__construct
 
@@ -721,7 +724,7 @@ class Chat
 			$this->renderMods[$modName]= ob_get_clean();
 		}
 
-		tolog(__METHOD__,null,['$this->renderMods'=>$this->renderMods]);
+		// tolog(__METHOD__,null,['$this->renderMods'=>$this->renderMods]);
 
 		return $this->renderMods;
 	}
