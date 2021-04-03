@@ -8,9 +8,6 @@ $START_PROFILE = microtime(true);
 require_once __DIR__.'/core/define.php';
 
 
-tolog(__FILE__,null,[]);
-
-
 $Chat= new Chat;
 
 // tolog('$Chat',null,[$Chat]);

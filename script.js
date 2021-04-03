@@ -34,7 +34,7 @@ if(f){
 
 
 // *Чекбоксы
-let oSND = document.getElementById("playSound"),
+const oSND = document.getElementById("playSound"),
 	oNTF = document.getElementById("notifications"),
 	oAH = document.getElementById("autoHeight");
 
@@ -168,7 +168,7 @@ function refreshAfter (XMLo) {
 	State.setDB(response.state)
 	.hilightUsers(msgs, usersList);
 
-	return Promise.resolve({note: 'in refreshAfter content ' + html !== undefined? 'been modifed': 'NOT been modifed', data:{h,lm,html}});
+	return Promise.resolve({note: 'in refreshAfter content ' + (html !== undefined? 'been modifed': 'NOT been modifed'), data:{h,lm,html}});
 
 } //refreshAfter
 
@@ -229,10 +229,12 @@ var poll = (function () {
 			return ra;
 		}, ra=>{
 			logTrace('refresh has been REJECTED in poll',ra);
+			poll.stop = 0;
 			poll(true);
 		})
 		.catch(ra=>{
 			logTrace('ERROR in poll',ra);
+			poll.stop = 0;
 			poll(true);
 		});
 	};

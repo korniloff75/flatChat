@@ -157,7 +157,7 @@ class Chat
 
 		$this->uState['ts'] = time();
 
-		$this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
+		// $this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
 		$this->_updateState();
@@ -208,7 +208,11 @@ class Chat
 	 */
 	private function _newPost()
 	{
-		if ( !$this->name || !$this->text && empty($_FILES) ) {
+		if (
+			!$this->name
+			|| empty($text = self::cleanText(@$_REQUEST["text"] ?? null))
+			&& empty($_FILES)
+		) {
 			header( 'HTTP/1.1 400 Bad Request' );
 			die( "Полученные данные не прошли серверную валидацию." );
 		}
@@ -222,10 +226,10 @@ class Chat
 		Uploads::$pathname = \DR.self::FILES_DIR;
 		$upload = new Uploads(null, 'attach');
 
-		tolog('Uploads',null,['$upload'=>$upload]);
+		if(count($upload->loaded)) tolog('Uploads',null,['$upload'=>$upload]);
 
 		// *Write
-		$this->_save($upload->loaded);
+		$this->_save($text, $upload->loaded);
 
 		$this->mode = "list";
 
@@ -234,13 +238,13 @@ class Chat
 	}
 
 
-	private function _save($files= [])
+	private function _save(?string $text, $files= [])
 	{
 		array_walk($files, function(&$f){
 			$f= self::getPathFromRoot($f);
 		});
 
-		$data= [$this->IP,$this->ts,$this->name,$this->text,json_encode($files,  JSON_UNESCAPED_SLASHES),filter_var(@$_REQUEST['appeals'])];
+		$data= [$this->IP,$this->ts,$this->name,$text,json_encode($files, JSON_UNESCAPED_SLASHES),filter_var(@$_REQUEST['appeals'])];
 
 		// *Write
 		file_put_contents( $this->dbPathname, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
@@ -405,7 +409,7 @@ class Chat
 
 		// tolog(__METHOD__,null,['$chat'=>$chat,]);
 
-		tolog(__METHOD__,null,['is_adm()'=>is_adm(), 'buf'=>ob_get_contents()]);
+		tolog(__METHOD__,null,['buf'=>ob_get_contents()]);
 
 		return ob_get_clean();
 	}
