@@ -21,6 +21,7 @@ class Chat
 		TEMPLATE_DEFAULT= '_default_';
 
 	static
+		$secretLen= 3,
 		// *Отладка
 		$dev= true,
 		// *Порядок данных
@@ -34,6 +35,7 @@ class Chat
 		$useStartIndex= true, // *Увеличивать номер поста
 		$templatePath,
 		$templateDir,
+		$secret,
 		$out=[];
 
 	private
@@ -62,7 +64,8 @@ class Chat
 				header('Location: /' . self::getPathFromRoot(\DR));
 				die;
 			}
-			$this->_newPost();
+			$this->_auth()
+				->_newPost();
 			echo $this->Out( "OK", true );
 			// $this->exit = true;
 			die;
@@ -199,10 +202,38 @@ class Chat
 	}
 
 
+	protected function _auth(){
+		$base= new DbJSON(\DR.'/assets/adm.json');
+
+		// note Reset secret
+		// $base->set([$this->name=>null]);
+
+		$rSecret= trim($_REQUEST['secret']);
+		if(strlen($rSecret) >= self::$secretLen){
+			$mds= md5($rSecret);
+		}
+
+		if(is_null($base->{$this->name})){
+			$base->set([$this->name=>$mds]);
+		}
+
+		tolog(__METHOD__,null,['$this->secret'=>$this->secret, '$mds'=>$mds]);
+
+		if($base->{$this->name} === $mds){
+			$this->secret= $rSecret;
+			return $this;
+		}
+		else{
+			// new Exception("Auth was FAIL");
+			die("Auth was FAIL");
+		}
+	}
+
+
 	// *Обновили $this->State
 	protected function _updateState()
 	{
-		$this->State= new State($this->uState);
+		return $this->State= new State($this->uState);
 	}
 
 
@@ -364,8 +395,7 @@ class Chat
 		// var_dump($out);
 
 		// if($this->successPolling)
-		$this->_updateState();
-		$this->State->save();
+		$this->_updateState()->save();
 
 		$out= array_merge($out, [
 			'state'=> $this->State->get(),

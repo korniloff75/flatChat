@@ -42,7 +42,7 @@ class State extends DbJSON
 
 		$this->set(['users'=>[$UID=>$uState]]);
 
-		// tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
+		tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
 
 		if(!isset($this->startIndex)) $this->set(['startIndex'=>0]);
 	}
@@ -76,13 +76,6 @@ class State extends DbJSON
 		}
 
 		// tolog(__METHOD__,null,['$this->users'=>$this->users]);
-
-		// *check changes
-		if(
-			!$this->changed
-		) return;
-
-		// $this->save();
 
 		parent::__destruct();
 	}

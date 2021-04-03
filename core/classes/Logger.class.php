@@ -5,13 +5,15 @@
 		global $log;
 		$log = new Logger('my.log', \DR);
  */
-function tolog()
-{
-	// return $this->add(func_get_args());
-	global $log;
-
-	$log = $log ?? new Logger();
-	return call_user_func_array([$log,'add'], func_get_args());
+if(!function_exists('tolog')){
+	function tolog()
+	{
+		// return $this->add(func_get_args());
+		global $log;
+	
+		$log = $log ?? new Logger();
+		return call_user_func_array([$log,'add'], func_get_args());
+	}
 }
 
 /**

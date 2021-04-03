@@ -45,8 +45,8 @@ function hideName(){
 	f.name.value= f.name.value || Chat.name || null;
 	f.name.type= f.name.value? 'hidden': 'text';
 
-	f.UIN.value= f.UIN.value || Chat.UIN || null;
-	f.UIN.type= f.UIN.value? 'hidden': 'text';
+	f.secret.value= f.secret.value || Chat.secret || null;
+	f.secret.type= f.secret.value? 'hidden': 'text';
 
 	console.log(f.name.value);
 }
@@ -167,7 +167,7 @@ function refreshAfter (XMLo) {
 	}
 
 	// *Every
-	State.setDB(response.state)
+	State.setDB(response)
 	.hilightUsers(msgs, usersList);
 
 	return Promise.resolve({note: 'in refreshAfter content ' + (html !== undefined? 'been modifed': 'NOT been modifed'), data:{h,lm,html}});
@@ -600,7 +600,7 @@ on(_w, ('onpageshow' in _w)? 'pageshow': 'load', e=>{
 	State.handlePosts(msgs);
 
 	// todo
-	State.setDB(Out.state)
+	State.setDB(Out)
 	.hilightUsers(msgs, usersList);
 
 	showAttaches();

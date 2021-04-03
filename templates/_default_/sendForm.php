@@ -7,7 +7,7 @@
 	<form action="./core/bot.php" method="post" id="sendForm">
 		<div id="sendDialog" class="block2">
 			<input type="hidden" name="name" value="<?=$this->name?>" maxLength="<?=Chat::MAXUSERNAMELEN?>" placeholder="Имя" required />
-			<input type="hidden" name="UIN" value="<?=$this->UIN?>" placeholder="Это поле пока не работает" required />
+			<input type="hidden" name="secret" value="<?=$_SESSION['secret']??''?>" placeholder="Введите ваш secret" required minLength="3" />
 			<input type="hidden" name="appeals" value="" placeholder="Обращения" />
 			<textarea name="text" placeholder="Текст" maxLength="<?=Chat::MAXUSERTEXTLEN?>" autofocus></textarea>
 			<div class="submit">
