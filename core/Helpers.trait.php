@@ -74,15 +74,23 @@ trait Helpers
 	//
 	/**
 	 * *Путь относительно DR
-	 * @param {bool} $fromRootFolder === true ? Root folder : DR
+	 * @param {bool} $fromRootFolder === true ? Root folder : Domain root
 	 */
 	public static function getPathFromRoot(string $absPath, $fromRootFolder=false)
 	:string
 	{
 		// $Root= defined('GDR') && !$fromRootFolder? \GDR: $_SERVER['DOCUMENT_ROOT'];
 		$Root= defined('GDR') && !$fromRootFolder? \GDR: \DR;
-		return str_replace(self::fixSlashes($Root) . '/', '', self::fixSlashes($absPath));
+
+		$absPath= self::fixSlashes($absPath);
+		$Root= self::fixSlashes($Root) . '/';
+		$out= str_replace($Root, '', $absPath);
+
+		// tolog(__METHOD__,null,['$absPath'=>$absPath, '$Root'=>$Root, '$out'=>$out]);
+
+		return $out;
 	}
+
 
 	// *Реальный IP
 	public static function realIP ()

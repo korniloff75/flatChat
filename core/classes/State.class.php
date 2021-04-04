@@ -7,47 +7,35 @@ class State extends DbJSON
 		// EXPIRES= 1*3600,
 		BASE_PATHNAME= \DR.'/state.json';
 
-	public $test = 1;
+	public $test = \Chat::DEV;
 
-	/*
-	function __set($n,$v)
-	{
-		return $this->db->set([$n=>$v]);
-	}
-	*/
 
 	public function __construct(array $uState)
 	{
-		// *Последнее обращение к серверу
-		// $uState['ts']= time();
-
 		$UID= $uState['UID'];
 		// unset($uState['UID']);
 
-
 		parent::__construct(self::BASE_PATHNAME);
 
-		// *Save orig state before mutations
+		/* // *Save orig state before mutations
 		$orig_uState= $this->users[$UID];
 
-		// $this->set(['users'=>[$UID=>$uState]]);
-			// ->(['users'=>[$UID=>$uState]]);
-
-		// *Restore main state fields
+		// *Restore main state fields ?
 		$freezed = [
 			'ban'=> $orig_uState['ban'] ?? false,
 		];
 
 		$uState = array_replace($uState, $freezed);
 
-		$this->set(['users'=>[$UID=>$uState]]);
+		$this->set(['users'=>[$UID=>$uState]]); */
 
-		tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
+		// tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
 
 		if(!isset($this->startIndex)) $this->set(['startIndex'=>0]);
 	}
 
 
+	// *Обновление в том же экземпляре
 	function update(array $uState)
 	{
 		$this->__construct($uState);
@@ -58,7 +46,7 @@ class State extends DbJSON
 	function __destruct()
 	{
 		// tolog(__METHOD__,null,[$this->users]);
-		// *Чистим старых пользователей
+		// *Чистим ошибочные записи
 		$now= time();
 		$change=0;
 		foreach(($users= $this->get('users')) as $uid=>$user){

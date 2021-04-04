@@ -17,15 +17,17 @@ viewBox="0 0 51.619 51.619">
 </div>
 
 <script type="module" defer>
-import {msgs,on,_w, elemInViewport,scrollIntoView} from '../../script.js';
-// import {elemInViewport,scrollIntoView} from '../../assets/helpers.js';
+// import {msgs,on,_w, elemInViewport,scrollIntoView} from '../../script.js';
+// import {msgs,on,_w, elemInViewport,scrollIntoView} from './script.js';
+import {on,elemInViewport,scrollIntoView} from './assets/helpers.js';
 
 // *Scroll to posts/form
-let toReadSvg= document.querySelector('.svg-toRead'),
+let msgs= document.querySelector('#msgsContent'),
+	toReadSvg= document.querySelector('.svg-toRead'),
 	toBottomSvg= document.querySelector('.svg-toBottom'),
 	toFormSvg= document.querySelector('.svg-toForm');
 
-on(_w, 'scroll', e=>{
+on(window, 'scroll', e=>{
 	if(elemInViewport(msgs, .9)){
 		toReadSvg.style.display='none';
 		toFormSvg.style.display='';

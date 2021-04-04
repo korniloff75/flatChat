@@ -131,7 +131,7 @@ function refreshAfter (XMLo) {
 		? response.html
 		: response;
 
-	Object.assign(Chat, response.Chat);
+	Object.assign(Chat, response.state.users[response.UID]);
 
 	console.log('Response after refresh', {response}, 'Updated Chat', {Chat});
 
@@ -159,7 +159,8 @@ function refreshAfter (XMLo) {
 
 	}
 
-	logTrace('refresh Success',{h,lm,html});
+	// logTrace('refresh Success',{h,lm,html});
+	console.log('refresh Success',{h,lm,html});
 
 	// *if Modifed
 	if (html !== undefined) {
@@ -168,7 +169,8 @@ function refreshAfter (XMLo) {
 
 	// *Every
 	State.setDB(response)
-	.hilightUsers(msgs, usersList);
+	.addToUsersList(usersList);
+	// .hilightUsers(msgs, usersList);
 
 	return Promise.resolve({note: 'in refreshAfter content ' + (html !== undefined? 'been modifed': 'NOT been modifed'), data:{h,lm,html}});
 
@@ -601,7 +603,8 @@ on(_w, ('onpageshow' in _w)? 'pageshow': 'load', e=>{
 
 	// todo
 	State.setDB(Out)
-	.hilightUsers(msgs, usersList);
+	.addToUsersList(usersList);
+	// .hilightUsers(msgs, usersList);
 
 	showAttaches();
 

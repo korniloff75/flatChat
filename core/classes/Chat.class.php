@@ -6,6 +6,8 @@ class Chat
 	use Helpers;
 
 	const
+		// DEV= true,
+		DEV= false,
 		DBPATHNAME= \DR."/chat.db",
 		ARH_PATHNAME= \DR.'/db',
 		FILES_DIR= '/files_B',
@@ -22,8 +24,6 @@ class Chat
 
 	static
 		$secretLen= 3,
-		// *Отладка
-		$dev= true,
 		// *Порядок данных
 		$indexes= ['IP','ts','name','text','files','appeals'],
 		$templateModules= ['head','header','sendForm','footer','scrollNav'];
@@ -52,24 +52,22 @@ class Chat
 	{
 		$this->dbPathname= $dbPathname ?? self::DBPATHNAME;
 
-		// $this->Online= new DbJSON(\DR.'/online.json');
+		$this->Online= new DbJSON(\DR.'/online.json');
 
 		$this->_setUState()
 			->_controller();
 
-		tolog(__METHOD__,null,['$this->mode'=>$this->mode, 'uState'=>$this->uState, 'self::getPathFromRoot(\DR)'=>self::getPathFromRoot(\DR)]);
+		tolog(__METHOD__,null,['$this->mode'=>$this->mode, 'self::getPathFromRoot(\DR)'=>self::getPathFromRoot(\DR.'/')]);
 
 		if ( ($this->lastMod = filemtime( $this->dbPathname )) === false ) $this->lastMod = 0;
 
 		if($this->mode === 'post'){
 			if($this->uState['ban']){
-				header('Location: /' . self::getPathFromRoot(\DR));
+				header('Location: /' . self::getPathFromRoot(\DR.'/'));
 				die;
 			}
 			$this->_auth()
 				->_newPost();
-			echo $this->Out( "OK", true );
-			// $this->exit = true;
 			die;
 		}
 
@@ -99,13 +97,6 @@ class Chat
 	function __get($n)
 	{
 		return $this->$n ?? $this->uState[$n] ?? null;
-	}
-
-	public function getJsonUState()
-	:string
-	{
-		tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
-		return json_encode($this->uState,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
 
 
@@ -148,7 +139,7 @@ class Chat
 			$this->uState= array_replace($this->uState, $chatUser);
 		}
 
-		tolog(__METHOD__,null,['$chatUserCook'=>$chatUserCook, '$chatUser'=>$chatUser]);
+		tolog(__METHOD__,null,['$chatUserCook'=>$chatUserCook, /* '$chatUser'=>$chatUser */]);
 
 		$this->uState['name'] = $this->name? $this->name: $_SESSION['user']['name'] ?? self::cleanName(@$_REQUEST["name"]) ?? null;
 
@@ -163,7 +154,7 @@ class Chat
 
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
-		$this->uState['ts'] = time();
+		// $this->uState['ts'] = time();
 
 		// $this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
@@ -280,10 +271,10 @@ class Chat
 		// *Write
 		$this->_save($text, $upload->loaded);
 
-		$this->mode = "list";
-
 		clearstatcache();
 		$this->lastMod = filemtime( $this->dbPathname );
+
+		die($this->Out( "OK", true ));
 	}
 
 
@@ -293,7 +284,13 @@ class Chat
 			$f= self::getPathFromRoot($f);
 		});
 
-		$data= [$this->IP,$this->ts,$this->name,$text,json_encode($files, JSON_UNESCAPED_SLASHES),filter_var(@$_REQUEST['appeals'])];
+		$this->text= $text;
+		$this->appeals= filter_var(@$_REQUEST['appeals']);
+
+		foreach(self::$indexes as $ind){
+			$i = $this->{$ind};
+			$data[]= is_array($i)? json_encode($i, JSON_UNESCAPED_SLASHES): $i;
+		}
 
 		// *Write
 		file_put_contents( $this->dbPathname, implode(self::DELIM, $data) . PHP_EOL, LOCK_EX|FILE_APPEND );
@@ -306,7 +303,7 @@ class Chat
 	public function getHTMLContent()
 	:string
 	{
-		if(self::$dev){
+		if(self::DEV){
 			header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
 			header('Pragma: no-cache'); // HTTP 1.0.
 			header('Expires: 0'); // Proxies.
@@ -412,23 +409,14 @@ class Chat
 		// if($this->successPolling)
 		$this->_updateState()->save();
 
-		$Online= new DbJSON(\DR.'/online.json');
-		$Online->set([$this->UID=>['ts'=>time()]]);
-
 		$out= array_merge($out, [
-			'online'=> $Online->get(),
+			'online'=> $this->Online->get(),
 			'state'=> $this->State->get(),
-			'Chat'=> $this->uState,
+			// 'Chat'=> $this->uState,
 			'UID'=> $this->UID,
 			'lastMod'=> $this->lastMod,
 			'is_https'=> self::is('https'),
 		]);
-
-		/* $out['state']= $this->State->get();
-		$out['Chat']= $this->uState;
-		$out['UID']= $this->UID;
-		$out['lastMod']= $this->lastMod;
-		$out['is_https']= self::is('https'); */
 
 		return json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
 	}
@@ -453,8 +441,11 @@ class Chat
 			// tolog(__METHOD__,null,['$indexes'=>$indexes,$v]);
 			$v= array_combine($indexes, $v);
 
+			$v['UID']= self::defineUID($v['name'], $v['IP']);
+
+			$v['online']= $this->Online->{$v['UID']}['ts'] ?? 0;
 			// *ts -> Date
-			$v['ts']= date('Y-m-d H:i', $v['ts']);
+			$v['date']= date('Y-m-d H:i', $v['ts']);
 
 			echo $this->{$render}(++$n,$v);
 		};
@@ -581,10 +572,7 @@ class Chat
 
 		tolog(__METHOD__,null,['banned user state'=>$this->State->users[$uid]]);
 
-		echo $this->Out( "OK", true );
-
-		die;
-
+		die($this->Out( "OK", true ));
 	}
 
 
@@ -664,7 +652,6 @@ class Chat
 		// tolog(__METHOD__,null,[$i]);
 		extract($i);
 
-		$UID= self::defineUID($name, $IP);
 		if($this->useStartIndex){
 			$n+= $this->State->startIndex;
 		}
@@ -680,13 +667,18 @@ class Chat
 		// *Цитировать
 		$cite= $this->useStartIndex? '<div class="cite btn">Цитировать</div>':'';
 
-		// var_dump($n, $this->State->pinned, $pinned, empty($this->State->pinned), ($pinned === $n));
+		$is_online= (time() - $online) < \REFRESHTIME;
+		$nameClass= 'name' . ($is_online? ' on':'');
+
+		// tolog(__METHOD__,null,['$nameClass'=>$nameClass, (time() - $online), \REFRESHTIME]);
+
+		// var_dump(time(), $online, (time() - $online), \REFRESHTIME);
 
 		$t = "<div class=\"msg "
 		. ($pinned? 'pinned ':'')
 		. ($banned? 'banned ':'')
-		. "\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class=\"name\">$name"
-		. '</span><span class="misc"><span class="date">' . $ts . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
+		. "\" id=\"msg_{$n}\" data-uid='{$UID}' data-appeals='{$appeals}'><div class=\"info\" data-ip='{$IP}'><div><label class='select'><input type='checkbox'><b class='num'>$n</b></label> <!--<span class=\"state\"></span>--><span class='{$nameClass}'>$name"
+		. '</span><span class="misc"><span class="date">' . $date . "</span></span></div>$cite<div class='voice button' title='Озвучить текст'>📢🎧</div></div>"
 		. "<div class='post'>{$text}</div>";
 
 		// *BB-codes
@@ -834,10 +826,7 @@ class Chat
 		// *Включает скрытое очищение вывода так, что мы видим данные как только они появляются.
 		ob_implicit_flush();
 
-		// set_time_limit(ini_get('max_execution_time') /2);
-		// ignore_user_abort(true);
 		set_time_limit($exec_time);
-		// $start_time= time();
 
 		tolog(__METHOD__,null,['$rlm'=>$rlm, '$this->lastMod'=>$this->lastMod, 'connection_status()'=>connection_status()]);
 
@@ -847,14 +836,9 @@ class Chat
 		while (1) {
 			++$counter;
 
-			$Online= new DbJSON(\DR.'/online.json');
+			$this->Online= new DbJSON(\DR.'/online.json');
 
-			$Online->set([$this->UID=>['ts'=>time()]]);
-				// ->save();
-
-			// $this->uState['ts']= time();
-			// $this->_updateState()->save();
-
+			$this->Online->set([$this->UID=>['ts'=>time()]]);
 
 			// *Обновление
 			if (
@@ -863,17 +847,6 @@ class Chat
 			) {
 
 				echo $this->Out( "OK", true );
-
-				// if(!ob_end_flush()) flush();
-
-				/* // *При обрыве соединения
-				if(connection_status() != CONNECTION_NORMAL){
-					$this->uState['on'] = false;
-					$this->State->users= [$this->UID=>$this->uState];
-
-					file_put_contents('test', __METHOD__.' - uState - '. json_encode($this->State->get(), JSON_UNESCAPED_UNICODE));
-					// break;
-				} */
 
 				// leave this loop step
 				break;

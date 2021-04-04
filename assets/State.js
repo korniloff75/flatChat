@@ -82,12 +82,13 @@ export function handlePosts (msgs) {
 
 
 /**
+ * note deprecated
  * *Hilight online users and fill the users list
  * every server response (with/without update content)
  * @param {HTMLElement} box
  * @param {HTMLElement} listNode
  */
-export function hilightUsers (box, listNode){
+function hilightUsers (box, listNode){
 	if(!users) return;
 
 	var uInfo= box.querySelectorAll('.info');
@@ -122,7 +123,7 @@ export function hilightUsers (box, listNode){
 
 
 // *Текущие пользователи за timeRange сек.
-function addToUsersList (listNode) {
+export function addToUsersList (listNode) {
 	if(!listNode){
 		console.log('listNode is empty');
 		return;
@@ -148,7 +149,7 @@ function addToUsersList (listNode) {
 		uData.on= uData.ts + REFRESHTIME > now;
 		uData.check= {now, restTime: (uData.ts + REFRESHTIME - now), note:'If restTime > 0 uData.on=true'};
 
-		console.log('afterFilter',{uData});
+		// console.log('afterFilter',{uData});
 
 		var p= document.createElement('p'),
 			d= getUTC(uData.ts*1000);

@@ -31,11 +31,14 @@
 
 <script type="text/javascript">
 	const REFRESHTIME= <?=\REFRESHTIME?>;
-	let Chat= <?=$this->getJsonUState()?>,
+	let
 		LastMod= <?=$this->lastMod?>,
 		Out= <?=$this->Out()?>,
+		Chat= Out.state.users[Out.UID],
 		Online= Out.online;
 </script>
+
+<!-- <?=realpath('./')?> -->
 
 <script src="./script.js" type="module" defer></script>
 
@@ -44,7 +47,7 @@
 <script src="./assets/BB.js" type="module" async></script>
 <script src="./assets/Images/Images.js" type="module" async></script>
 <script src="./assets/Template/tpl.mod.js" type="module" async></script>
-<?php //todo ?>
+
 <script src="./assets/modal/modal.js" type="module" async></script>
 <?php if(is_adm()): ?>
 <script src="./assets/Admin.js" type="module" defer></script>
