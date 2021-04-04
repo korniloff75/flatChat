@@ -33,7 +33,8 @@
 	const REFRESHTIME= <?=\REFRESHTIME?>;
 	let Chat= <?=$this->getJsonUState()?>,
 		LastMod= <?=$this->lastMod?>,
-		Out= <?=$this->Out()?>;
+		Out= <?=$this->Out()?>,
+		Online= Out.online;
 </script>
 
 <script src="./script.js" type="module" defer></script>

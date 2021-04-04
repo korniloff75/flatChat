@@ -609,7 +609,7 @@ export function addStyle(href){
 }
 
 export function getUTC(d){
-	if(!(d instanceof Date)) new Error('Аргумент должен быть экземляром Date');
+	if(!(d instanceof Date)) d= new Date(d);
 	return `${d.getFullYear()}-${fixZero(d.getMonth()+1)}-${fixZero(d.getDate())} ${fixZero(d.getHours())}:${fixZero(d.getMinutes())}`;
 }
 

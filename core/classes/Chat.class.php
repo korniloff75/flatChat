@@ -52,6 +52,8 @@ class Chat
 	{
 		$this->dbPathname= $dbPathname ?? self::DBPATHNAME;
 
+		// $this->Online= new DbJSON(\DR.'/online.json');
+
 		$this->_setUState()
 			->_controller();
 
@@ -166,7 +168,9 @@ class Chat
 		// $this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
-		$this->_updateState();
+
+		// $this->_updateState();
+		$this->State= new State($this->uState);
 
 		$this->uState= $this->State->users[$this->UID];
 		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
@@ -203,37 +207,48 @@ class Chat
 
 
 	protected function _auth(){
-		$base= new DbJSON(\DR.'/assets/adm.json');
-
-		// note Reset secret
-		// $base->set([$this->name=>null]);
-
 		$rSecret= trim($_REQUEST['secret']);
+
 		if(strlen($rSecret) >= self::$secretLen){
-			$mds= md5($rSecret);
+			$hash= md5($rSecret);
 		}
 
-		if(is_null($base->{$this->name})){
-			$base->set([$this->name=>$mds]);
+		if(empty($_SESSION['secret'])){
+			$base= new DbJSON(\DR.'/assets/adm.json');
+			// note Reset secret
+			// $base->set([$this->name=>null]);
+
+			if(empty($base->{$this->name})){
+				$base->set([$this->name=>$hash]);
+			}
+
+			if($base->{$this->name} === $hash){
+				$_SESSION['secret']= $rSecret;
+			}
+			else{
+				// new Exception("Auth was FAIL");
+				die("Auth was FAIL");
+			}
 		}
 
-		tolog(__METHOD__,null,['$this->secret'=>$this->secret, '$mds'=>$mds]);
+		tolog(__METHOD__,null,['$rSecret'=>$rSecret, '$hash'=>$hash]);
 
-		if($base->{$this->name} === $mds){
-			$this->secret= $rSecret;
-			return $this;
-		}
-		else{
-			// new Exception("Auth was FAIL");
-			die("Auth was FAIL");
-		}
+		return $this;
 	}
 
 
 	// *Обновили $this->State
 	protected function _updateState()
 	{
-		return $this->State= new State($this->uState);
+		// return $this->State= new State($this->uState);
+		return $this->State= $this->State->update($this->uState);
+	}
+
+
+	// todo?
+	function opts()
+	{
+
 	}
 
 
@@ -397,7 +412,11 @@ class Chat
 		// if($this->successPolling)
 		$this->_updateState()->save();
 
+		$Online= new DbJSON(\DR.'/online.json');
+		$Online->set([$this->UID=>['ts'=>time()]]);
+
 		$out= array_merge($out, [
+			'online'=> $Online->get(),
 			'state'=> $this->State->get(),
 			'Chat'=> $this->uState,
 			'UID'=> $this->UID,
@@ -828,13 +847,14 @@ class Chat
 		while (1) {
 			++$counter;
 
-			$this->uState['ts']= time();
+			$Online= new DbJSON(\DR.'/online.json');
 
-			// if($counter%($loop_time*3) === 0){
-				$this->_updateState();
-				// $this->State->users= [$this->UID=>['ts'=>time()]];
-				$this->State->save();
-			// }
+			$Online->set([$this->UID=>['ts'=>time()]]);
+				// ->save();
+
+			// $this->uState['ts']= time();
+			// $this->_updateState()->save();
+
 
 			// *Обновление
 			if (
@@ -865,11 +885,6 @@ class Chat
 				break;
 			}
 			else {
-				/* if((time() - $start_time) > $exec_time){
-					echo $this->Out( "NONMODIFIED" );
-					break;
-				} */
-
 				sleep( $loop_time );
 				clearstatcache();
 				$this->lastMod = filemtime( $this->dbPathname );

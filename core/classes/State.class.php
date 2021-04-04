@@ -48,6 +48,13 @@ class State extends DbJSON
 	}
 
 
+	function update(array $uState)
+	{
+		$this->__construct($uState);
+		return $this;
+	}
+
+
 	function __destruct()
 	{
 		// tolog(__METHOD__,null,[$this->users]);

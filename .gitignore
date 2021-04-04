@@ -6,6 +6,7 @@ node_modules
 /dist
 /tmp
 *.db
+/online.json
 */adm.json
 /state.json
 db/*
@@ -45,3 +46,4 @@ yarn-error.log*
 *.sw*
 todo.txt
 .stackdump
+templates/_default_/sendForm.php

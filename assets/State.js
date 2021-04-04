@@ -11,11 +11,13 @@ import { Ajax,getUTC } from "./helpers.js";
 
 var _w= window,
 	users,
+	online,
 	appeals= document.querySelector('.appeals');
 
 
-export function setDB (state){
-	users= state.users;
+export function setDB (Out){
+	users= Out.state.users;
+	online= Out.online;
 	return this;
 }
 
@@ -132,30 +134,33 @@ function addToUsersList (listNode) {
 	const dfr= document.createDocumentFragment(),
 		now= Date.now()/1000; //sec;
 
-	Object.keys(users).forEach(uid=>{
+	Object.keys(online).forEach(uid=>{
 		var uData= users[uid];
 
+		// console.log('beforeFilter',{uData});
+
 		if(
-			!uData.name
-			|| (now - uData.ts) > timeRange
+			!uData
+			|| !uData.name
+			|| (now - (uData.ts= online[uid].ts)) > timeRange
 		) return;
 
-		uData.on= (now - REFRESHTIME) < uData.ts;
-		uData.check= {now, delta: (now - REFRESHTIME - uData.ts),};
+		uData.on= uData.ts + REFRESHTIME > now;
+		uData.check= {now, restTime: (uData.ts + REFRESHTIME - now), note:'If restTime > 0 uData.on=true'};
+
+		console.log('afterFilter',{uData});
 
 		var p= document.createElement('p'),
-			d= new Date(uData.ts*1000);
+			d= getUTC(uData.ts*1000);
 
 		p.textContent= uData.name;
-
-		// console.log({uData});
 
 		if(uData.on){
 			p.classList.add('on');
 		}
 		else {
 			p.classList.remove('on');
-			p.innerHTML+= ` <span class="date">(${getUTC(d)})</span>`;
+			p.innerHTML+= ` <span class="date">(${d})</span>`;
 		}
 
 		if(uData.ban){
