@@ -34,7 +34,7 @@
 	let
 		LastMod= <?=$this->lastMod?>,
 		Out= <?=$this->Out()?>,
-		Chat= Out.state.users[Out.UID],
+		Chat= Out.state.users[Out.UID] || {},
 		Online= Out.online;
 </script>
 

@@ -158,8 +158,10 @@ export function addToUsersList (listNode) {
 
 		if(uData.on){
 			p.classList.add('on');
+			p.classList.remove('meta');
 		}
 		else {
+			p.classList.add('meta');
 			p.classList.remove('on');
 			p.innerHTML+= ` <span class="date">(${d})</span>`;
 		}

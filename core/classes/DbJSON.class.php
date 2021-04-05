@@ -361,6 +361,7 @@ class DbJSON implements Iterator, Countable
 				self::toJSON($this->db), LOCK_EX
 			);
 		}
+		return $this;
 	}
 
 

@@ -17,8 +17,6 @@ viewBox="0 0 51.619 51.619">
 </div>
 
 <script type="module" defer>
-// import {msgs,on,_w, elemInViewport,scrollIntoView} from '../../script.js';
-// import {msgs,on,_w, elemInViewport,scrollIntoView} from './script.js';
 import {on,elemInViewport,scrollIntoView} from './assets/helpers.js';
 
 // *Scroll to posts/form

@@ -10,14 +10,23 @@ class State extends DbJSON
 	public $test = \Chat::DEV;
 
 
-	public function __construct(array $uState)
+	public function __construct(?array &$uState=null)
 	{
-		$UID= $uState['UID'];
 		// unset($uState['UID']);
 
 		parent::__construct(self::BASE_PATHNAME);
 
-		/* // *Save orig state before mutations
+		if(!isset($this->startIndex)) $this->set(['startIndex'=>0]);
+
+		if(!$uState) return;
+
+		/*
+
+		$this->set(['users'=>[$UID=>$uState]]); */
+
+		$UID= $uState['UID'];
+
+		// *Save orig state before mutations
 		$orig_uState= $this->users[$UID];
 
 		// *Restore main state fields ?
@@ -25,18 +34,22 @@ class State extends DbJSON
 			'ban'=> $orig_uState['ban'] ?? false,
 		];
 
+		// tolog(__METHOD__,null,['$uState'=>$uState]);
+
 		$uState = array_replace($uState, $freezed);
 
-		$this->set(['users'=>[$UID=>$uState]]); */
+		if(!empty($this->users[$UID]))
+			$uState= array_replace($this->users[$UID], $uState);
 
-		// tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$this->users[$UID]]);
+		$this->set(['users'=>[$UID=>$uState]]);
 
-		if(!isset($this->startIndex)) $this->set(['startIndex'=>0]);
+		// tolog(__METHOD__,null,['$this->users'=>$this->users, '$freezed'=>$freezed, '$uState'=>$uState]);
 	}
 
 
+	// todo
 	// *Обновление в том же экземпляре
-	function update(array $uState)
+	function update(?array $uState=null)
 	{
 		$this->__construct($uState);
 		return $this;

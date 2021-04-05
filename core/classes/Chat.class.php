@@ -10,6 +10,7 @@ class Chat
 		DEV= false,
 		DBPATHNAME= \DR."/chat.db",
 		ARH_PATHNAME= \DR.'/db',
+		AUTH_PATHNAME= \DR.'/assets/adm.db.json',
 		FILES_DIR= '/files_B',
 		ADM= [
 			'feedback'=>"<a href='//t.me/js_master_bot'>Telegram</a>",
@@ -146,24 +147,23 @@ class Chat
 		if( empty($this->uState['name']) ){
 			if( self::is('ajax') ) throw new Exception("Пользователь без имени");
 
+			$this->out['reject']= true;
 			$this->out['html']= "<div>Чтобы получать обновления чата напишите свой первый пост!</div>";
-			return $this;
 		}
 
 		// if( empty($this->uState['name']) && self::is('ajax') ) throw new Exception("Пользователь без имени");
 
 		$this->uState['UID']= self::defineUID($this->name, $this->IP);
 
-		// $this->uState['ts'] = time();
+		$this->uState['ts'] = time();
+		$this->Online->set([$this->UID=>['ts'=>$this->uState['ts']]]);
 
 		// $this->uState['text'] = self::cleanText(@$_REQUEST["text"] ?? null);
 
 		tolog(__METHOD__,null,['uState before UPD'=>$this->uState]);
 
-		// $this->_updateState();
 		$this->State= new State($this->uState);
 
-		$this->uState= $this->State->users[$this->UID];
 		tolog(__METHOD__,null,['uState after UPD'=>$this->uState]);
 
 		// if(POLLING) file_put_contents('test1', __METHOD__. json_encode($this->uState, JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND);
@@ -198,49 +198,38 @@ class Chat
 
 
 	protected function _auth(){
+		$base= new DbJSON(self::AUTH_PATHNAME);
 		$rSecret= trim($_REQUEST['secret']);
 
 		if(strlen($rSecret) >= self::$secretLen){
 			$hash= md5($rSecret);
 		}
 
-		if(empty($_SESSION['secret'])){
-			$base= new DbJSON(\DR.'/assets/adm.json');
-			// note Reset secret
-			// $base->set([$this->name=>null]);
+		// tolog(__METHOD__ . ' before',null,['$this->name'=>$this->name, '$rSecret'=>$rSecret, '$base->{$this->name}'=>$base->{$this->name}, '$hash'=>$hash, 'empty($base->{$this->name})'=>empty($base->{$this->name})]);
 
-			if(empty($base->{$this->name})){
-				$base->set([$this->name=>$hash]);
-			}
+		// note Reset secret
+		// $base->remove($this->name);
 
-			if($base->{$this->name} === $hash){
-				$_SESSION['secret']= $rSecret;
-			}
-			else{
-				// new Exception("Auth was FAIL");
-				die("Auth was FAIL");
-			}
+		if(is_null($base->{$this->name})){
+			$base->set([$this->name=>$hash]);
 		}
 
-		tolog(__METHOD__,null,['$rSecret'=>$rSecret, '$hash'=>$hash]);
+		elseif($base->{$this->name} === $hash){
+			$_SESSION['secret']= $rSecret;
+		}
+		else{
+			// die('{"error":"Auth was FAIL"}');
+			$_SESSION['secret']=null;
+			$this->out['reject']=1;
+			$this->out['html']="Вы пытаетесь войти под чужой учётной записью.";
+			die($this->Out('OK'));
+		}
+
+		// tolog(__METHOD__,null,['$this->name'=>$this->name, '$rSecret'=>$rSecret, '$base->{$this->name}'=>$base->{$this->name}, '$hash'=>$hash]);
 
 		return $this;
 	}
 
-
-	// *Обновили $this->State
-	protected function _updateState()
-	{
-		// return $this->State= new State($this->uState);
-		return $this->State= $this->State->update($this->uState);
-	}
-
-
-	// todo?
-	function opts()
-	{
-
-	}
 
 
 	/**
@@ -284,11 +273,11 @@ class Chat
 			$f= self::getPathFromRoot($f);
 		});
 
-		$this->text= $text;
-		$this->appeals= filter_var(@$_REQUEST['appeals']);
+		// $this->text= $text;
+		$appeals= filter_var(@$_REQUEST['appeals']);
 
 		foreach(self::$indexes as $ind){
-			$i = $this->{$ind};
+			$i = $this->{$ind} ?? $$ind;
 			$data[]= is_array($i)? json_encode($i, JSON_UNESCAPED_SLASHES): $i;
 		}
 
@@ -371,7 +360,7 @@ class Chat
 				// *Добавляем в архив
 				&& file_put_contents( self::ARH_PATHNAME.'/'.time(), $file, LOCK_EX )
 			){
-				$this->State->startIndex= $this->State->startIndex + ($count - self::MAX_LINES);
+				$this->State->set(['startIndex'=> $this->State->startIndex + ($count - self::MAX_LINES)]);
 
 				$file = $newFile;
 			}
@@ -391,28 +380,27 @@ class Chat
 		$out= &$this->out;
 
 		// *$out already exist
-		if(!empty($out['html'])){
+		/* if(!empty($out['html'])){
 			tolog(__METHOD__,Logger::BACKTRACE,['$out'=>$out]);
 			return json_encode($out, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-		}
+		} */
 
-		$out['html']= $out['html'] ?? '';
-		$out['html'].= !is_null($status)? "{$status}:{$this->lastMod}\n": '';
+		$out['html'] = (!is_null($status)? "{$status}:{$this->lastMod}\n": '') . ($out['html'] ?? '');
 
-		if ( $is_modified ) {
+		if ( empty($out['reject']) && $is_modified ) {
 			$out['html'].= $this->_parse();
 		} //$is_modified
 
 		// tolog(__METHOD__,Logger::BACKTRACE,['$out'=>$out]);
 		// var_dump($out);
 
-		// if($this->successPolling)
-		$this->_updateState()->save();
+		tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
+
+		// $this->State= $this->State ??
 
 		$out= array_merge($out, [
 			'online'=> $this->Online->get(),
-			'state'=> $this->State->get(),
-			// 'Chat'=> $this->uState,
+			'state'=> $this->State->update()->get(),
 			'UID'=> $this->UID,
 			'lastMod'=> $this->lastMod,
 			'is_https'=> self::is('https'),
@@ -506,11 +494,11 @@ class Chat
 	{
 		if(!is_adm()) return;
 		if($this->mode === 'set'){
-			$this->State->pinned = (int) $num;
+			$this->State->set(['pinned' => (int) $num]);
 			echo "Post $num pinned.";
 		}
 		elseif($this->mode === 'remove'){
-			$this->State->pinned= -1;
+			$this->State->set(['pinned' => -1]);
 			echo "Post $num unpinned.";
 		}
 
@@ -804,7 +792,11 @@ class Chat
 
 		if($template){
 			$this->uState['template'] = $template;
-			$this->State->save();
+			$this->State->update($this->uState)->save();
+			// $this->State= $this->State->save();
+
+			tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
+
 			echo $this->Out( "NONMODIFIED" );
 			flush();
 		}

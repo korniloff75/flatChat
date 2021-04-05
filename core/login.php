@@ -9,7 +9,8 @@ if(
 ){
 	$user= 'nobody';
 
-	$base= new DbJSON(\DR.'/assets/adm.json');
+	$base= new DbJSON(Chat::AUTH_PATHNAME);
+	
 	if(!$base->Adm){
 		$base->set(['Adm'=>hash('sha256',$pwd)]);
 		$_SESSION['adm']= true;

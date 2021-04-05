@@ -7,6 +7,9 @@ import * as Img from './assets/Images/Images.js';
 import { modal } from './assets/modal/modal.js';
 export {Ajax, css, on, off, speak, elemInViewport, scrollIntoView};
 
+// *1 пост
+if(!Chat) Chat= {};
+
 console.log('Glob server vars', {Chat, LastMod, Out});
 
 export const _w= window;
@@ -45,7 +48,7 @@ function hideName(){
 	f.name.value= f.name.value || Chat.name || null;
 	f.name.type= f.name.value? 'hidden': 'text';
 
-	f.secret.value= f.secret.value || Chat.secret || null;
+	f.secret.value= f.secret.value || null;
 	f.secret.type= f.secret.value? 'hidden': 'text';
 
 	console.log(f.name.value);
@@ -122,7 +125,7 @@ function refreshAfter (XMLo) {
 		response = undefined;
 	}
 
-	if(!response) {
+	if(!response || response.error) {
 		// console.log();
 		return Promise.reject({note:'Response after refresh is empty!',data:{response}});
 	};
@@ -150,6 +153,9 @@ function refreshAfter (XMLo) {
 		html = html.substring(p + 1);
 
 		if (h === "NONMODIFIED") html = undefined;
+		else if(response.reject){
+			// *Выводим ошибку с сервера
+		}
 		else if (LastMod === lm) {
 			html = undefined;
 			console.log('LastMod === lm',{LastMod,lm,html});

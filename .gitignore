@@ -7,7 +7,7 @@ node_modules
 /tmp
 *.db
 /online.json
-*/adm.json
+*.*.json
 /state.json
 db/*
 js/db/*.*
