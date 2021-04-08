@@ -219,6 +219,7 @@ class Chat
 		}
 		else{
 			// die('{"error":"Auth was FAIL"}');
+			header('Content-Type: application/json');
 			$_SESSION['secret']=null;
 			$this->out['reject']=1;
 			$this->out['html']="Вы пытаетесь войти под чужой учётной записью.";
@@ -292,6 +293,7 @@ class Chat
 	public function getHTMLContent()
 	:string
 	{
+		header('Content-Type: text/html');
 		if(self::DEV){
 			header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
 			header('Pragma: no-cache'); // HTTP 1.0.
@@ -560,6 +562,7 @@ class Chat
 
 		tolog(__METHOD__,null,['banned user state'=>$this->State->users[$uid]]);
 
+		header('Content-Type: application/json');
 		die($this->Out( "OK", true ));
 	}
 
@@ -797,6 +800,7 @@ class Chat
 
 			tolog(__METHOD__,null,['$this->uState'=>$this->uState]);
 
+			header('Content-Type: application/json');
 			echo $this->Out( "NONMODIFIED" );
 			flush();
 		}
@@ -831,6 +835,8 @@ class Chat
 			$this->Online= new DbJSON(\DR.'/online.json');
 
 			$this->Online->set([$this->UID=>['ts'=>time()]]);
+
+			header('Content-Type: application/json');
 
 			// *Обновление
 			if (

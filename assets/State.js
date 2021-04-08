@@ -1,7 +1,7 @@
 'use strict';
 
 // import { on } from "../script.js";
-import { Ajax,getUTC } from "./helpers.js";
+import { getUTC } from "./helpers.js";
 
 // native
 
@@ -27,22 +27,6 @@ export function defineUID (name,IP){
 	return name + IP.substring(0,dotPos+1);
 }
 
-
-/**
- * *Выделение постов пользователя
- * после отправки и появления новых постов
- * !deprecated
- * todo- add appeals, перенести в handlePosts
- * @param {Node} msgs
- */
-/* export function findMyPosts (msgs) {
-	msgs.querySelectorAll(`div[data-uid]`).forEach(msg=>{
-		var uid= msg.dataset.uid;
-
-		([Chat.myUID, Chat.UID].includes(uid)) && msg.classList.add('myPost');
-		// console.log(uid, [Chat.myUID, Chat.UID].includes(uid));
-	});
-} */
 
 
 /**
@@ -147,7 +131,7 @@ export function addToUsersList (listNode) {
 		) return;
 
 		uData.on= uData.ts + REFRESHTIME > now;
-		uData.check= {now, restTime: (uData.ts + REFRESHTIME - now), note:'If restTime > 0 uData.on=true'};
+		uData.check= {now, restTime: parseInt(uData.ts + REFRESHTIME - now), note:'If restTime > 0 uData.on=true'};
 
 		// console.log('afterFilter',{uData});
 
@@ -173,10 +157,8 @@ export function addToUsersList (listNode) {
 		dfr.appendChild(p);
 	});
 
-	console.log('addToUsersList',{users});
+	// console.log('addToUsersList',{users});
 
 	listNode.innerHTML='';
 	listNode.appendChild(dfr);
-
-// console.log({node});
 }

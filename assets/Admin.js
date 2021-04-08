@@ -28,21 +28,34 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 // *Обработка кликов по админ-панели
 on(msgs,'click',e=>{
 	const t= e.target,
+		msg= t.closest('.msg'),
+		num= msg.querySelector('.num').textContent,
 		adm= t.closest('.adm');
+
+	let btn;
 
 	if(adm){
 		e.stopPropagation();
 		e.preventDefault();
 		console.log('click on the admin panel', adm);
 	}
+	// *Save edits
+	else if((btn= t.closest('.saveEdits'))){
+		let area= msg.querySelector('.editarea');
+		return refresh({
+			responseType:'json',
+			num: num,
+			saveEdits: area.value,
+			mode: 'set',
+		});
+	}
 	else return;
 
-	const msg= t.closest('.msg'),
-		num= msg.querySelector('.num').textContent,
+
+	const
 		name=  msg.querySelector('.name').textContent,
 		UID= msg.dataset.uid;
 
-	let btn;
 
 	// *Pin post
 	if((btn= t.closest('.pin'))){
@@ -94,17 +107,6 @@ on(msgs,'click',e=>{
 		msg.appendChild(msg.area);
 		msg.appendChild(save);
 		return;
-	}
-
-	// *Save edits
-	if((btn= t.closest('.saveEdits'))){
-		var area= msg.querySelector('.editarea');
-		return refresh({
-			responseType:'json',
-			num: num,
-			saveEdits: area.value,
-			mode: 'set',
-		});
 	}
 
 	// *Remove post

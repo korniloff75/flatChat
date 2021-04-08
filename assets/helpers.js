@@ -494,7 +494,7 @@ export function off(obj, event, handler) {
 
 // *Озвучка текста
 export function speak(txt){
-	const synth = window.speechSynthesis;
+	const synth = _w.speechSynthesis;
 	if(synth.pending){
 		return;
 	}
@@ -511,13 +511,13 @@ export function speak(txt){
 
 
 export const SpeechRecognition =
-window.SpeechRecognition || window.webkitSpeechRecognition;
+_w.SpeechRecognition || _w.webkitSpeechRecognition;
 
 export function prinText(ta){
 	const SpeechGrammarList =
-		window.SpeechGrammarList || window.webkitSpeechGrammarList;
+		_w.SpeechGrammarList || _w.webkitSpeechGrammarList;
 	const SpeechRecognitionEvent =
-		window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+		_w.SpeechRecognitionEvent || _w.webkitSpeechRecognitionEvent;
 
 	if(!SpeechRecognition) return;
 
@@ -562,14 +562,16 @@ export function prinText(ta){
 }
 
 
-export function sendNotification(title, options) {
-	// Проверим, поддерживает ли браузер HTML5 Notifications
-	if (!window.Notification) {
+// Проверим, поддерживает ли браузер HTML5 Notifications
+if (!_w.Notification) {
 	modal('Ваш браузер не поддерживает HTML Notifications, его необходимо обновить.');
-	}
+}
+
+export function sendNotification(title, options) {
+	if (!_w.Notification) return;
 
 	// Проверим, есть ли права на отправку уведомлений
-	else if (Notification.permission === "granted") {
+	if (Notification.permission === "granted") {
 	// Если права есть, отправим уведомление
 	var notification = new Notification(title, options);
 	}
@@ -579,7 +581,7 @@ export function sendNotification(title, options) {
 		Notification.requestPermission()
 		.then(ok=>new Notification(title, options));
 	} else {
-		// Пользователь ранее отклонил наш запрос на показ уведомлений
+		// Пользователь уже послал нас ранее
 	}
 	return notification;
 }
@@ -608,6 +610,11 @@ export function addStyle(href){
 	console.log({style});
 }
 
+
+/**
+ * @param {int} d - timestamp
+ * @returns {string} UTC - yyyy-mm-dd hh:mm
+ */
 export function getUTC(d){
 	if(!(d instanceof Date)) d= new Date(d);
 	return `${d.getFullYear()}-${fixZero(d.getMonth()+1)}-${fixZero(d.getDate())} ${fixZero(d.getHours())}:${fixZero(d.getMinutes())}`;
@@ -623,5 +630,5 @@ export function logTrace(msg) {
 		args= Array.from(arguments);
 	args.push(err.stack);
 	// console.log(args, Array.from(arguments));
-	console.log.apply(console, args );
+	console.log.apply( console, args );
 }
