@@ -29,7 +29,7 @@ logoutBtn && on(logoutBtn, 'click', e=>{
 on(msgs,'click',e=>{
 	const t= e.target,
 		msg= t.closest('.msg'),
-		num= msg.querySelector('.num').textContent,
+		num= msg&&msg.querySelector('.num').textContent,
 		adm= t.closest('.adm');
 
 	let btn;
@@ -124,7 +124,7 @@ on(msgs,'click',e=>{
 		})
 	}
 
-	//todo *BAN
+	// *BAN
 	if((btn= t.closest('.ban'))){
 		let banned= msg.classList.contains('banned');
 

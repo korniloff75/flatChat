@@ -211,9 +211,9 @@ a:hover {
 
 #msgsContent .msg {
 	width: 89%;
-	margin-bottom: 0.5em;
+	margin-bottom: .5em;
 	padding: 0.3em;
-	border-radius: .5em;
+	border-radius: .5em .5em .5em 0;
 	position: relative;
 	z-index: 1;
 	word-wrap: break-word;
@@ -224,8 +224,9 @@ a:hover {
 	border: 1px dashed;
 }
 
-#msgsContent .msg.myPost {
+#msgsContent .msg + .msg.myPost {
 	margin-left: 10%;
+	border-radius: .5em .5em 0 .5em;
 }
 
 #msgsContent .msg.pinned {

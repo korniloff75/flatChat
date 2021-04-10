@@ -41,7 +41,13 @@ hr {
 }
 
 #msgsContent .msg + .msg {
-	border-color: #ccc;
+	background: #182533;
+	border-color: #345;
+}
+
+#msgsContent .msg + .msg.myPost {
+	background: #2b5278;
+	border-color: #234;
 }
 
 #msgsContent .msg .info {

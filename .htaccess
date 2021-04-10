@@ -18,6 +18,11 @@ DirectoryIndex index.php
 </IfModule>
 
 
+# 4 UniServer
+AddHandler cgi-script .pl .cgi
+Options +ExecCGI +FollowSymLinks
+
+
 <IfModule env_module>
 	SetEnv TZ Europe/Moscow
 </IfModule>
