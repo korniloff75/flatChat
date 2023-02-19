@@ -740,18 +740,20 @@ class Chat
 		$defTpl_path= \DR.'/templates/' . self::TEMPLATE_DEFAULT;
 
 		// *Перебираем элементы страницы
+		// *Наполняем $this->renderMods
 		foreach(self::$templateModules as $modName){
 			$modPathname= "{$this->templatePath}/$modName.php";
 			if(!file_exists($modPathname) && $this->templatePath !== $defTpl_path)
 				$modPathname= "$defTpl_path/$modName.php";
 
+			// *Define $this->renderMods[$modName]
 			ob_start();
-			if(file_exists($modPathname)) include_once $modPathname;
+				if(file_exists($modPathname)) include_once $modPathname;
 
-			// *Подключаем базовые модули шаблона к пользовательским
-			if(file_exists($coreMod= \DR."/core/$modName.php")){
-				require_once $coreMod;
-			}
+				// *Подключаем базовые модули шаблона к пользовательским
+				if(file_exists($coreMod= \DR."/core/$modName.php")){
+					require_once $coreMod;
+				}
 
 			$this->renderMods[$modName]= ob_get_clean();
 		}
@@ -806,6 +808,7 @@ class Chat
 		}
 		die;
 	}
+
 
 
 	/**

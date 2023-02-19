@@ -45,6 +45,7 @@ spl_autoload_register('_autoloader');
 if( isset($_REQUEST["dev"]) || !POLLING ){
 	global $log;
 	$log = new Logger('my.log', \DR);
+	tolog(__FILE__,null,['$_REQUEST["dev"]'=>$_REQUEST["dev"]]);
 }
 elseif(!function_exists('tolog')) {
 	function tolog(){}

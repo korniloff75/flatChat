@@ -509,6 +509,7 @@ label.input__file::before{
 	z-index: 1;
 	max-width: 100%;
 	overflow: hidden;
+	border-radius: 1em 1em 0 0;
 	padding-bottom: .5em;
 }
 

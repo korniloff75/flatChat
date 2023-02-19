@@ -51,7 +51,12 @@ function hideName(){
 	f.secret.value= f.secret.value || null;
 	f.secret.type= f.secret.value? 'hidden': 'text';
 
-	console.log(f.name.value);
+	console.log({
+		'f.name.value':f.name.value,
+		'f.name.type':f.name.type,
+		'f.secret.value':f.secret.value,
+		'f.secret.type':f.secret.type,
+	});
 }
 
 hideName();

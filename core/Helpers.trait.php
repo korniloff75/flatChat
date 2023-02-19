@@ -181,18 +181,9 @@ trait Helpers
 	public static function profile($rem='')
 	:string
 	{
-		global $START_PROFILE;
+		$info = '<p>Page generation - ' . round((microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'])*1e4)/10 . 'ms | Memory usage - now ( '. round (memory_get_usage()/1024) . ') max (' . round (memory_get_peak_usage()/1024) . ') kB</p>';
 
-		if(empty($START_PROFILE))
-		{
-			return '';
-		}
-		else
-		{
-			$info = '<p>Page generation - ' . round((microtime(true) - $START_PROFILE)*1e4)/10 . 'ms | Memory usage - now ( '. round (memory_get_usage()/1024) . ') max (' . round (memory_get_peak_usage()/1024) . ') kB</p>';
-
-			return  "<div class='core info'><b>Used PHP-" . phpversion() . " Technical Info $rem </b>: $info</div>";
-		}
+		return  "<div class='core info'><b>Used PHP-" . phpversion() . " Technical Info $rem </b>: $info</div>";
 
 	}
 
