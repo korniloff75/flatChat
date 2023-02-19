@@ -44,6 +44,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
-todo.txt
+todo.*
 .stackdump
 templates/_default_/sendForm.php
